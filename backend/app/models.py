@@ -164,6 +164,45 @@ class MinistryMembership(Base):
     member   = relationship("Member")
 
 
+class ServicePlan(Base):
+    __tablename__ = "service_plans"
+
+    id               = Column(String, primary_key=True, default=gen_id)
+    title            = Column(String(200), nullable=False)
+    date             = Column(Date, nullable=False)
+    service_type     = Column(String(50), default="Sunday Service")
+    status           = Column(String(20), default="draft")   # draft | planning | ready | complete
+    series_name      = Column(String(200))
+    sermon_title     = Column(String(200))
+    sermon_scripture = Column(String(200))
+    sermon_notes     = Column(Text)
+    preacher_id      = Column(String, ForeignKey("members.id"), nullable=True)
+    notes            = Column(Text)
+    created_at       = Column(DateTime, default=datetime.utcnow)
+    updated_at       = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    preacher = relationship("Member", foreign_keys=[preacher_id])
+    items    = relationship("ServiceItem", back_populates="plan",
+                            cascade="all, delete-orphan",
+                            order_by="ServiceItem.sort_order")
+
+
+class ServiceItem(Base):
+    __tablename__ = "service_items"
+
+    id               = Column(String, primary_key=True, default=gen_id)
+    plan_id          = Column(String, ForeignKey("service_plans.id"), nullable=False)
+    item_type        = Column(String(30), default="other")  # song|sermon|prayer|announcement|communion|offering|reading|other
+    title            = Column(String(200), nullable=False)
+    duration_minutes = Column(Integer, default=5)
+    notes            = Column(String(500))
+    color            = Column(String(20), default="blue")
+    sort_order       = Column(Integer, default=0)
+    created_at       = Column(DateTime, default=datetime.utcnow)
+
+    plan = relationship("ServicePlan", back_populates="items")
+
+
 class OrgNode(Base):
     __tablename__ = "org_nodes"
 

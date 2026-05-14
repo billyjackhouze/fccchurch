@@ -248,6 +248,62 @@ class MinistryMembershipCreate(BaseModel):
     joined_date: Optional[date] = None
 
 
+# ── Service Planning ──────────────────────────────────────────────────────────
+
+class ServiceItemBase(BaseModel):
+    item_type:        Optional[str] = "other"
+    title:            str
+    duration_minutes: Optional[int] = 5
+    notes:            Optional[str] = None
+    color:            Optional[str] = "blue"
+    sort_order:       Optional[int] = 0
+
+class ServiceItemCreate(ServiceItemBase):
+    pass
+
+class ServiceItemUpdate(ServiceItemBase):
+    title: Optional[str] = None
+
+class ServiceItemOut(ServiceItemBase):
+    id:         str
+    plan_id:    str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class ServiceItemReorder(BaseModel):
+    ordered_ids: List[str]
+
+class ServicePlanBase(BaseModel):
+    title:            str
+    date:             date
+    service_type:     Optional[str] = "Sunday Service"
+    status:           Optional[str] = "draft"
+    series_name:      Optional[str] = None
+    sermon_title:     Optional[str] = None
+    sermon_scripture: Optional[str] = None
+    sermon_notes:     Optional[str] = None
+    preacher_id:      Optional[str] = None
+    notes:            Optional[str] = None
+
+class ServicePlanCreate(ServicePlanBase):
+    pass
+
+class ServicePlanUpdate(ServicePlanBase):
+    title: Optional[str] = None
+    date:  Optional[date] = None
+
+class ServicePlanOut(ServicePlanBase):
+    id:             str
+    preacher_name:  Optional[str] = None
+    items:          List[ServiceItemOut] = []
+    item_count:     int = 0
+    total_minutes:  int = 0
+    created_at:     datetime
+    class Config:
+        from_attributes = True
+
+
 # ── Org Hierarchy ─────────────────────────────────────────────────────────────
 
 class OrgNodeBase(BaseModel):

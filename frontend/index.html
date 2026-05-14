@@ -206,6 +206,78 @@ tr:last-child td{border-bottom:none}
 .vol-coming{background:#F8FAFF;border:2px dashed #CBD5E1;border-radius:10px;padding:36px;text-align:center}
 .detail-contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px}
 .detail-tabs{display:flex;gap:2px;background:#F3F4F6;border-radius:8px;padding:3px;margin-bottom:22px;flex-wrap:wrap}
+/* ── Service Planning ── */
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+@media(max-width:900px){.kanban-board{grid-template-columns:1fr 1fr}}
+.kanban-col{background:#F9FAFB;border-radius:10px;padding:12px;border:1px solid #E5E7EB;min-height:200px}
+.kanban-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kanban-col-head h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.kanban-col-head .col-count{font-size:11px;background:#E5E7EB;color:#6B7280;border-radius:99px;padding:1px 7px;font-weight:700}
+.kanban-col.col-draft    .kanban-col-head h4{color:#6B7280}
+.kanban-col.col-planning .kanban-col-head h4{color:#1E40AF}
+.kanban-col.col-ready    .kanban-col-head h4{color:#854D0E}
+.kanban-col.col-complete .kanban-col-head h4{color:#166534}
+.kanban-col.col-draft{border-top:3px solid #9CA3AF}
+.kanban-col.col-planning{border-top:3px solid #3B82F6}
+.kanban-col.col-ready{border-top:3px solid #B8860B}
+.kanban-col.col-complete{border-top:3px solid #1A7A4A}
+.kanban-card{background:#fff;border-radius:8px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;transition:box-shadow .15s, transform .1s;border-left:3px solid #E5E7EB;user-select:none}
+.kanban-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12);transform:translateY(-1px)}
+.kanban-card.dragging{opacity:.45;transform:scale(.97)}
+.kanban-card.drag-over-card{border-top:2px solid #1E3A5F}
+.kanban-col.drag-over-col{background:#EBF0F8}
+.kc-date{font-size:11px;color:#9CA3AF;margin-bottom:3px;font-weight:600}
+.kc-title{font-size:13px;font-weight:700;color:#1E3A5F;margin-bottom:5px}
+.kc-series{font-size:11px;color:#B8860B;font-weight:600;margin-bottom:5px}
+.kc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.kc-chip{font-size:10px;background:#F0F4F8;color:#374151;border-radius:4px;padding:2px 7px;font-weight:600}
+.kc-chip.green{background:#DCFCE7;color:#166534}
+.kc-chip.gold{background:#FEF9C3;color:#854D0E}
+/* Service detail page */
+.service-hero{background:linear-gradient(135deg,#1E3A5F,#2d5080);border-radius:12px;padding:24px 28px;color:#fff;margin-bottom:22px;display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.service-hero-left{flex:1;min-width:220px}
+.service-hero-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.service-hero-sub{font-size:13px;color:#90B4D4;margin-bottom:10px}
+.service-hero-badges{display:flex;gap:8px;flex-wrap:wrap}
+.service-hero-right{background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;min-width:200px}
+.service-hero-right .lbl{font-size:10px;color:#90B4D4;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.service-hero-right .val{font-size:14px;font-weight:700;color:#fff;margin-top:2px;margin-bottom:10px}
+/* Order of Service */
+.order-of-service{width:100%}
+.oos-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:4px solid #E5E7EB;cursor:grab;transition:box-shadow .15s;user-select:none}
+.oos-item:active{cursor:grabbing}
+.oos-item.dragging{opacity:.4;transform:scale(.98)}
+.oos-item.drag-over{border-top:2px solid #1E3A5F;margin-top:-2px}
+.oos-item.type-song        {border-left-color:#B8860B}
+.oos-item.type-sermon      {border-left-color:#1E3A5F}
+.oos-item.type-prayer      {border-left-color:#7C3AED}
+.oos-item.type-announcement{border-left-color:#1A7A4A}
+.oos-item.type-communion   {border-left-color:#DC2626}
+.oos-item.type-offering    {border-left-color:#059669}
+.oos-item.type-reading     {border-left-color:#0891B2}
+.oos-item.type-other       {border-left-color:#9CA3AF}
+.oos-handle{color:#D1D5DB;font-size:16px;cursor:grab;flex-shrink:0}
+.oos-time{font-size:11px;font-weight:700;color:#9CA3AF;min-width:40px;text-align:right;flex-shrink:0}
+.oos-type-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.oos-title{flex:1;font-weight:700;font-size:13px;color:#1F2937}
+.oos-notes{font-size:11px;color:#9CA3AF;margin-top:1px}
+.oos-duration{font-size:11px;color:#6B7280;background:#F3F4F6;border-radius:4px;padding:2px 7px;flex-shrink:0}
+.oos-actions{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.oos-item:hover .oos-actions{opacity:1}
+.sermon-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:20px 24px;margin-bottom:20px}
+.sermon-card h3{font-size:14px;font-weight:700;color:#1E3A5F;margin-bottom:14px}
+.sermon-field{display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F3F4F6}
+.sermon-field:last-child{border-bottom:none}
+.sermon-field .sf-lbl{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;min-width:90px;padding-top:2px}
+.sermon-field .sf-val{font-size:13px;color:#1F2937;flex:1;white-space:pre-wrap;line-height:1.5}
+.type-color-song{color:#B8860B}.type-color-sermon{color:#1E3A5F}.type-color-prayer{color:#7C3AED}
+.type-color-announcement{color:#1A7A4A}.type-color-communion{color:#DC2626}
+.type-color-offering{color:#059669}.type-color-reading{color:#0891B2}.type-color-other{color:#9CA3AF}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
+.status-draft   {background:#F3F4F6;color:#6B7280}
+.status-planning{background:#DBEAFE;color:#1E40AF}
+.status-ready   {background:#FEF9C3;color:#854D0E}
+.status-complete{background:#DCFCE7;color:#166534}
 /* ── Org Hierarchy ── */
 .org-tree{padding:4px 0}
 .org-node{margin:0;padding:0}
@@ -268,6 +340,8 @@ tr:last-child td{border-bottom:none}
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-section">Worship</div>
+    <div class="nav-item" onclick="showPage('services')" id="nav-services"><span class="icon">🎶</span> Service Planning</div>
     <div class="nav-section">Ministry</div>
     <div class="nav-item" onclick="showPage('schedule')" id="nav-schedule"><span class="icon">📅</span> Schedule</div>
     <div class="nav-item" onclick="showPage('rooms')" id="nav-rooms"><span class="icon">🏛️</span> Rooms &amp; Facilities</div>
@@ -315,6 +389,78 @@ tr:last-child td{border-bottom:none}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px">
         <div class="card"><div class="card-header"><h3>🏛️ Room Status Today</h3></div><div class="card-body" id="dash-rooms"><div class="spinner"></div></div></div>
         <div class="card"><div class="card-header"><h3>👥 Newest Members</h3></div><div class="card-body" id="dash-members"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- SERVICE PLANNING — KANBAN -->
+    <div class="page" id="page-services">
+      <div class="page-header">
+        <h2>🎶 Service Planning</h2>
+        <button class="btn btn-primary" id="svc-add-btn" style="display:none" onclick="openServicePlanModal()">+ New Service Plan</button>
+      </div>
+      <div class="kanban-board" id="services-kanban">
+        <div class="kanban-col col-draft">
+          <div class="kanban-col-head"><h4>📝 Draft</h4><span class="col-count" id="cnt-draft">0</span></div>
+          <div class="kanban-drop-zone" id="col-draft" ondragover="onKanbanDragOver(event,'draft')" ondrop="onKanbanDrop(event,'draft')" ondragleave="onKanbanDragLeave(event)"></div>
+        </div>
+        <div class="kanban-col col-planning">
+          <div class="kanban-col-head"><h4>🔵 In Planning</h4><span class="col-count" id="cnt-planning">0</span></div>
+          <div class="kanban-drop-zone" id="col-planning" ondragover="onKanbanDragOver(event,'planning')" ondrop="onKanbanDrop(event,'planning')" ondragleave="onKanbanDragLeave(event)"></div>
+        </div>
+        <div class="kanban-col col-ready">
+          <div class="kanban-col-head"><h4>⭐ Ready</h4><span class="col-count" id="cnt-ready">0</span></div>
+          <div class="kanban-drop-zone" id="col-ready" ondragover="onKanbanDragOver(event,'ready')" ondrop="onKanbanDrop(event,'ready')" ondragleave="onKanbanDragLeave(event)"></div>
+        </div>
+        <div class="kanban-col col-complete">
+          <div class="kanban-col-head"><h4>✅ Complete</h4><span class="col-count" id="cnt-complete">0</span></div>
+          <div class="kanban-drop-zone" id="col-complete" ondragover="onKanbanDragOver(event,'complete')" ondrop="onKanbanDrop(event,'complete')" ondragleave="onKanbanDragLeave(event)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE DETAIL — ORDER OF SERVICE -->
+    <div class="page" id="page-service-detail">
+      <div class="detail-back-bar">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('services')">← Back to Service Planning</button>
+        <div class="action-btns" id="svc-detail-admin-btns" style="display:none">
+          <select id="svc-status-select" onchange="changeServiceStatus(this.value)" style="padding:6px 10px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px">
+            <option value="draft">📝 Draft</option>
+            <option value="planning">🔵 In Planning</option>
+            <option value="ready">⭐ Ready</option>
+            <option value="complete">✅ Complete</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="editCurrentServicePlan()">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentServicePlan()">🗑 Delete</button>
+        </div>
+      </div>
+
+      <div id="svc-hero"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" id="svc-detail-grid">
+        <!-- Order of service -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3>📋 Order of Service</h3>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span id="svc-total-time" style="font-size:12px;color:#6B7280"></span>
+                <button class="btn btn-primary btn-sm" id="svc-add-item-btn" style="display:none" onclick="openServiceItemModal()">+ Add Item</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="order-of-service" id="oos-list"></div>
+              <div id="oos-empty" class="empty" style="display:none">No items yet. Click "+ Add Item" to build the order of service.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sermon notes sidebar -->
+        <div>
+          <div class="sermon-card" id="svc-sermon-card">
+            <h3>📖 Sermon Notes</h3>
+            <div id="svc-sermon-body"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -782,6 +928,60 @@ tr:last-child td{border-bottom:none}
   </div>
 </div></div>
 
+<!-- Service Plan Modal -->
+<div class="modal-backdrop" id="service-plan-modal"><div class="modal" style="width:580px">
+  <h2 id="svc-plan-modal-title">🎶 New Service Plan</h2>
+  <input type="hidden" id="svc-plan-id">
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Plan Title *</label><input type="text" id="svc-title" placeholder="e.g. Sunday Morning Service — June 15"></div>
+    <div class="form-group"><label>Date *</label><input type="date" id="svc-date"></div>
+    <div class="form-group"><label>Service Type</label>
+      <select id="svc-type">
+        <option>Sunday Service</option><option>Contemporary</option><option>Traditional</option>
+        <option>Youth Service</option><option>Wednesday Night</option><option>Special Service</option>
+        <option>Revival</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Sermon Series</label><input type="text" id="svc-series" placeholder="e.g. Faith Over Fear"></div>
+    <div class="form-group"><label>Preacher</label><select id="svc-preacher"></select></div>
+    <div class="form-group span-2"><label>Sermon Title</label><input type="text" id="svc-sermon-title" placeholder="e.g. The Power of Surrender"></div>
+    <div class="form-group span-2"><label>Scripture Reference</label><input type="text" id="svc-scripture" placeholder="e.g. Romans 8:28, John 15:1-8"></div>
+    <div class="form-group span-2"><label>Sermon Notes / Outline</label><textarea id="svc-sermon-notes" style="min-height:90px" placeholder="Main points, illustrations, application…"></textarea></div>
+    <div class="form-group span-2"><label>Plan Notes (for team)</label><textarea id="svc-notes" style="min-height:55px" placeholder="Special instructions for the team…"></textarea></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('service-plan-modal')">Cancel</button>
+    <button class="btn btn-primary" id="svc-plan-save-btn" onclick="saveServicePlan()">Create Plan</button>
+  </div>
+</div></div>
+
+<!-- Service Item Modal -->
+<div class="modal-backdrop" id="service-item-modal"><div class="modal" style="width:480px">
+  <h2 id="svc-item-modal-title">➕ Add Service Item</h2>
+  <input type="hidden" id="svc-item-id">
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Item Title *</label><input type="text" id="si-title" placeholder="e.g. How Great Is Our God, Welcome & Announcements"></div>
+    <div class="form-group"><label>Type</label>
+      <select id="si-type" onchange="updateItemTypeColor()">
+        <option value="song">🎵 Song</option>
+        <option value="sermon">📖 Sermon</option>
+        <option value="prayer">🙏 Prayer</option>
+        <option value="announcement">📣 Announcement</option>
+        <option value="communion">🍞 Communion</option>
+        <option value="offering">💰 Offering</option>
+        <option value="reading">📜 Scripture Reading</option>
+        <option value="other">• Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Duration (minutes)</label><input type="number" id="si-duration" min="1" max="120" value="5"></div>
+    <div class="form-group span-2"><label>Notes</label><input type="text" id="si-notes" placeholder="Key of G, Acoustic version, Speaker name…"></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('service-item-modal')">Cancel</button>
+    <button class="btn btn-primary" id="svc-item-save-btn" onclick="saveServiceItem()">Add Item</button>
+  </div>
+</div></div>
+
 <!-- Group Modal -->
 <div class="modal-backdrop" id="group-modal"><div class="modal" style="width:520px">
   <h2 id="group-modal-title">🤝 Add Group</h2>
@@ -900,6 +1100,7 @@ const api = {
   get:    path       => apiFetch(path),
   post:   (path, d)  => apiFetch(path, { method:'POST',   body: JSON.stringify(d) }),
   put:    (path, d)  => apiFetch(path, { method:'PUT',    body: JSON.stringify(d) }),
+  patch:  (path, d)  => apiFetch(path, { method:'PATCH',  body: JSON.stringify(d) }),
   delete: path       => apiFetch(path, { method:'DELETE' }),
 };
 
@@ -1039,7 +1240,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1052,7 +1253,8 @@ function showPage(id) {
 }
 
 function renderPage(id) {
-  if (id==='dashboard')      renderDashboard();
+  if (id==='services')       renderServices();
+  else if (id==='dashboard')      renderDashboard();
   else if (id==='schedule')  renderSchedule();
   else if (id==='rooms')     renderRooms();
   else if (id==='members')    renderMembers();
@@ -1771,6 +1973,397 @@ async function saveMinistry() {
   ['min-name','min-desc'].forEach(i => document.getElementById(i).value = '');
   if (id) { showMinistryDetail(id); } else { showPage('ministries'); }
 }
+
+// ── SERVICE PLANNING ─────────────────────────────────────────────────────────
+let currentPlanId = null;
+let currentPlan   = null;
+let oosAllPlans   = [];
+let dragSrcPlanId = null;   // kanban drag
+let dragSrcItemId = null;   // oos drag
+
+const ITEM_TYPE_META = {
+  song:         { label:'Song',             icon:'🎵', dot:'#B8860B' },
+  sermon:       { label:'Sermon',           icon:'📖', dot:'#1E3A5F' },
+  prayer:       { label:'Prayer',           icon:'🙏', dot:'#7C3AED' },
+  announcement: { label:'Announcement',     icon:'📣', dot:'#1A7A4A' },
+  communion:    { label:'Communion',        icon:'🍞', dot:'#DC2626' },
+  offering:     { label:'Offering',         icon:'💰', dot:'#059669' },
+  reading:      { label:'Scripture Reading',icon:'📜', dot:'#0891B2' },
+  other:        { label:'Other',            icon:'•',  dot:'#9CA3AF' },
+};
+
+const STATUS_META = {
+  draft:    { label:'Draft',       cls:'status-draft'    },
+  planning: { label:'In Planning', cls:'status-planning' },
+  ready:    { label:'Ready',       cls:'status-ready'    },
+  complete: { label:'Complete',    cls:'status-complete' },
+};
+
+// ─── Kanban render ────────────────────────────────────────────────────────────
+async function renderServices() {
+  const isAdmin = currentUser?.role === 'admin';
+  if (isAdmin) document.getElementById('svc-add-btn').style.display = '';
+  try {
+    oosAllPlans = await api.get('/api/services');
+  } catch(e) {
+    ['draft','planning','ready','complete'].forEach(s => {
+      document.getElementById('col-' + s).innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+    });
+    return;
+  }
+  const cols = { draft:[], planning:[], ready:[], complete:[] };
+  oosAllPlans.forEach(p => (cols[p.status] || cols.draft).push(p));
+  ['draft','planning','ready','complete'].forEach(status => {
+    const zone = document.getElementById('col-' + status);
+    document.getElementById('cnt-' + status).textContent = cols[status].length;
+    if (cols[status].length === 0) {
+      zone.innerHTML = `<div style="text-align:center;padding:20px;color:#D1D5DB;font-size:12px">Drop plans here</div>`;
+      return;
+    }
+    zone.innerHTML = cols[status]
+      .sort((a,b) => a.date.localeCompare(b.date))
+      .map(p => kanbanCard(p, isAdmin)).join('');
+  });
+}
+
+function kanbanCard(p, isAdmin) {
+  const sm = STATUS_META[p.status] || STATUS_META.draft;
+  const volChip = p.item_count > 0
+    ? `<span class="kc-chip green">${p.item_count} items</span>`
+    : `<span class="kc-chip">No items</span>`;
+  const timeChip = p.total_minutes > 0
+    ? `<span class="kc-chip gold">${p.total_minutes} min</span>` : '';
+  const seriesHtml = p.series_name ? `<div class="kc-series">📚 ${p.series_name}</div>` : '';
+  const preacherHtml = p.preacher_name ? `<div style="font-size:11px;color:#6B7280;margin-bottom:3px">👤 ${p.preacher_name}</div>` : '';
+  return `<div class="kanban-card" draggable="true"
+    ondragstart="onKanbanCardDragStart(event,'${p.id}')"
+    ondragend="onKanbanCardDragEnd(event)"
+    onclick="showServiceDetail('${p.id}')">
+    <div class="kc-date">${fmtDate(p.date)} · ${p.service_type}</div>
+    <div class="kc-title">${p.title}</div>
+    ${seriesHtml}${preacherHtml}
+    ${p.sermon_title ? `<div style="font-size:11px;color:#374151;margin-bottom:4px">📖 ${p.sermon_title}</div>` : ''}
+    <div class="kc-meta">${volChip}${timeChip}</div>
+  </div>`;
+}
+
+// ─── Kanban drag-and-drop ─────────────────────────────────────────────────────
+function onKanbanCardDragStart(e, planId) {
+  dragSrcPlanId = planId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.target.classList.add('dragging');
+}
+function onKanbanCardDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kanban-drop-zone').forEach(z => z.classList.remove('drag-over-col'));
+}
+function onKanbanDragOver(e, status) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.kanban-drop-zone').forEach(z => z.classList.remove('drag-over-col'));
+  document.getElementById('col-' + status).classList.add('drag-over-col');
+}
+function onKanbanDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over-col');
+}
+async function onKanbanDrop(e, newStatus) {
+  e.preventDefault();
+  document.querySelectorAll('.kanban-drop-zone').forEach(z => z.classList.remove('drag-over-col'));
+  if (!dragSrcPlanId) return;
+  const plan = oosAllPlans.find(p => p.id === dragSrcPlanId);
+  if (!plan || plan.status === newStatus) { dragSrcPlanId = null; return; }
+  try {
+    await api.patch('/api/services/' + dragSrcPlanId + '/status', { status: newStatus });
+  } catch(err) {
+    alert('Could not move plan: ' + err.message); return;
+  } finally { dragSrcPlanId = null; }
+  renderServices();
+}
+
+// ─── Service Detail ───────────────────────────────────────────────────────────
+async function showServiceDetail(id) {
+  currentPlanId = id;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-service-detail').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-services').classList.add('active');
+  document.getElementById('topbar-title').textContent = 'Service Plan';
+  const isAdmin = currentUser?.role === 'admin';
+  document.getElementById('svc-detail-admin-btns').style.display = isAdmin ? '' : 'none';
+  document.getElementById('svc-add-item-btn').style.display = isAdmin ? '' : 'none';
+  await reloadServiceDetail();
+}
+
+async function reloadServiceDetail() {
+  try {
+    currentPlan = await api.get('/api/services/' + currentPlanId);
+    document.getElementById('topbar-title').textContent = currentPlan.title;
+    renderServiceHero(currentPlan);
+    renderSermonCard(currentPlan);
+    renderOOS(currentPlan);
+    if (currentUser?.role === 'admin') {
+      document.getElementById('svc-status-select').value = currentPlan.status;
+    }
+  } catch(e) {
+    document.getElementById('svc-hero').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+function renderServiceHero(p) {
+  const sm = STATUS_META[p.status] || STATUS_META.draft;
+  document.getElementById('svc-hero').innerHTML = `
+    <div class="service-hero">
+      <div class="service-hero-left">
+        <div class="service-hero-title">${p.title}</div>
+        <div class="service-hero-sub">${fmtDate(p.date)} · ${p.service_type}</div>
+        <div class="service-hero-badges">
+          <span class="status-pill ${sm.cls}">${sm.label}</span>
+          ${p.series_name ? `<span class="badge badge-gold">📚 ${p.series_name}</span>` : ''}
+          ${p.preacher_name ? `<span class="badge badge-blue">👤 ${p.preacher_name}</span>` : ''}
+          ${p.item_count > 0 ? `<span class="badge badge-green">${p.item_count} items · ${p.total_minutes} min</span>` : ''}
+        </div>
+      </div>
+      ${p.notes ? `<div class="service-hero-right">
+        <div class="lbl">Team Notes</div>
+        <div class="val" style="font-size:12px;font-weight:400;white-space:pre-wrap">${p.notes}</div>
+      </div>` : ''}
+    </div>`;
+}
+
+function renderSermonCard(p) {
+  const fields = [
+    ['Sermon Title',  p.sermon_title    || '—'],
+    ['Scripture',     p.sermon_scripture|| '—'],
+    ['Preacher',      p.preacher_name   || '—'],
+    ['Series',        p.series_name     || '—'],
+    ['Notes',         p.sermon_notes    || '—'],
+  ];
+  document.getElementById('svc-sermon-body').innerHTML = fields.map(([l,v]) => `
+    <div class="sermon-field">
+      <div class="sf-lbl">${l}</div>
+      <div class="sf-val">${v}</div>
+    </div>`).join('');
+}
+
+// ─── Order of Service (drag-and-drop) ────────────────────────────────────────
+function calcStartTimes(items) {
+  // Calculate cumulative start time from first item
+  let mins = 0;
+  return items.map(i => {
+    const t = mins;
+    mins += (i.duration_minutes || 0);
+    return t;
+  });
+}
+
+function minsToTime(totalMins) {
+  // Relative: just show +mm or as HH:MM offset
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  return (h > 0 ? h + 'h ' : '') + m + 'm';
+}
+
+function renderOOS(p) {
+  const list = document.getElementById('oos-list');
+  const empty = document.getElementById('oos-empty');
+  const totalEl = document.getElementById('svc-total-time');
+  if (!p.items || p.items.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    totalEl.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const starts = calcStartTimes(p.items);
+  totalEl.textContent = `Total: ${p.total_minutes} min`;
+  const isAdmin = currentUser?.role === 'admin';
+  list.innerHTML = p.items.map((item, idx) => {
+    const meta = ITEM_TYPE_META[item.item_type] || ITEM_TYPE_META.other;
+    const startLabel = minsToTime(starts[idx]);
+    const adminBtns = isAdmin ? `
+      <button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:11px" onclick="editServiceItem('${item.id}')">✏️</button>
+      <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteServiceItem('${item.id}')">🗑</button>` : '';
+    return `<div class="oos-item type-${item.item_type}" draggable="${isAdmin}"
+        data-item-id="${item.id}"
+        ondragstart="onOOSDragStart(event,'${item.id}')"
+        ondragend="onOOSDragEnd(event)"
+        ondragover="onOOSDragOver(event)"
+        ondrop="onOOSDrop(event,'${item.id}')">
+      <span class="oos-handle" style="${isAdmin?'':'cursor:default;opacity:.3'}">⠿</span>
+      <span class="oos-time">+${startLabel}</span>
+      <span class="oos-type-dot" style="background:${meta.dot}"></span>
+      <div style="flex:1;min-width:0">
+        <div class="oos-title">${meta.icon} ${item.title}</div>
+        ${item.notes ? `<div class="oos-notes">${item.notes}</div>` : ''}
+      </div>
+      <span class="oos-duration">${item.duration_minutes}m</span>
+      <div class="oos-actions">${adminBtns}</div>
+    </div>`;
+  }).join('');
+}
+
+// OOS drag
+function onOOSDragStart(e, itemId) {
+  dragSrcItemId = itemId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+function onOOSDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.oos-item').forEach(el => el.classList.remove('drag-over'));
+}
+function onOOSDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.oos-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+async function onOOSDrop(e, targetItemId) {
+  e.preventDefault();
+  document.querySelectorAll('.oos-item').forEach(el => el.classList.remove('drag-over'));
+  if (!dragSrcItemId || dragSrcItemId === targetItemId) { dragSrcItemId = null; return; }
+  // Reorder locally first for instant UI feedback
+  const items = [...currentPlan.items];
+  const srcIdx = items.findIndex(i => i.id === dragSrcItemId);
+  const tgtIdx = items.findIndex(i => i.id === targetItemId);
+  if (srcIdx === -1 || tgtIdx === -1) { dragSrcItemId = null; return; }
+  const [moved] = items.splice(srcIdx, 1);
+  items.splice(tgtIdx, 0, moved);
+  currentPlan.items = items;
+  renderOOS(currentPlan);
+  dragSrcItemId = null;
+  // Persist to backend
+  try {
+    await api.patch('/api/services/' + currentPlanId + '/items/reorder',
+      { ordered_ids: items.map(i => i.id) });
+  } catch(err) {
+    console.warn('Reorder save failed:', err.message);
+  }
+}
+
+// ─── Service Plan CRUD ────────────────────────────────────────────────────────
+async function openServicePlanModal(prefill) {
+  document.getElementById('service-plan-modal').classList.add('open');
+  try {
+    const all = await api.get('/api/members');
+    document.getElementById('svc-preacher').innerHTML = '<option value="">— Not assigned —</option>' +
+      all.map(m => `<option value="${m.id}"${prefill?.preacher_id===m.id?' selected':''}>${m.first} ${m.last}</option>`).join('');
+  } catch {
+    document.getElementById('svc-preacher').innerHTML = '<option value="">— Not assigned —</option>';
+  }
+  if (prefill) {
+    document.getElementById('svc-plan-id').value         = prefill.id || '';
+    document.getElementById('svc-title').value           = prefill.title || '';
+    document.getElementById('svc-date').value            = prefill.date || '';
+    document.getElementById('svc-type').value            = prefill.service_type || 'Sunday Service';
+    document.getElementById('svc-series').value          = prefill.series_name || '';
+    document.getElementById('svc-sermon-title').value    = prefill.sermon_title || '';
+    document.getElementById('svc-scripture').value       = prefill.sermon_scripture || '';
+    document.getElementById('svc-sermon-notes').value    = prefill.sermon_notes || '';
+    document.getElementById('svc-notes').value           = prefill.notes || '';
+  } else {
+    document.getElementById('svc-plan-id').value = '';
+    ['svc-title','svc-series','svc-sermon-title','svc-scripture','svc-sermon-notes','svc-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('svc-date').value = todayStr;
+    document.getElementById('svc-type').value = 'Sunday Service';
+  }
+}
+
+async function editCurrentServicePlan() {
+  document.getElementById('svc-plan-modal-title').textContent = '✏️ Edit Service Plan';
+  document.getElementById('svc-plan-save-btn').textContent = 'Save Changes';
+  await openServicePlanModal(currentPlan);
+}
+
+async function saveServicePlan() {
+  const title = document.getElementById('svc-title').value.trim();
+  const date  = document.getElementById('svc-date').value;
+  if (!title) { alert('Plan title is required.'); return; }
+  if (!date)  { alert('Date is required.'); return; }
+  const id = document.getElementById('svc-plan-id').value;
+  const data = {
+    title,
+    date,
+    service_type:     document.getElementById('svc-type').value,
+    series_name:      document.getElementById('svc-series').value || null,
+    preacher_id:      document.getElementById('svc-preacher').value || null,
+    sermon_title:     document.getElementById('svc-sermon-title').value || null,
+    sermon_scripture: document.getElementById('svc-scripture').value || null,
+    sermon_notes:     document.getElementById('svc-sermon-notes').value || null,
+    notes:            document.getElementById('svc-notes').value || null,
+  };
+  try {
+    if (id) { await api.put('/api/services/' + id, data); }
+    else    { const p = await api.post('/api/services', data); currentPlanId = p.id; }
+    closeModal('service-plan-modal');
+    document.getElementById('svc-plan-modal-title').textContent = '🎶 New Service Plan';
+    document.getElementById('svc-plan-save-btn').textContent = 'Create Plan';
+    if (id) { await reloadServiceDetail(); }
+    else    { showPage('services'); }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function deleteCurrentServicePlan() {
+  if (!confirm('Delete this service plan and all its items?')) return;
+  await api.delete('/api/services/' + currentPlanId);
+  showPage('services');
+}
+
+async function changeServiceStatus(newStatus) {
+  try {
+    await api.patch('/api/services/' + currentPlanId + '/status', { status: newStatus });
+    await reloadServiceDetail();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ─── Service Item CRUD ────────────────────────────────────────────────────────
+function openServiceItemModal(prefill) {
+  document.getElementById('svc-item-modal-title').textContent = prefill ? '✏️ Edit Item' : '➕ Add Service Item';
+  document.getElementById('svc-item-save-btn').textContent = prefill ? 'Save Changes' : 'Add Item';
+  document.getElementById('svc-item-id').value   = prefill?.id || '';
+  document.getElementById('si-title').value      = prefill?.title || '';
+  document.getElementById('si-type').value       = prefill?.item_type || 'song';
+  document.getElementById('si-duration').value   = prefill?.duration_minutes || 5;
+  document.getElementById('si-notes').value      = prefill?.notes || '';
+  document.getElementById('service-item-modal').classList.add('open');
+}
+
+function updateItemTypeColor() { /* visual hook if needed */ }
+
+function editServiceItem(itemId) {
+  const item = currentPlan?.items.find(i => i.id === itemId);
+  if (item) openServiceItemModal(item);
+}
+
+async function saveServiceItem() {
+  const title = document.getElementById('si-title').value.trim();
+  if (!title) { alert('Item title is required.'); return; }
+  const id = document.getElementById('svc-item-id').value;
+  const data = {
+    title,
+    item_type:        document.getElementById('si-type').value,
+    duration_minutes: parseInt(document.getElementById('si-duration').value) || 5,
+    notes:            document.getElementById('si-notes').value || null,
+  };
+  try {
+    if (id) {
+      await api.put(`/api/services/${currentPlanId}/items/${id}`, data);
+    } else {
+      await api.post(`/api/services/${currentPlanId}/items`, data);
+    }
+    closeModal('service-item-modal');
+    await reloadServiceDetail();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function deleteServiceItem(itemId) {
+  if (!confirm('Remove this item from the order of service?')) return;
+  await api.delete(`/api/services/${currentPlanId}/items/${itemId}`);
+  await reloadServiceDetail();
+}
+
+// Wire service-plan-modal into openModal interceptor done below via direct calls
+
 
 // ── GROUPS ───────────────────────────────────────────────────────────────────
 let currentGroupId = null;
