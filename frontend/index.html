@@ -311,6 +311,9 @@ body.is-admin .admin-only{display:inline-flex}
 /* ── Toast ── */
 #toast{position:fixed;bottom:28px;right:28px;background:#1E3A5F;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none}
 #toast.show{opacity:1}
+/* ── Settings ── */
+.settings-tab{transition:color .15s,border-color .15s}
+.settings-tab:hover{color:#1E3A5F!important}
 /* ── Page header h1 ── */
 .page-header h1{font-size:20px;font-weight:800;color:#1E3A5F}
 .page-header .subtitle{font-size:13px;color:#6B7280;margin-top:2px}
@@ -384,6 +387,7 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="nav-section" id="admin-nav-section">Admin</div>
     <div class="nav-item" onclick="showPage('manage-shifts')" id="nav-manage-shifts" style="display:none"><span class="icon">⚙️</span> Manage Shifts</div>
     <div class="nav-item" onclick="showPage('users')" id="nav-users" style="display:none"><span class="icon">🔐</span> User Accounts</div>
+    <div class="nav-item" onclick="showPage('admin-settings')" id="nav-admin-settings" style="display:none"><span class="icon">⚙️</span> App Settings</div>
   </nav>
   <div class="sidebar-footer">
     <div class="api-status"><span class="api-dot" id="api-dot"></span><span id="api-status-text">Connecting…</span></div>
@@ -666,6 +670,7 @@ body.is-admin .admin-only{display:inline-flex}
             </div>
             <div style="display:flex;gap:8px;align-items:center">
               <button class="btn btn-secondary" onclick="showPage('bible-lookup')">🔍 Bible Lookup</button>
+              <button class="btn btn-gold admin-only" onclick="openAIAssist()">🤖 AI Assist</button>
               <button class="btn btn-primary admin-only" onclick="openSermonModal()">+ Add Sermon</button>
             </div>
           </div>
@@ -704,6 +709,7 @@ body.is-admin .admin-only{display:inline-flex}
               </div>
             </div>
             <div style="display:flex;gap:8px">
+              <button class="btn btn-gold admin-only" onclick="openAIAssist()">🤖 AI Assist</button>
               <button class="btn btn-secondary" onclick="exportSermonPdf()">⬇️ Export PDF</button>
               <button class="btn btn-primary admin-only" onclick="saveOutline()">💾 Save Outline</button>
             </div>
@@ -837,6 +843,77 @@ body.is-admin .admin-only{display:inline-flex}
         <thead><tr><th>Email</th><th>Role</th><th>Linked Member</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="users-tbody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span> Loading…</td></tr></tbody>
       </table></div></div>
+    </div>
+
+    <!-- ADMIN SETTINGS (admin only) -->
+    <div class="page" id="page-admin-settings">
+      <div class="page-header">
+        <div><h2>⚙️ App Settings</h2><p style="color:#6B7280;font-size:13px;margin-top:2px">Configure email, API keys, and dropdown value lists</p></div>
+      </div>
+
+      <!-- Tabs -->
+      <div id="settings-tabs" style="display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:20px">
+        <button class="settings-tab active" onclick="switchSettingsTab('general')" id="stab-general"
+          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid #1E3A5F;margin-bottom:-2px;color:#1E3A5F">
+          🏛 General
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('email')" id="stab-email"
+          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
+          📧 Email
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('api')" id="stab-api"
+          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
+          🔑 API Keys
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('lists')" id="stab-lists"
+          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
+          📋 Value Lists
+        </button>
+      </div>
+
+      <!-- General tab -->
+      <div id="settings-panel-general" class="settings-panel">
+        <div class="card"><div class="card-body">
+          <div class="form-grid" id="settings-form-general"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveSettingsGroup('general')">Save General Settings</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- Email tab -->
+      <div id="settings-panel-email" class="settings-panel" style="display:none">
+        <div class="card"><div class="card-body">
+          <p style="font-size:12px;color:#6B7280;margin-bottom:14px">Used for sending password resets and member notifications. Gmail: use App Password (not your regular password) with 2FA enabled.</p>
+          <div class="form-grid" id="settings-form-email"></div>
+          <div class="form-actions" style="gap:10px">
+            <button class="btn btn-ghost btn-sm" onclick="testEmail()">📨 Send Test Email</button>
+            <button class="btn btn-primary" onclick="saveSettingsGroup('email')">Save Email Settings</button>
+          </div>
+        </div></div>
+        <div id="email-test-result" style="display:none;margin-top:12px"></div>
+      </div>
+
+      <!-- API Keys tab -->
+      <div id="settings-panel-api" class="settings-panel" style="display:none">
+        <div class="card"><div class="card-body">
+          <p style="font-size:12px;color:#6B7280;margin-bottom:14px">API keys are stored securely and never displayed after saving. Leave blank to keep the current saved value.</p>
+          <div class="form-grid" id="settings-form-api"></div>
+          <div style="margin-top:12px;padding:12px;background:#EBF0F8;border-radius:8px;font-size:12px;color:#374151">
+            <strong>🤖 AI Sermon Assistant</strong> uses the Anthropic API. Get a key at
+            <a href="https://console.anthropic.com" target="_blank" style="color:#1E3A5F">console.anthropic.com</a>.
+            The key should start with <code>sk-ant-</code>.
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveSettingsGroup('api')">Save API Keys</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- Value Lists tab -->
+      <div id="settings-panel-lists" class="settings-panel" style="display:none">
+        <div id="settings-lists-body"></div>
+      </div>
     </div>
 
   </div>
@@ -1271,6 +1348,52 @@ body.is-admin .admin-only{display:inline-flex}
   </div>
 </div>
 
+<!-- AI Sermon Assistant Modal -->
+<div class="modal-backdrop" id="ai-assist-modal">
+  <div class="modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <h2>🤖 AI Sermon Assistant</h2>
+      <button class="modal-close" onclick="closeModal('ai-assist-modal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:18px">Powered by Claude. Enter a topic and click Generate — Claude will build a complete sermon outline you can refine and save.</p>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>Sermon Topic *</label>
+        <input id="ai-topic" placeholder="e.g. Finding Peace in the Storm" onkeydown="if(event.key==='Enter')runAISermonAssist()">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label>Style</label>
+        <select id="ai-style">
+          <option value="expository">Expository</option>
+          <option value="topical">Topical</option>
+          <option value="narrative">Narrative</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <div class="form-group" style="flex:2">
+        <label>Scripture Hint (optional)</label>
+        <input id="ai-scripture" placeholder="e.g. Philippians 4:6-7">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label>Main Points</label>
+        <select id="ai-points">
+          <option value="2">2 Points</option>
+          <option value="3" selected>3 Points</option>
+          <option value="4">4 Points</option>
+          <option value="5">5 Points</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <button id="ai-generate-btn" class="btn btn-primary" onclick="runAISermonAssist()" style="width:100%;padding:11px;font-size:14px">
+        ✨ Generate Outline
+      </button>
+    </div>
+    <div id="ai-output" style="display:none;margin-top:18px"></div>
+  </div>
+</div>
+
 <!-- Forgot Password Modal -->
 <div class="modal-backdrop" id="forgot-modal"><div class="modal" style="width:420px">
   <h2>🔑 Reset Password</h2>
@@ -1394,6 +1517,7 @@ function hideLoginScreen() {
   if (currentUser?.role === 'admin') {
     document.getElementById('nav-users').style.display = '';
     document.getElementById('nav-manage-shifts').style.display = '';
+    document.getElementById('nav-admin-settings').style.display = '';
     document.body.classList.add('is-admin');
   }
   document.getElementById('topbar-user').innerHTML =
@@ -1453,7 +1577,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1478,8 +1602,9 @@ function renderPage(id) {
   else if (id==='volunteer') renderVolunteer();
   else if (id==='myshifts')  renderMyShifts();
   else if (id==='manage-shifts') renderManageShifts();
-  else if (id==='users')     renderUsers();
-  else if (id==='sermons')   renderSermons();
+  else if (id==='users')           renderUsers();
+  else if (id==='admin-settings')  renderAdminSettings();
+  else if (id==='sermons')         renderSermons();
   else if (id==='sermon-outline') { /* handled by showOutlineBuilder */ }
   else if (id==='bible-lookup') renderBibleHistory();
 }
@@ -3778,6 +3903,298 @@ function quickBibleLookup(ref) {
     const inp = document.getElementById('bible-ref-input');
     if (inp) { inp.value = ref; lookupVerse(); }
   }, 50);
+}
+
+// ══════════════════════════════ ADMIN SETTINGS ══════════════════════════════
+let _settingsData = {};   // key → { value, is_secret, label, group }
+
+const SETTING_META = {
+  // general
+  church_name:       { label:'Church Name',    type:'text' },
+  church_address:    { label:'Address',         type:'text' },
+  church_phone:      { label:'Phone',           type:'text' },
+  church_website:    { label:'Website',         type:'text' },
+  // email
+  email_smtp_host:   { label:'SMTP Host',       type:'text',     placeholder:'smtp.gmail.com' },
+  email_smtp_port:   { label:'SMTP Port',       type:'number',   placeholder:'587' },
+  email_smtp_user:   { label:'SMTP Username',   type:'email',    placeholder:'you@gmail.com' },
+  email_smtp_pass:   { label:'SMTP Password',   type:'password', placeholder:'Leave blank to keep saved value' },
+  email_from_name:   { label:'From Name',       type:'text',     placeholder:'FFC Church' },
+  email_from_addr:   { label:'From Address',    type:'email',    placeholder:'no-reply@fccchurch.com' },
+  email_use_tls:     { label:'Use TLS',         type:'select',   options:['true','false'] },
+  // api
+  api_anthropic_key: { label:'Anthropic API Key', type:'password', placeholder:'sk-ant-…  (leave blank to keep saved)' },
+};
+
+const GROUP_KEYS = {
+  general: ['church_name','church_address','church_phone','church_website'],
+  email:   ['email_smtp_host','email_smtp_port','email_smtp_user','email_smtp_pass',
+             'email_from_name','email_from_addr','email_use_tls'],
+  api:     ['api_anthropic_key'],
+  lists:   ['list_member_status','list_event_types','list_giving_types',
+             'list_giving_funds','list_service_item_types'],
+};
+
+const LIST_LABELS = {
+  list_member_status:      'Member Status Options',
+  list_event_types:        'Event Types',
+  list_giving_types:       'Giving Types',
+  list_giving_funds:       'Giving Funds',
+  list_service_item_types: 'Service Item Types',
+};
+
+async function renderAdminSettings() {
+  try {
+    const all = await api.get('/api/settings');
+    _settingsData = {};
+    all.forEach(s => _settingsData[s.key] = s);
+    renderSettingsTab(document.querySelector('.settings-tab.active')?.id?.replace('stab-','') || 'general');
+  } catch(e) {
+    showToast('Failed to load settings: ' + e.message);
+  }
+}
+
+function switchSettingsTab(tab) {
+  document.querySelectorAll('.settings-tab').forEach(t => {
+    const active = t.id === 'stab-' + tab;
+    t.style.borderBottom = active ? '2px solid #1E3A5F' : '2px solid transparent';
+    t.style.color = active ? '#1E3A5F' : '#6B7280';
+    if (active) t.classList.add('active'); else t.classList.remove('active');
+  });
+  document.querySelectorAll('.settings-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('settings-panel-' + tab).style.display = '';
+  renderSettingsTab(tab);
+}
+
+function renderSettingsTab(tab) {
+  if (tab === 'lists') { renderListsTab(); return; }
+  const keys = GROUP_KEYS[tab] || [];
+  const container = document.getElementById('settings-form-' + tab);
+  if (!container) return;
+  container.innerHTML = keys.map(key => {
+    const meta = SETTING_META[key] || { label: key, type: 'text' };
+    const saved = _settingsData[key];
+    const isSecret = saved?.is_secret;
+    const currentVal = isSecret ? '' : (saved?.value || '');
+    const ph = isSecret ? (saved?.value ? '(saved — leave blank to keep)' : (meta.placeholder||'')) : (meta.placeholder||'');
+
+    if (meta.type === 'select') {
+      return `<div class="form-group">
+        <label>${meta.label}</label>
+        <select id="setting-${key}">${(meta.options||[]).map(o=>`<option value="${o}" ${currentVal===o?'selected':''}>${o}</option>`).join('')}</select>
+      </div>`;
+    }
+    return `<div class="form-group">
+      <label>${meta.label}${isSecret?' <span style="color:#B8860B;font-size:10px">🔒 SECRET</span>':''}</label>
+      <input type="${meta.type||'text'}" id="setting-${key}" value="${currentVal}" placeholder="${ph}">
+    </div>`;
+  }).join('');
+}
+
+async function saveSettingsGroup(group) {
+  const keys = GROUP_KEYS[group] || [];
+  let saved = 0;
+  for (const key of keys) {
+    const el = document.getElementById('setting-' + key);
+    if (!el) continue;
+    const val = el.value.trim();
+    // For secrets: skip if blank (keep existing)
+    const meta = _settingsData[key];
+    if (meta?.is_secret && !val) continue;
+    try {
+      const updated = await api.put('/api/settings/' + key, { value: val });
+      _settingsData[key] = updated;
+      saved++;
+    } catch(e) {
+      showToast('Error saving ' + key + ': ' + e.message);
+    }
+  }
+  showToast(saved ? `✅ ${saved} setting${saved>1?'s':''} saved` : 'Nothing changed');
+}
+
+// ── Value Lists tab ──────────────────────────────────────────────────────────
+function renderListsTab() {
+  const container = document.getElementById('settings-lists-body');
+  const listKeys = GROUP_KEYS.lists;
+  container.innerHTML = listKeys.map(key => {
+    const saved = _settingsData[key];
+    let items = [];
+    try { items = JSON.parse(saved?.value || '[]'); } catch(e) {}
+    return `
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <h3>${LIST_LABELS[key] || key}</h3>
+          <button class="btn btn-primary btn-sm" onclick="addListItem('${key}')">+ Add</button>
+        </div>
+        <div class="card-body">
+          <ul id="list-items-${key}" style="list-style:none;padding:0;margin:0">
+            ${items.map((item,i) => listItemRow(key, item, i)).join('')}
+          </ul>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <button class="btn btn-primary btn-sm" onclick="saveList('${key}')">💾 Save List</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function listItemRow(key, item, idx) {
+  return `<li id="listrow-${key}-${idx}" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F3F4F6">
+    <span style="color:#9CA3AF;font-size:14px;cursor:grab">☰</span>
+    <input type="text" value="${item}" style="flex:1;padding:5px 8px;border:1px solid #D1D5DB;border-radius:5px;font-size:13px"
+           id="listinput-${key}-${idx}">
+    <button onclick="removeListItem('${key}',${idx})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:16px;padding:0 4px" title="Remove">✕</button>
+  </li>`;
+}
+
+function addListItem(key) {
+  const ul = document.getElementById('list-items-' + key);
+  const idx = ul.children.length;
+  const li = document.createElement('li');
+  li.id = `listrow-${key}-${idx}`;
+  li.innerHTML = listItemRow(key, '', idx);
+  ul.appendChild(li.children[0] || li);
+  // Re-render cleanly
+  const current = getListItems(key);
+  current.push('');
+  rerenderListItems(key, current);
+}
+
+function removeListItem(key, idx) {
+  const items = getListItems(key);
+  items.splice(idx, 1);
+  rerenderListItems(key, items);
+}
+
+function getListItems(key) {
+  const ul = document.getElementById('list-items-' + key);
+  if (!ul) return [];
+  const inputs = ul.querySelectorAll('input[type=text]');
+  return [...inputs].map(i => i.value.trim()).filter(v => v);
+}
+
+function rerenderListItems(key, items) {
+  const ul = document.getElementById('list-items-' + key);
+  if (!ul) return;
+  ul.innerHTML = items.map((item, i) => listItemRow(key, item, i)).join('');
+}
+
+async function saveList(key) {
+  const items = getListItems(key);
+  try {
+    const updated = await api.put('/api/settings/' + key, { value: JSON.stringify(items) });
+    _settingsData[key] = updated;
+    showToast('✅ List saved');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+// ── Test email ───────────────────────────────────────────────────────────────
+async function testEmail() {
+  const res = document.getElementById('email-test-result');
+  res.style.display = 'block';
+  res.innerHTML = '<span style="color:#6B7280">Sending test email…</span>';
+  try {
+    const resp = await api.post('/api/settings/test-email', {});
+    res.innerHTML = '<span style="color:#1A7A4A">✅ Test email sent successfully!</span>';
+  } catch(e) {
+    res.innerHTML = `<span style="color:#DC2626">❌ ${e.message}</span>`;
+  }
+}
+
+// ══════════════════════════════ AI SERMON ASSISTANT ══════════════════════════
+async function runAISermonAssist() {
+  const topic     = document.getElementById('ai-topic').value.trim();
+  const scripture = document.getElementById('ai-scripture').value.trim();
+  const style     = document.getElementById('ai-style').value;
+  const numPts    = parseInt(document.getElementById('ai-points').value) || 3;
+
+  if (!topic) { showToast('Enter a topic first'); return; }
+
+  const btn = document.getElementById('ai-generate-btn');
+  const out  = document.getElementById('ai-output');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  out.innerHTML = '<p style="color:#6B7280;text-align:center;padding:24px">Claude is crafting your outline…</p>';
+  out.style.display = 'block';
+
+  try {
+    const result = await api.post('/api/sermons/ai-assist', {
+      topic, scripture: scripture || null, style, num_points: numPts
+    });
+    const o = result.outline;
+    _aiOutline = o;
+
+    out.innerHTML = `
+      <div style="border-left:4px solid #6366f1;padding:16px;background:#F9FAFB;border-radius:0 10px 10px 0">
+        <div style="font-size:1.15rem;font-weight:700;margin-bottom:4px">${o.sermon_title || ''}</div>
+        <div style="font-size:0.85rem;color:#6B7280;margin-bottom:16px">${o.scripture || ''}</div>
+
+        ${o.introduction ? `<div style="margin-bottom:12px"><strong style="color:#6366f1">Introduction</strong><p style="margin-top:4px;font-size:0.9rem">${o.introduction}</p></div>` : ''}
+
+        ${(o.main_points||[]).map((pt,i)=>`
+          <div style="margin-bottom:12px;padding:10px;background:#fff;border-radius:8px;border:1px solid #E5E7EB">
+            <div style="font-weight:700">Point ${['I','II','III','IV','V'][i]||i+1}: ${pt.heading||''}</div>
+            ${pt.scripture?`<div style="font-size:0.82rem;color:#6366f1;margin-top:3px">📖 ${pt.scripture}</div>`:''}
+            ${pt.illustration?`<div style="font-size:0.85rem;margin-top:6px"><strong>Illustration:</strong> ${pt.illustration}</div>`:''}
+            ${pt.application?`<div style="font-size:0.85rem;margin-top:4px"><strong>Application:</strong> ${pt.application}</div>`:''}
+          </div>`).join('')}
+
+        ${o.conclusion ? `<div style="margin-bottom:12px"><strong style="color:#6366f1">Conclusion</strong><p style="margin-top:4px;font-size:0.9rem">${o.conclusion}</p></div>` : ''}
+        ${o.call_to_action ? `<div><strong style="color:#6366f1">Call to Action</strong><p style="margin-top:4px;font-size:0.9rem">${o.call_to_action}</p></div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" onclick="useAIOutline()">✅ Use This Outline</button>
+        <button class="btn btn-ghost btn-sm" onclick="runAISermonAssist()">🔄 Regenerate</button>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div style="color:#DC2626;padding:12px;background:#FEF2F2;border-radius:8px">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Generate Outline';
+  }
+}
+
+let _aiOutline = null;
+
+function useAIOutline() {
+  if (!_aiOutline) return;
+  // Pre-fill the sermon modal with the AI outline, then switch to outline builder
+  const o = _aiOutline;
+  closeModal('ai-assist-modal');
+  openSermonModal({
+    title:        o.sermon_title || '',
+    scripture:    o.scripture    || '',
+    sermon_notes: buildNotesFromOutline(o),
+  });
+}
+
+function buildNotesFromOutline(o) {
+  const lines = [];
+  if (o.introduction) lines.push('INTRODUCTION\n' + o.introduction);
+  (o.main_points||[]).forEach((pt,i)=>{
+    const roman = ['I','II','III','IV','V'][i]||i+1;
+    lines.push(`\nPOINT ${roman}: ${pt.heading||''}`);
+    if (pt.scripture)    lines.push('Scripture: ' + pt.scripture);
+    if (pt.illustration) lines.push('Illustration: ' + pt.illustration);
+    if (pt.application)  lines.push('Application: ' + pt.application);
+  });
+  if (o.conclusion)     lines.push('\nCONCLUSION\n' + o.conclusion);
+  if (o.call_to_action) lines.push('\nCALL TO ACTION\n' + o.call_to_action);
+  return lines.join('\n');
+}
+
+function openAIAssist() {
+  // Reset the panel for a fresh request
+  document.getElementById('ai-topic').value = '';
+  document.getElementById('ai-scripture').value = '';
+  document.getElementById('ai-style').value = 'expository';
+  document.getElementById('ai-points').value = '3';
+  document.getElementById('ai-output').style.display = 'none';
+  document.getElementById('ai-generate-btn').disabled = false;
+  document.getElementById('ai-generate-btn').textContent = '✨ Generate Outline';
+  document.getElementById('ai-assist-modal').classList.add('open');
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────

@@ -303,3 +303,15 @@ class Sermon(Base):
 
     preacher = relationship("Member", foreign_keys=[preacher_id])
     plan     = relationship("ServicePlan", foreign_keys=[plan_id])
+
+
+class Setting(Base):
+    """Key-value store for app-wide configuration (email, API keys, value lists)."""
+    __tablename__ = "settings"
+
+    key        = Column(String(120), primary_key=True)
+    value      = Column(Text)
+    is_secret  = Column(Boolean, default=False)   # mask on read
+    label      = Column(String(200))              # human-readable label
+    group      = Column(String(50))               # email | api | lists | general
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

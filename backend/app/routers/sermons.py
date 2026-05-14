@@ -3,6 +3,7 @@ Sermon archive endpoints.
 """
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
@@ -248,3 +249,78 @@ def export_pdf(sermon_id: str, db: Session = Depends(get_db),
     filename = f"sermon_{s.date}_{s.title[:30].replace(' ','_')}.pdf"
     return StreamingResponse(buf, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+# ── AI Sermon Assistant ───────────────────────────────────────────────────────
+
+class AISermonRequest(BaseModel):
+    topic:      str
+    scripture:  Optional[str] = None
+    style:      Optional[str] = "expository"   # expository | topical | narrative
+    num_points: Optional[int] = 3
+
+@router.post("/ai-assist")
+def ai_sermon_assist(req: AISermonRequest, db: Session = Depends(get_db),
+                     _: models.User = Depends(require_admin)):
+    from app.routers.settings import get_raw
+    api_key = get_raw("api_anthropic_key", db)
+    if not api_key:
+        raise HTTPException(status_code=400,
+            detail="Anthropic API key not configured. Add it in Admin → Settings → API Keys.")
+
+    try:
+        import anthropic
+    except ImportError:
+        raise HTTPException(status_code=500, detail="anthropic library not installed on server.")
+
+    style_desc = {
+        "expository": "expository (verse-by-verse scripture analysis)",
+        "topical":    "topical (theme-based with supporting scriptures)",
+        "narrative":  "narrative (story-driven with personal illustration)",
+    }.get(req.style, "expository")
+
+    scripture_hint = f" The primary scripture is: {req.scripture}." if req.scripture else ""
+    prompt = f"""You are a helpful sermon preparation assistant for a Christian pastor.
+
+Generate a complete sermon outline for a {style_desc} sermon on this topic: "{req.topic}".{scripture_hint}
+
+The outline should have {req.num_points} main points. Format your response as valid JSON only, with this exact structure:
+{{
+  "sermon_title": "A compelling sermon title",
+  "scripture": "Primary scripture reference",
+  "introduction": "2-3 sentences for the introduction / opening hook",
+  "main_points": [
+    {{
+      "heading": "Point heading",
+      "scripture": "Supporting scripture reference",
+      "illustration": "A brief illustration or story idea",
+      "application": "Practical application for the congregation"
+    }}
+  ],
+  "conclusion": "2-3 sentences wrapping up the message",
+  "call_to_action": "What you want the congregation to do or feel"
+}}
+
+Return ONLY the JSON, no explanation, no markdown code fences."""
+
+    client = anthropic.Anthropic(api_key=api_key)
+    message = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=1500,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = message.content[0].text.strip()
+    # Strip markdown fences if model wrapped it anyway
+    if raw.startswith("```"):
+        raw = "\n".join(raw.split("\n")[1:])
+    if raw.endswith("```"):
+        raw = "\n".join(raw.split("\n")[:-1])
+
+    import json as _json
+    try:
+        outline = _json.loads(raw)
+    except Exception:
+        raise HTTPException(status_code=500, detail="AI returned malformed JSON. Try again.")
+
+    return {"outline": outline}

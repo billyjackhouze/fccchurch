@@ -443,3 +443,18 @@ class SermonOut(SermonBase):
     created_at:    datetime
     class Config:
         from_attributes = True
+
+
+# ── Settings ──────────────────────────────────────────────────────────────────
+
+class SettingOut(BaseModel):
+    key:       str
+    value:     Optional[str] = None   # None / "***" for secrets
+    is_secret: bool = False
+    label:     Optional[str] = None
+    group:     Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class SettingUpsert(BaseModel):
+    value: str
