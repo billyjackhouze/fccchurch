@@ -164,6 +164,55 @@ class MinistryMembership(Base):
     member   = relationship("Member")
 
 
+class OrgNode(Base):
+    __tablename__ = "org_nodes"
+
+    id         = Column(String, primary_key=True, default=gen_id)
+    title      = Column(String(100), nullable=False)
+    member_id  = Column(String, ForeignKey("members.id"), nullable=True)
+    parent_id  = Column(String, ForeignKey("org_nodes.id"), nullable=True)
+    sort_order = Column(Integer, default=0)
+    notes      = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    member = relationship("Member", foreign_keys=[member_id])
+
+
+class Group(Base):
+    __tablename__ = "church_groups"
+
+    id           = Column(String, primary_key=True, default=gen_id)
+    name         = Column(String(100), nullable=False)
+    group_type   = Column(String(50), default="Small Group")
+    leader_id    = Column(String, ForeignKey("members.id"), nullable=True)
+    meeting_day  = Column(String(20))
+    meeting_time = Column(String(10))
+    location     = Column(String(200))
+    description  = Column(Text)
+    is_active    = Column(Boolean, default=True)
+    color        = Column(String(20), default="blue")
+    created_at   = Column(DateTime, default=datetime.utcnow)
+    updated_at   = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    leader      = relationship("Member", foreign_keys=[leader_id])
+    memberships = relationship("GroupMembership", back_populates="group", cascade="all, delete-orphan")
+
+
+class GroupMembership(Base):
+    __tablename__ = "group_memberships"
+
+    id          = Column(String, primary_key=True, default=gen_id)
+    group_id    = Column(String, ForeignKey("church_groups.id"), nullable=False)
+    member_id   = Column(String, ForeignKey("members.id"), nullable=False)
+    role        = Column(String(50), default="Member")
+    joined_date = Column(Date)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+    group  = relationship("Group", back_populates="memberships")
+    member = relationship("Member")
+
+
 class VolunteerShift(Base):
     __tablename__ = "volunteer_shifts"
 

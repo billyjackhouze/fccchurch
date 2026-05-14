@@ -248,6 +248,77 @@ class MinistryMembershipCreate(BaseModel):
     joined_date: Optional[date] = None
 
 
+# ── Org Hierarchy ─────────────────────────────────────────────────────────────
+
+class OrgNodeBase(BaseModel):
+    title:      str
+    member_id:  Optional[str] = None
+    parent_id:  Optional[str] = None
+    sort_order: Optional[int] = 0
+    notes:      Optional[str] = None
+
+class OrgNodeCreate(OrgNodeBase):
+    pass
+
+class OrgNodeUpdate(OrgNodeBase):
+    title: Optional[str] = None
+
+class OrgNodeOut(OrgNodeBase):
+    id:          str
+    member_name: Optional[str] = None
+    member_photo: Optional[str] = None
+    children:    List["OrgNodeOut"] = []
+    created_at:  datetime
+    class Config:
+        from_attributes = True
+
+OrgNodeOut.model_rebuild()
+
+
+# ── Groups ─────────────────────────────────────────────────────────────────────
+
+class GroupMembershipOut(BaseModel):
+    id:           str
+    member_id:    str
+    member_name:  str
+    member_photo: Optional[str] = None
+    role:         str
+    joined_date:  Optional[date] = None
+    class Config:
+        from_attributes = True
+
+class GroupBase(BaseModel):
+    name:         str
+    group_type:   Optional[str] = "Small Group"
+    leader_id:    Optional[str] = None
+    meeting_day:  Optional[str] = None
+    meeting_time: Optional[str] = None
+    location:     Optional[str] = None
+    description:  Optional[str] = None
+    is_active:    Optional[bool] = True
+    color:        Optional[str] = "blue"
+
+class GroupCreate(GroupBase):
+    pass
+
+class GroupUpdate(GroupBase):
+    name: Optional[str] = None
+
+class GroupOut(GroupBase):
+    id:           str
+    leader_name:  Optional[str] = None
+    member_count: int = 0
+    memberships:  List[GroupMembershipOut] = []
+    created_at:   datetime
+    class Config:
+        from_attributes = True
+
+class GroupMembershipCreate(BaseModel):
+    member_id:   str
+    role:        Optional[str] = "Member"
+    joined_date: Optional[date] = None
+
+
 # ── Volunteer Shifts ──────────────────────────────────────────────────────────
 
 class ShiftSignupOut(BaseModel):

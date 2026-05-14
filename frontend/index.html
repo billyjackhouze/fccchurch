@@ -206,6 +206,30 @@ tr:last-child td{border-bottom:none}
 .vol-coming{background:#F8FAFF;border:2px dashed #CBD5E1;border-radius:10px;padding:36px;text-align:center}
 .detail-contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px}
 .detail-tabs{display:flex;gap:2px;background:#F3F4F6;border-radius:8px;padding:3px;margin-bottom:22px;flex-wrap:wrap}
+/* ── Org Hierarchy ── */
+.org-tree{padding:4px 0}
+.org-node{margin:0;padding:0}
+.org-node-row{display:flex;align-items:center;gap:0;padding:4px 0;cursor:pointer}
+.org-node-row:hover .org-node-card{background:#EBF0F8}
+.org-node-indent{display:flex;align-items:stretch;flex-shrink:0}
+.org-node-indent-line{width:24px;border-right:2px solid #D1D5DB;margin-right:0;flex-shrink:0}
+.org-node-indent-corner{width:24px;height:50%;border-left:2px solid #D1D5DB;border-bottom:2px solid #D1D5DB;margin-right:0;flex-shrink:0;align-self:flex-start}
+.org-node-card{display:flex;align-items:center;gap:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:8px 14px;margin:3px 0;flex:1;max-width:420px;transition:background .15s}
+.org-node-title{font-weight:700;font-size:13px;color:#1E3A5F}
+.org-node-member{font-size:12px;color:#6B7280}
+.org-node-actions{display:flex;gap:4px;margin-left:auto;opacity:0;transition:opacity .15s}
+.org-node-card:hover .org-node-actions{opacity:1}
+.org-add-child{font-size:11px;color:#1E3A5F;cursor:pointer;background:#EBF0F8;border:none;border-radius:4px;padding:2px 7px;font-weight:600}
+.org-del-btn{font-size:11px;color:#DC2626;cursor:pointer;background:#FEE2E2;border:none;border-radius:4px;padding:2px 7px;font-weight:600}
+/* ── Groups ── */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+.group-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:20px;border-top:4px solid #1E3A5F;cursor:pointer;transition:box-shadow .15s}
+.group-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.group-card.gold{border-top-color:#B8860B}.group-card.green{border-top-color:#1A7A4A}.group-card.red{border-top-color:#DC2626}.group-card.purple{border-top-color:#7C3AED}
+.group-card h4{font-size:15px;font-weight:700;color:#1E3A5F;margin-bottom:4px}
+.group-card .gc-sub{font-size:12px;color:#6B7280;margin-bottom:10px}
+.group-card .gc-count{font-size:22px;font-weight:800;color:#1E3A5F}
+.group-card .gc-lbl{font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -250,6 +274,8 @@ tr:last-child td{border-bottom:none}
     <div class="nav-section">People</div>
     <div class="nav-item" onclick="showPage('members')" id="nav-members"><span class="icon">👥</span> Members</div>
     <div class="nav-item" onclick="showPage('ministries')" id="nav-ministries"><span class="icon">⛪</span> Ministries</div>
+    <div class="nav-item" onclick="showPage('groups')" id="nav-groups"><span class="icon">🤝</span> Groups</div>
+    <div class="nav-item" onclick="showPage('hierarchy')" id="nav-hierarchy"><span class="icon">🏛</span> Org Chart</div>
     <div class="nav-section">Finance</div>
     <div class="nav-item" onclick="showPage('giving')" id="nav-giving"><span class="icon">💰</span> Giving &amp; Pledges</div>
     <div class="nav-section">Volunteer</div>
@@ -419,6 +445,43 @@ tr:last-child td{border-bottom:none}
           <button class="btn btn-primary btn-sm" id="add-ministry-member-btn" style="display:none" onclick="openAddMinistryMember()">+ Add Member</button>
         </div>
         <div class="card-body" id="ministry-members-body"></div>
+      </div>
+    </div>
+
+    <!-- GROUPS -->
+    <div class="page" id="page-groups">
+      <div class="page-header"><h2>🤝 Groups</h2>
+        <button class="btn btn-primary" id="group-add-btn" style="display:none" onclick="openGroupModal()">+ Add Group</button>
+      </div>
+      <div class="groups-grid" id="groups-grid"><div class="spinner"></div></div>
+    </div>
+
+    <!-- GROUP DETAIL -->
+    <div class="page" id="page-group-detail">
+      <div class="detail-back-bar">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('groups')">← Back to Groups</button>
+        <div class="action-btns" id="group-detail-admin-btns" style="display:none">
+          <button class="btn btn-outline btn-sm" onclick="editCurrentGroup()">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentGroup()">🗑 Delete</button>
+        </div>
+      </div>
+      <div id="group-detail-hero" class="member-hero-card"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Group Members</h3>
+          <button class="btn btn-primary btn-sm" id="add-group-member-btn" style="display:none" onclick="openAddGroupMember()">+ Add Member</button>
+        </div>
+        <div class="card-body" id="group-members-body"></div>
+      </div>
+    </div>
+
+    <!-- ORG CHART / HIERARCHY -->
+    <div class="page" id="page-hierarchy">
+      <div class="page-header"><h2>🏛 Organizational Chart</h2>
+        <button class="btn btn-primary" id="hierarchy-add-btn" style="display:none" onclick="openOrgNodeModal(null)">+ Add Position</button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="hierarchy-tree"><div class="spinner"></div></div>
       </div>
     </div>
 
@@ -719,6 +782,85 @@ tr:last-child td{border-bottom:none}
   </div>
 </div></div>
 
+<!-- Group Modal -->
+<div class="modal-backdrop" id="group-modal"><div class="modal" style="width:520px">
+  <h2 id="group-modal-title">🤝 Add Group</h2>
+  <input type="hidden" id="grp-id">
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Group Name *</label><input type="text" id="grp-name" placeholder="e.g. Tuesday Bible Study"></div>
+    <div class="form-group"><label>Group Type</label>
+      <select id="grp-type">
+        <option>Small Group</option><option>Bible Study</option><option>Prayer Group</option>
+        <option>Sunday School</option><option>Youth Group</option><option>Women's Group</option>
+        <option>Men's Group</option><option>Support Group</option><option>Outreach Team</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Color</label>
+      <select id="grp-color">
+        <option value="blue">Blue</option><option value="gold">Gold</option>
+        <option value="green">Green</option><option value="red">Red</option><option value="purple">Purple</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Leader</label><select id="grp-leader"></select></div>
+    <div class="form-group"><label>Meeting Day</label>
+      <select id="grp-day">
+        <option value="">— Not set —</option>
+        <option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+        <option>Thursday</option><option>Friday</option><option>Saturday</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Meeting Time</label><input type="time" id="grp-time"></div>
+    <div class="form-group"><label>Location</label><input type="text" id="grp-location" placeholder="e.g. Room 104, Online"></div>
+    <div class="form-group span-2"><label>Description</label><textarea id="grp-desc" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="grp-active"><option value="true">Active</option><option value="false">Inactive</option></select>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('group-modal')">Cancel</button>
+    <button class="btn btn-primary" id="group-save-btn" onclick="saveGroup()">Add Group</button>
+  </div>
+</div></div>
+
+<!-- Add Group Member Modal -->
+<div class="modal-backdrop" id="group-member-modal"><div class="modal" style="width:440px">
+  <h2>👤 Add Member to Group</h2>
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Member *</label><select id="gm-member-id"></select></div>
+    <div class="form-group"><label>Role in Group</label>
+      <select id="gm-role">
+        <option value="Member">Member</option>
+        <option value="Leader">Leader</option>
+        <option value="Co-Leader">Co-Leader</option>
+        <option value="Facilitator">Facilitator</option>
+        <option value="Volunteer">Volunteer</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Joined Date</label><input type="date" id="gm-joined"></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('group-member-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="addGroupMember()">Add to Group</button>
+  </div>
+</div></div>
+
+<!-- Org Node Modal -->
+<div class="modal-backdrop" id="org-node-modal"><div class="modal" style="width:480px">
+  <h2 id="org-node-modal-title">➕ Add Position</h2>
+  <input type="hidden" id="on-id">
+  <input type="hidden" id="on-parent-id">
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Position / Title *</label><input type="text" id="on-title" placeholder="e.g. Senior Pastor, Elder, Deacon"></div>
+    <div class="form-group"><label>Assigned Member</label><select id="on-member"></select></div>
+    <div class="form-group"><label>Sort Order</label><input type="number" id="on-sort" min="0" value="0"></div>
+    <div class="form-group"><label>Notes</label><textarea id="on-notes" style="min-height:60px"></textarea></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('org-node-modal')">Cancel</button>
+    <button class="btn btn-primary" id="org-node-save-btn" onclick="saveOrgNode()">Add Position</button>
+  </div>
+</div></div>
+
 <!-- Forgot Password Modal -->
 <div class="modal-backdrop" id="forgot-modal"><div class="modal" style="width:420px">
   <h2>🔑 Reset Password</h2>
@@ -897,7 +1039,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -915,6 +1057,8 @@ function renderPage(id) {
   else if (id==='rooms')     renderRooms();
   else if (id==='members')    renderMembers();
   else if (id==='ministries') renderMinistries();
+  else if (id==='groups')     renderGroups();
+  else if (id==='hierarchy')  renderHierarchy();
   else if (id==='giving')     renderGiving();
   else if (id==='volunteer') renderVolunteer();
   else if (id==='myshifts')  renderMyShifts();
@@ -1538,9 +1682,9 @@ function renderMinistryMembers(m) {
         ? `<img src="${url}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="family-avatar" style="display:none">${initials}</span>`
         : `<span class="family-avatar">${initials}</span>`;
       const isLeader = ms.role === 'Leader' || ms.role === 'Co-Leader';
-      const removeBtn = currentUser?.role === 'admin'
-        ? `<span onclick="event.stopPropagation();removeMinistryMember('${m.id}','${ms.id}')" style="color:#DC2626;cursor:pointer;margin-left:6px;font-size:11px" title="Remove">✕</span>`
-        : '';
+      const adminBtns = currentUser?.role === 'admin' ? `
+        <span onclick="event.stopPropagation();editMinistryMemberRole('${m.id}','${ms.id}','${ms.role}')" style="color:#1E3A5F;cursor:pointer;font-size:11px" title="Edit role">✏️</span>
+        <span onclick="event.stopPropagation();removeMinistryMember('${m.id}','${ms.id}')" style="color:#DC2626;cursor:pointer;margin-left:2px;font-size:11px" title="Remove">✕</span>` : '';
       return `<span class="member-role-chip" onclick="showMemberDetail('${ms.member_id}')" style="cursor:pointer">
         ${avatar}
         <span>
@@ -1548,7 +1692,7 @@ function renderMinistryMembers(m) {
           <div style="font-size:10px;color:#6B7280">${ms.role}${ms.joined_date ? ' · Since ' + fmtDate(ms.joined_date) : ''}</div>
         </span>
         <span class="role-badge${isLeader ? ' leader' : ''}">${ms.role}</span>
-        ${removeBtn}
+        ${adminBtns}
       </span>`;
     }).join('') + '</div>';
 }
@@ -1577,6 +1721,14 @@ async function addMinistryMember() {
 async function removeMinistryMember(ministryId, membershipId) {
   if (!confirm('Remove this member from the ministry?')) return;
   await api.delete(`/api/ministries/${ministryId}/members/${membershipId}`);
+  showMinistryDetail(ministryId);
+}
+
+async function editMinistryMemberRole(ministryId, membershipId, currentRole) {
+  const roles = ['Member','Leader','Co-Leader','Volunteer','Coordinator'];
+  const newRole = prompt('Change role (Member, Leader, Co-Leader, Volunteer, Coordinator):', currentRole);
+  if (!newRole || !roles.includes(newRole)) { if(newRole !== null) alert('Invalid role. Choose from: ' + roles.join(', ')); return; }
+  await api.put(`/api/ministries/${ministryId}/members/${membershipId}`, { member_id: '', role: newRole });
   showMinistryDetail(ministryId);
 }
 
@@ -1619,6 +1771,308 @@ async function saveMinistry() {
   ['min-name','min-desc'].forEach(i => document.getElementById(i).value = '');
   if (id) { showMinistryDetail(id); } else { showPage('ministries'); }
 }
+
+// ── GROUPS ───────────────────────────────────────────────────────────────────
+let currentGroupId = null;
+
+async function renderGroups() {
+  const isAdmin = currentUser?.role === 'admin';
+  if (isAdmin) document.getElementById('group-add-btn').style.display = '';
+  try {
+    const groups = await api.get('/api/groups');
+    if (groups.length === 0) {
+      document.getElementById('groups-grid').innerHTML =
+        '<div class="empty" style="grid-column:1/-1">No groups yet. Click "+ Add Group" to create one.</div>';
+      return;
+    }
+    document.getElementById('groups-grid').innerHTML = groups.map(g => `
+      <div class="group-card ${g.color||'blue'}" onclick="showGroupDetail('${g.id}')">
+        <h4>${g.name}</h4>
+        <div class="gc-sub">${g.group_type}${g.leader_name ? ' · 👤 ' + g.leader_name : ''}${g.meeting_day ? '<br>📅 ' + g.meeting_day + (g.meeting_time ? ' at ' + fmtTime(g.meeting_time) : '') : ''}${g.location ? '<br>📍 ' + g.location : ''}</div>
+        <div class="gc-count">${g.member_count}</div>
+        <div class="gc-lbl">Member${g.member_count !== 1 ? 's' : ''}</div>
+        ${!g.is_active ? '<span class="badge badge-gray" style="margin-top:8px">Inactive</span>' : ''}
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('groups-grid').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function showGroupDetail(id) {
+  currentGroupId = id;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-group-detail').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-groups').classList.add('active');
+  const isAdmin = currentUser?.role === 'admin';
+  document.getElementById('group-detail-admin-btns').style.display = isAdmin ? '' : 'none';
+  document.getElementById('add-group-member-btn').style.display = isAdmin ? '' : 'none';
+  document.getElementById('topbar-title').textContent = 'Group';
+  try {
+    const g = await api.get('/api/groups/' + id);
+    document.getElementById('topbar-title').textContent = g.name;
+    const dayTime = g.meeting_day ? `${g.meeting_day}${g.meeting_time ? ' at ' + fmtTime(g.meeting_time) : ''}` : null;
+    document.getElementById('group-detail-hero').innerHTML = `
+      <div style="flex:1">
+        <div class="member-hero-name">${g.name}</div>
+        <div class="member-hero-sub">${g.group_type}${g.description ? ' · ' + g.description : ''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          ${g.leader_name ? `<span class="badge badge-gold">👤 ${g.leader_name}</span>` : ''}
+          ${dayTime ? `<span class="badge badge-blue">📅 ${dayTime}</span>` : ''}
+          ${g.location ? `<span class="badge badge-gray">📍 ${g.location}</span>` : ''}
+          <span class="badge ${g.is_active ? 'badge-green' : 'badge-gray'}">${g.is_active ? 'Active' : 'Inactive'}</span>
+          <span class="badge badge-blue">${g.member_count} member${g.member_count !== 1 ? 's' : ''}</span>
+        </div>
+      </div>`;
+    renderGroupMembers(g);
+  } catch(e) {
+    document.getElementById('group-detail-hero').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+function renderGroupMembers(g) {
+  const body = document.getElementById('group-members-body');
+  if (!g.memberships || g.memberships.length === 0) {
+    body.innerHTML = '<div class="empty" style="padding:24px">No members yet. Click "+ Add Member" to add someone.</div>';
+    return;
+  }
+  const sorted = [...g.memberships].sort((a, b) => {
+    const order = { Leader: 0, 'Co-Leader': 1, Facilitator: 2, Member: 3, Volunteer: 4 };
+    return (order[a.role] ?? 5) - (order[b.role] ?? 5);
+  });
+  body.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px">` +
+    sorted.map(ms => {
+      const initls = ms.member_name.split(' ').map(w => w[0] || '').join('').toUpperCase();
+      const url = ms.member_photo ? `${API_BASE}/static/photos/${ms.member_photo}` : null;
+      const avatar = url
+        ? `<img src="${url}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="family-avatar" style="display:none">${initls}</span>`
+        : `<span class="family-avatar">${initls}</span>`;
+      const isLeader = ms.role === 'Leader' || ms.role === 'Co-Leader';
+      const removeBtn = currentUser?.role === 'admin'
+        ? `<span onclick="event.stopPropagation();removeGroupMember('${g.id}','${ms.id}')" style="color:#DC2626;cursor:pointer;margin-left:6px;font-size:11px" title="Remove">✕</span>`
+        : '';
+      return `<span class="member-role-chip" onclick="showMemberDetail('${ms.member_id}')" style="cursor:pointer">
+        ${avatar}
+        <span>
+          <div style="font-weight:700;font-size:12px;color:#1E3A5F">${ms.member_name}</div>
+          <div style="font-size:10px;color:#6B7280">${ms.role}${ms.joined_date ? ' · Since ' + fmtDate(ms.joined_date) : ''}</div>
+        </span>
+        <span class="role-badge${isLeader ? ' leader' : ''}">${ms.role}</span>
+        ${removeBtn}
+      </span>`;
+    }).join('') + '</div>';
+}
+
+async function openGroupModal(prefillData) {
+  document.getElementById('group-modal').classList.add('open');
+  try {
+    const all = await api.get('/api/members');
+    document.getElementById('grp-leader').innerHTML = '<option value="">— No Leader —</option>' +
+      all.map(m => `<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+    if (prefillData) {
+      document.getElementById('grp-id').value          = prefillData.id || '';
+      document.getElementById('grp-name').value        = prefillData.name || '';
+      document.getElementById('grp-type').value        = prefillData.group_type || 'Small Group';
+      document.getElementById('grp-color').value       = prefillData.color || 'blue';
+      document.getElementById('grp-leader').value      = prefillData.leader_id || '';
+      document.getElementById('grp-day').value         = prefillData.meeting_day || '';
+      document.getElementById('grp-time').value        = prefillData.meeting_time || '';
+      document.getElementById('grp-location').value    = prefillData.location || '';
+      document.getElementById('grp-desc').value        = prefillData.description || '';
+      document.getElementById('grp-active').value      = prefillData.is_active !== false ? 'true' : 'false';
+    }
+  } catch(e) {
+    document.getElementById('grp-leader').innerHTML = '<option value="">— No Leader —</option>';
+  }
+}
+
+async function editCurrentGroup() {
+  const g = await api.get('/api/groups/' + currentGroupId);
+  document.getElementById('group-modal-title').textContent = '✏️ Edit Group';
+  document.getElementById('group-save-btn').textContent = 'Save Changes';
+  await openGroupModal(g);
+}
+
+async function deleteCurrentGroup() {
+  if (!confirm('Delete this group and all its membership records?')) return;
+  await api.delete('/api/groups/' + currentGroupId);
+  showPage('groups');
+}
+
+async function saveGroup() {
+  const name = document.getElementById('grp-name').value.trim();
+  if (!name) { alert('Group name is required.'); return; }
+  const id = document.getElementById('grp-id').value;
+  const data = {
+    name,
+    group_type:   document.getElementById('grp-type').value,
+    color:        document.getElementById('grp-color').value || 'blue',
+    leader_id:    document.getElementById('grp-leader').value || null,
+    meeting_day:  document.getElementById('grp-day').value || null,
+    meeting_time: document.getElementById('grp-time').value || null,
+    location:     document.getElementById('grp-location').value || null,
+    description:  document.getElementById('grp-desc').value || null,
+    is_active:    document.getElementById('grp-active').value === 'true',
+  };
+  if (id) { await api.put('/api/groups/' + id, data); }
+  else    { await api.post('/api/groups', data); }
+  closeModal('group-modal');
+  document.getElementById('grp-id').value = '';
+  document.getElementById('group-modal-title').textContent = '🤝 Add Group';
+  document.getElementById('group-save-btn').textContent = 'Add Group';
+  ['grp-name','grp-desc','grp-location','grp-time'].forEach(i => document.getElementById(i).value = '');
+  if (id) { showGroupDetail(id); } else { showPage('groups'); }
+}
+
+async function openAddGroupMember() {
+  const all = await api.get('/api/members');
+  const g = await api.get('/api/groups/' + currentGroupId);
+  const existingIds = new Set(g.memberships.map(ms => ms.member_id));
+  const opts = all.filter(x => !existingIds.has(x.id))
+    .map(x => `<option value="${x.id}">${x.first} ${x.last}</option>`).join('');
+  document.getElementById('gm-member-id').innerHTML = opts || '<option>All members already added</option>';
+  document.getElementById('gm-joined').value = todayStr;
+  openModal('group-member-modal');
+}
+
+async function addGroupMember() {
+  const member_id = document.getElementById('gm-member-id').value;
+  const role      = document.getElementById('gm-role').value;
+  const joined    = document.getElementById('gm-joined').value;
+  if (!member_id) { alert('Please select a member.'); return; }
+  await api.post(`/api/groups/${currentGroupId}/members`, { member_id, role, joined_date: joined || null });
+  closeModal('group-member-modal');
+  showGroupDetail(currentGroupId);
+}
+
+async function removeGroupMember(groupId, membershipId) {
+  if (!confirm('Remove this member from the group?')) return;
+  await api.delete(`/api/groups/${groupId}/members/${membershipId}`);
+  showGroupDetail(groupId);
+}
+
+
+// ── ORG HIERARCHY ─────────────────────────────────────────────────────────────
+let orgNodeEditId = null;
+let orgNodeParentId = null;
+
+async function renderHierarchy() {
+  const isAdmin = currentUser?.role === 'admin';
+  if (isAdmin) document.getElementById('hierarchy-add-btn').style.display = '';
+  try {
+    const tree = await api.get('/api/hierarchy');
+    const container = document.getElementById('hierarchy-tree');
+    if (tree.length === 0) {
+      container.innerHTML = '<div class="empty">No org chart yet. Click "+ Add Position" to add the first node (e.g. Senior Pastor).</div>';
+      return;
+    }
+    container.innerHTML = '<div class="org-tree">' + renderOrgTree(tree, 0, isAdmin) + '</div>';
+  } catch(e) {
+    document.getElementById('hierarchy-tree').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+function renderOrgTree(nodes, depth, isAdmin) {
+  return nodes.map(n => {
+    const initls = n.member_name ? n.member_name.split(' ').map(w=>w[0]||'').join('').toUpperCase() : '';
+    const url = n.member_photo ? `${API_BASE}/static/photos/${n.member_photo}` : null;
+    const avatar = n.member_name
+      ? (url
+        ? `<img src="${url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="family-avatar" style="width:32px;height:32px;font-size:12px;display:none">${initls}</span>`
+        : `<span class="family-avatar" style="width:32px;height:32px;font-size:12px">${initls}</span>`)
+      : `<span style="width:32px;height:32px;border-radius:50%;background:#E5E7EB;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏛</span>`;
+    const indent = depth > 0 ? `<div style="width:${depth * 28}px;display:flex;align-items:stretch;flex-shrink:0">` +
+      Array(depth).fill().map((_,i)=>`<div style="width:24px;border-right:${i<depth-1?'2px solid #D1D5DB':'none'};margin-right:4px"></div>`).join('') +
+      `</div>` : '';
+    const adminBtns = isAdmin ? `
+      <span class="org-add-child" onclick="event.stopPropagation();openOrgNodeModal('${n.id}')" title="Add child position">+ Child</span>
+      <span style="cursor:pointer;background:#EBF0F8;border:none;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;color:#1E3A5F" onclick="event.stopPropagation();editOrgNode('${n.id}')">✏️</span>
+      <span class="org-del-btn" onclick="event.stopPropagation();deleteOrgNode('${n.id}')">🗑</span>` : '';
+    const hasChildren = n.children && n.children.length > 0;
+    return `<div class="org-node">
+      <div class="org-node-row">
+        ${indent}
+        <div style="display:flex;gap:2px;flex-direction:column;flex-shrink:0;width:20px;align-self:stretch">
+          ${depth > 0 ? `<div style="width:14px;height:50%;border-bottom:2px solid #D1D5DB;border-left:2px solid transparent"></div><div style="width:14px;height:50%"></div>` : ''}
+        </div>
+        <div class="org-node-card">
+          ${avatar}
+          <div style="flex:1;min-width:0">
+            <div class="org-node-title">${n.title}</div>
+            ${n.member_name ? `<div class="org-node-member">👤 ${n.member_name}</div>` : '<div class="org-node-member" style="color:#D1D5DB">— Vacant —</div>'}
+          </div>
+          <div class="org-node-actions">${adminBtns}</div>
+        </div>
+      </div>
+      ${hasChildren ? renderOrgTree(n.children, depth + 1, isAdmin) : ''}
+    </div>`;
+  }).join('');
+}
+
+async function openOrgNodeModal(parentId) {
+  orgNodeEditId = null;
+  orgNodeParentId = parentId;
+  document.getElementById('org-node-modal-title').textContent = parentId ? '➕ Add Child Position' : '➕ Add Top-Level Position';
+  document.getElementById('org-node-save-btn').textContent = 'Add Position';
+  document.getElementById('on-id').value        = '';
+  document.getElementById('on-parent-id').value = parentId || '';
+  document.getElementById('on-title').value     = '';
+  document.getElementById('on-sort').value      = '0';
+  document.getElementById('on-notes').value     = '';
+  document.getElementById('org-node-modal').classList.add('open');
+  try {
+    const all = await api.get('/api/members');
+    document.getElementById('on-member').innerHTML = '<option value="">— Vacant —</option>' +
+      all.map(m => `<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  } catch {
+    document.getElementById('on-member').innerHTML = '<option value="">— Vacant —</option>';
+  }
+}
+
+async function editOrgNode(id) {
+  orgNodeEditId = id;
+  document.getElementById('org-node-modal-title').textContent = '✏️ Edit Position';
+  document.getElementById('org-node-save-btn').textContent = 'Save Changes';
+  document.getElementById('org-node-modal').classList.add('open');
+  try {
+    const [flat, all] = await Promise.all([api.get('/api/hierarchy/flat'), api.get('/api/members')]);
+    const n = flat.find(x => x.id === id);
+    if (!n) return;
+    document.getElementById('on-id').value        = n.id;
+    document.getElementById('on-parent-id').value = n.parent_id || '';
+    document.getElementById('on-title').value     = n.title;
+    document.getElementById('on-sort').value      = n.sort_order || 0;
+    document.getElementById('on-notes').value     = n.notes || '';
+    document.getElementById('on-member').innerHTML = '<option value="">— Vacant —</option>' +
+      all.map(m => `<option value="${m.id}" ${m.id === n.member_id ? 'selected' : ''}>${m.first} ${m.last}</option>`).join('');
+  } catch(e) {
+    alert('Error loading node: ' + e.message);
+  }
+}
+
+async function saveOrgNode() {
+  const title = document.getElementById('on-title').value.trim();
+  if (!title) { alert('Position title is required.'); return; }
+  const id = document.getElementById('on-id').value;
+  const data = {
+    title,
+    member_id:  document.getElementById('on-member').value || null,
+    parent_id:  document.getElementById('on-parent-id').value || null,
+    sort_order: parseInt(document.getElementById('on-sort').value) || 0,
+    notes:      document.getElementById('on-notes').value || null,
+  };
+  if (id) { await api.put('/api/hierarchy/' + id, data); }
+  else    { await api.post('/api/hierarchy', data); }
+  closeModal('org-node-modal');
+  renderHierarchy();
+}
+
+async function deleteOrgNode(id) {
+  if (!confirm('Delete this position? Child positions will be re-parented up one level.')) return;
+  await api.delete('/api/hierarchy/' + id);
+  renderHierarchy();
+}
+
 
 // ── VOLUNTEER ────────────────────────────────────────────────────────────────
 let volTab = 'open';
@@ -2061,6 +2515,7 @@ function openModal(id) {
   if (id==='user-modal')     { openUserModal(); return; }
   if (id==='shift-modal')    { openShiftModal(); return; }
   if (id==='ministry-modal') { openMinistryModal(); return; }
+  if (id==='group-modal')    { openGroupModal(); return; }
   document.getElementById(id).classList.add('open');
   document.getElementById(id).querySelectorAll('input[type=date]').forEach(i=>{if(!i.value)i.value=todayStr;});
 }
@@ -2077,10 +2532,15 @@ async function openShiftModal() {
 }
 
 async function openMinistryModal() {
-  const all = await api.get('/api/members');
-  document.getElementById('min-leader').innerHTML = '<option value="">— No Leader —</option>' +
-    all.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  // Open the modal immediately so the user gets visual feedback
   document.getElementById('ministry-modal').classList.add('open');
+  try {
+    const all = await api.get('/api/members');
+    document.getElementById('min-leader').innerHTML = '<option value="">— No Leader —</option>' +
+      all.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  } catch(e) {
+    document.getElementById('min-leader').innerHTML = '<option value="">— No Leader —</option>';
+  }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
