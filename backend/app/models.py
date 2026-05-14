@@ -135,6 +135,35 @@ class Pledge(Base):
     member = relationship("Member", back_populates="pledges")
 
 
+class Ministry(Base):
+    __tablename__ = "ministries"
+
+    id          = Column(String, primary_key=True, default=gen_id)
+    name        = Column(String(100), nullable=False)
+    description = Column(Text)
+    leader_id   = Column(String, ForeignKey("members.id"), nullable=True)
+    color       = Column(String(20), default="blue")
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    leader      = relationship("Member", foreign_keys=[leader_id])
+    memberships = relationship("MinistryMembership", back_populates="ministry", cascade="all, delete-orphan")
+
+
+class MinistryMembership(Base):
+    __tablename__ = "ministry_memberships"
+
+    id          = Column(String, primary_key=True, default=gen_id)
+    ministry_id = Column(String, ForeignKey("ministries.id"), nullable=False)
+    member_id   = Column(String, ForeignKey("members.id"), nullable=False)
+    role        = Column(String(50), default="Member")
+    joined_date = Column(Date)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+    ministry = relationship("Ministry", back_populates="memberships")
+    member   = relationship("Member")
+
+
 class VolunteerShift(Base):
     __tablename__ = "volunteer_shifts"
 

@@ -209,6 +209,45 @@ class ResetPassword(BaseModel):
     new_password: str
 
 
+# ── Ministries ────────────────────────────────────────────────────────────────
+
+class MinistryMembershipOut(BaseModel):
+    id:           str
+    member_id:    str
+    member_name:  str
+    member_photo: Optional[str] = None
+    role:         str
+    joined_date:  Optional[date] = None
+    class Config:
+        from_attributes = True
+
+class MinistryBase(BaseModel):
+    name:        str
+    description: Optional[str] = None
+    leader_id:   Optional[str] = None
+    color:       Optional[str] = "blue"
+
+class MinistryCreate(MinistryBase):
+    pass
+
+class MinistryUpdate(MinistryBase):
+    name: Optional[str] = None
+
+class MinistryOut(MinistryBase):
+    id:           str
+    leader_name:  Optional[str] = None
+    member_count: int = 0
+    memberships:  List[MinistryMembershipOut] = []
+    created_at:   datetime
+    class Config:
+        from_attributes = True
+
+class MinistryMembershipCreate(BaseModel):
+    member_id:   str
+    role:        Optional[str] = "Member"
+    joined_date: Optional[date] = None
+
+
 # ── Volunteer Shifts ──────────────────────────────────────────────────────────
 
 class ShiftSignupOut(BaseModel):

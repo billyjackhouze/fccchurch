@@ -155,6 +155,19 @@ tr:last-child td{border-bottom:none}
 .login-link{color:#1E3A5F;cursor:pointer;text-decoration:underline}
 /* ── User Mgmt ── */
 .user-chip{display:inline-flex;align-items:center;gap:6px;background:#F0F4F8;border-radius:6px;padding:3px 8px;font-size:12px}
+/* ── Ministries ── */
+.ministry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+.ministry-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:20px;border-top:4px solid #1E3A5F;cursor:pointer;transition:box-shadow .15s}
+.ministry-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.ministry-card.gold{border-top-color:#B8860B}.ministry-card.green{border-top-color:#1A7A4A}.ministry-card.red{border-top-color:#DC2626}.ministry-card.purple{border-top-color:#7C3AED}
+.ministry-card h4{font-size:15px;font-weight:700;color:#1E3A5F;margin-bottom:4px}
+.ministry-card .mc-sub{font-size:12px;color:#6B7280;margin-bottom:10px}
+.ministry-card .mc-count{font-size:22px;font-weight:800;color:#1E3A5F}
+.ministry-card .mc-lbl{font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px}
+.ministry-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.member-role-chip{display:inline-flex;align-items:center;gap:8px;background:#F0F4F8;border-radius:8px;padding:8px 14px;margin:4px;font-size:13px}
+.member-role-chip .role-badge{font-size:10px;background:#1E3A5F;color:#fff;border-radius:4px;padding:1px 6px;font-weight:600;text-transform:uppercase}
+.member-role-chip .role-badge.leader{background:#B8860B}
 /* ── Volunteer Shifts ── */
 .shift-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:18px 20px;margin-bottom:14px;border-left:4px solid #1E3A5F}
 .shift-card.gold{border-left-color:#B8860B}.shift-card.green{border-left-color:#1A7A4A}.shift-card.urgent{border-left-color:#DC2626}
@@ -236,6 +249,7 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item" onclick="showPage('rooms')" id="nav-rooms"><span class="icon">🏛️</span> Rooms &amp; Facilities</div>
     <div class="nav-section">People</div>
     <div class="nav-item" onclick="showPage('members')" id="nav-members"><span class="icon">👥</span> Members</div>
+    <div class="nav-item" onclick="showPage('ministries')" id="nav-ministries"><span class="icon">⛪</span> Ministries</div>
     <div class="nav-section">Finance</div>
     <div class="nav-item" onclick="showPage('giving')" id="nav-giving"><span class="icon">💰</span> Giving &amp; Pledges</div>
     <div class="nav-section">Volunteer</div>
@@ -378,6 +392,33 @@ tr:last-child td{border-bottom:none}
             <tbody id="pledges-tbody"></tbody>
           </table></div>
         </div>
+      </div>
+    </div>
+
+    <!-- MINISTRIES -->
+    <div class="page" id="page-ministries">
+      <div class="page-header"><h2>⛪ Ministries</h2>
+        <button class="btn btn-primary" id="ministry-add-btn" style="display:none" onclick="openModal('ministry-modal')">+ Add Ministry</button>
+      </div>
+      <div class="ministry-grid" id="ministries-grid"><div class="spinner"></div></div>
+    </div>
+
+    <!-- MINISTRY DETAIL -->
+    <div class="page" id="page-ministry-detail">
+      <div class="detail-back-bar">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('ministries')">← Back to Ministries</button>
+        <div class="action-btns" id="ministry-detail-admin-btns" style="display:none">
+          <button class="btn btn-outline btn-sm" onclick="editCurrentMinistry()">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentMinistry()">🗑 Delete</button>
+        </div>
+      </div>
+      <div id="ministry-detail-hero" class="member-hero-card"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Ministry Members</h3>
+          <button class="btn btn-primary btn-sm" id="add-ministry-member-btn" style="display:none" onclick="openAddMinistryMember()">+ Add Member</button>
+        </div>
+        <div class="card-body" id="ministry-members-body"></div>
       </div>
     </div>
 
@@ -606,6 +647,50 @@ tr:last-child td{border-bottom:none}
   </div>
 </div></div>
 
+<!-- Ministry Modal -->
+<div class="modal-backdrop" id="ministry-modal"><div class="modal" style="width:500px">
+  <h2 id="ministry-modal-title">⛪ Add Ministry</h2>
+  <input type="hidden" id="min-id">
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Ministry Name *</label><input type="text" id="min-name" placeholder="e.g. Worship Team"></div>
+    <div class="form-group span-2"><label>Description</label><textarea id="min-desc" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>Ministry Leader</label><select id="min-leader"></select></div>
+    <div class="form-group"><label>Color</label>
+      <select id="min-color">
+        <option value="blue">Blue</option><option value="gold">Gold</option>
+        <option value="green">Green</option><option value="red">Red</option>
+        <option value="purple">Purple</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('ministry-modal')">Cancel</button>
+    <button class="btn btn-primary" id="ministry-save-btn" onclick="saveMinistry()">Add Ministry</button>
+  </div>
+</div></div>
+
+<!-- Add Ministry Member Modal -->
+<div class="modal-backdrop" id="ministry-member-modal"><div class="modal" style="width:440px">
+  <h2>👤 Add Member to Ministry</h2>
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Member *</label><select id="mm-member-id"></select></div>
+    <div class="form-group"><label>Role in Ministry</label>
+      <select id="mm-role">
+        <option value="Member">Member</option>
+        <option value="Leader">Leader</option>
+        <option value="Co-Leader">Co-Leader</option>
+        <option value="Volunteer">Volunteer</option>
+        <option value="Coordinator">Coordinator</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Joined Date</label><input type="date" id="mm-joined"></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('ministry-member-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="addMinistryMember()">Add to Ministry</button>
+  </div>
+</div></div>
+
 <!-- Volunteer Shift Modal -->
 <div class="modal-backdrop" id="shift-modal"><div class="modal" style="width:580px">
   <h2 id="shift-modal-title">🙋 Add Volunteer Shift</h2>
@@ -812,7 +897,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -828,8 +913,9 @@ function renderPage(id) {
   if (id==='dashboard')      renderDashboard();
   else if (id==='schedule')  renderSchedule();
   else if (id==='rooms')     renderRooms();
-  else if (id==='members')   renderMembers();
-  else if (id==='giving')    renderGiving();
+  else if (id==='members')    renderMembers();
+  else if (id==='ministries') renderMinistries();
+  else if (id==='giving')     renderGiving();
   else if (id==='volunteer') renderVolunteer();
   else if (id==='myshifts')  renderMyShifts();
   else if (id==='manage-shifts') renderManageShifts();
@@ -1375,6 +1461,165 @@ async function removeFamilyLink(relationId, memberId) {
   }
 }
 
+// ── MINISTRIES ───────────────────────────────────────────────────────────────
+let currentMinistryId = null;
+
+const MINISTRY_COLORS = ['blue','gold','green','red','purple'];
+
+function ministryCardColor(color) {
+  return MINISTRY_COLORS.includes(color) ? color : 'blue';
+}
+
+async function renderMinistries() {
+  const isAdmin = currentUser?.role === 'admin';
+  if (isAdmin) document.getElementById('ministry-add-btn').style.display = '';
+  try {
+    const mins = await api.get('/api/ministries');
+    if (mins.length === 0) {
+      document.getElementById('ministries-grid').innerHTML =
+        '<div class="empty" style="grid-column:1/-1">No ministries yet. Click "+ Add Ministry" to create one.</div>';
+      return;
+    }
+    document.getElementById('ministries-grid').innerHTML = mins.map(m => `
+      <div class="ministry-card ${ministryCardColor(m.color)}" onclick="showMinistryDetail('${m.id}')">
+        <h4>${m.name}</h4>
+        <div class="mc-sub">${m.leader_name ? '👤 ' + m.leader_name : 'No leader assigned'}${m.description ? '<br>' + m.description.slice(0,60) + (m.description.length>60?'…':'') : ''}</div>
+        <div class="mc-count">${m.member_count}</div>
+        <div class="mc-lbl">Member${m.member_count !== 1 ? 's' : ''}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('ministries-grid').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function showMinistryDetail(id) {
+  currentMinistryId = id;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-ministry-detail').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-ministries').classList.add('active');
+  const isAdmin = currentUser?.role === 'admin';
+  document.getElementById('ministry-detail-admin-btns').style.display = isAdmin ? '' : 'none';
+  document.getElementById('add-ministry-member-btn').style.display = isAdmin ? '' : 'none';
+  document.getElementById('topbar-title').textContent = 'Ministry';
+  try {
+    const m = await api.get('/api/ministries/' + id);
+    document.getElementById('topbar-title').textContent = m.name;
+    document.getElementById('ministry-detail-hero').innerHTML = `
+      <div style="flex:1">
+        <div class="member-hero-name">${m.name}</div>
+        <div class="member-hero-sub">${m.description || 'No description'}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          ${m.leader_name ? `<span class="badge badge-gold">👤 Leader: ${m.leader_name}</span>` : ''}
+          <span class="badge badge-blue">${m.member_count} member${m.member_count !== 1 ? 's' : ''}</span>
+        </div>
+      </div>`;
+    renderMinistryMembers(m);
+  } catch(e) {
+    document.getElementById('ministry-detail-hero').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+function renderMinistryMembers(m) {
+  const body = document.getElementById('ministry-members-body');
+  if (!m.memberships || m.memberships.length === 0) {
+    body.innerHTML = '<div class="empty" style="padding:24px">No members yet. Click "+ Add Member" to add someone.</div>';
+    return;
+  }
+  const sorted = [...m.memberships].sort((a, b) => {
+    const order = { Leader: 0, 'Co-Leader': 1, Coordinator: 2, Member: 3, Volunteer: 4 };
+    return (order[a.role] ?? 5) - (order[b.role] ?? 5);
+  });
+  body.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px">` +
+    sorted.map(ms => {
+      const initials = ms.member_name.split(' ').map(w => w[0] || '').join('').toUpperCase();
+      const url = ms.member_photo ? `${API_BASE}/static/photos/${ms.member_photo}` : null;
+      const avatar = url
+        ? `<img src="${url}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="family-avatar" style="display:none">${initials}</span>`
+        : `<span class="family-avatar">${initials}</span>`;
+      const isLeader = ms.role === 'Leader' || ms.role === 'Co-Leader';
+      const removeBtn = currentUser?.role === 'admin'
+        ? `<span onclick="event.stopPropagation();removeMinistryMember('${m.id}','${ms.id}')" style="color:#DC2626;cursor:pointer;margin-left:6px;font-size:11px" title="Remove">✕</span>`
+        : '';
+      return `<span class="member-role-chip" onclick="showMemberDetail('${ms.member_id}')" style="cursor:pointer">
+        ${avatar}
+        <span>
+          <div style="font-weight:700;font-size:12px;color:#1E3A5F">${ms.member_name}</div>
+          <div style="font-size:10px;color:#6B7280">${ms.role}${ms.joined_date ? ' · Since ' + fmtDate(ms.joined_date) : ''}</div>
+        </span>
+        <span class="role-badge${isLeader ? ' leader' : ''}">${ms.role}</span>
+        ${removeBtn}
+      </span>`;
+    }).join('') + '</div>';
+}
+
+async function openAddMinistryMember() {
+  const all = await api.get('/api/members');
+  const m = await api.get('/api/ministries/' + currentMinistryId);
+  const existingIds = new Set(m.memberships.map(ms => ms.member_id));
+  const opts = all.filter(x => !existingIds.has(x.id))
+    .map(x => `<option value="${x.id}">${x.first} ${x.last}</option>`).join('');
+  document.getElementById('mm-member-id').innerHTML = opts || '<option>All members already added</option>';
+  document.getElementById('mm-joined').value = todayStr;
+  openModal('ministry-member-modal');
+}
+
+async function addMinistryMember() {
+  const member_id = document.getElementById('mm-member-id').value;
+  const role      = document.getElementById('mm-role').value;
+  const joined    = document.getElementById('mm-joined').value;
+  if (!member_id) { alert('Please select a member.'); return; }
+  await api.post(`/api/ministries/${currentMinistryId}/members`, { member_id, role, joined_date: joined || null });
+  closeModal('ministry-member-modal');
+  showMinistryDetail(currentMinistryId);
+}
+
+async function removeMinistryMember(ministryId, membershipId) {
+  if (!confirm('Remove this member from the ministry?')) return;
+  await api.delete(`/api/ministries/${ministryId}/members/${membershipId}`);
+  showMinistryDetail(ministryId);
+}
+
+async function editCurrentMinistry() {
+  const m = await api.get('/api/ministries/' + currentMinistryId);
+  const all = await api.get('/api/members');
+  document.getElementById('ministry-modal-title').textContent = '✏️ Edit Ministry';
+  document.getElementById('min-id').value    = m.id;
+  document.getElementById('min-name').value  = m.name;
+  document.getElementById('min-desc').value  = m.description || '';
+  document.getElementById('min-color').value = m.color || 'blue';
+  document.getElementById('min-leader').innerHTML = '<option value="">— No Leader —</option>' +
+    all.map(x => `<option value="${x.id}" ${x.id === m.leader_id ? 'selected' : ''}>${x.first} ${x.last}</option>`).join('');
+  document.getElementById('ministry-save-btn').textContent = 'Save Changes';
+  document.getElementById('ministry-modal').classList.add('open');
+}
+
+async function deleteCurrentMinistry() {
+  if (!confirm('Delete this ministry and all its membership records?')) return;
+  await api.delete('/api/ministries/' + currentMinistryId);
+  showPage('ministries');
+}
+
+async function saveMinistry() {
+  const name = document.getElementById('min-name').value.trim();
+  if (!name) { alert('Ministry name is required.'); return; }
+  const id = document.getElementById('min-id').value;
+  const data = {
+    name,
+    description: document.getElementById('min-desc').value || null,
+    leader_id:   document.getElementById('min-leader').value || null,
+    color:       document.getElementById('min-color').value || 'blue',
+  };
+  if (id) { await api.put('/api/ministries/' + id, data); }
+  else    { await api.post('/api/ministries', data); }
+  closeModal('ministry-modal');
+  document.getElementById('min-id').value = '';
+  document.getElementById('ministry-modal-title').textContent = '⛪ Add Ministry';
+  document.getElementById('ministry-save-btn').textContent = 'Add Ministry';
+  ['min-name','min-desc'].forEach(i => document.getElementById(i).value = '');
+  if (id) { showMinistryDetail(id); } else { showPage('ministries'); }
+}
+
 // ── VOLUNTEER ────────────────────────────────────────────────────────────────
 let volTab = 'open';
 
@@ -1478,7 +1723,8 @@ async function renderVolunteer() {
   const ministryFilter = document.getElementById('vol-ministry-filter')?.value || '';
   const minSel = document.getElementById('vol-ministry-filter');
   if (minSel && minSel.options.length <= 1) {
-    MINISTRIES.forEach(m => minSel.innerHTML += `<option value="${m}">${m}</option>`);
+    const mins = await api.get('/api/ministries').catch(()=>[]);
+    mins.forEach(m => minSel.innerHTML += `<option value="${m.name}">${m.name}</option>`);
   }
 
   try {
@@ -1543,7 +1789,8 @@ async function renderManageShifts() {
   const ministryFilter = document.getElementById('admin-ministry-filter2')?.value || '';
   const minSel2 = document.getElementById('admin-ministry-filter2');
   if (minSel2 && minSel2.options.length <= 1) {
-    MINISTRIES.forEach(m => minSel2.innerHTML += `<option value="${m}">${m}</option>`);
+    const mins2 = await api.get('/api/ministries').catch(()=>[]);
+    mins2.forEach(m => minSel2.innerHTML += `<option value="${m.name}">${m.name}</option>`);
   }
 
   try {
@@ -1811,17 +2058,29 @@ async function deleteUser(id) {
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
 function openModal(id) {
-  if (id==='user-modal')  { openUserModal(); return; }
-  if (id==='shift-modal') { openShiftModal(); return; }
+  if (id==='user-modal')     { openUserModal(); return; }
+  if (id==='shift-modal')    { openShiftModal(); return; }
+  if (id==='ministry-modal') { openMinistryModal(); return; }
   document.getElementById(id).classList.add('open');
   document.getElementById(id).querySelectorAll('input[type=date]').forEach(i=>{if(!i.value)i.value=todayStr;});
 }
 async function openShiftModal() {
-  const rooms = await api.get('/api/rooms');
+  const [rooms, mins] = await Promise.all([api.get('/api/rooms'), api.get('/api/ministries').catch(()=>[])]);
   document.getElementById('sh-room').innerHTML = '<option value="">— No Room —</option>' + rooms.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const minSel = document.getElementById('sh-ministry');
+  const curVal = minSel.value;
+  minSel.innerHTML = '<option value="">— General / All —</option>' + mins.map(m=>`<option value="${m.name}">${m.name}</option>`).join('');
+  if (curVal) minSel.value = curVal;
   const modal = document.getElementById('shift-modal');
   modal.classList.add('open');
   if (!document.getElementById('sh-date').value) document.getElementById('sh-date').value = todayStr;
+}
+
+async function openMinistryModal() {
+  const all = await api.get('/api/members');
+  document.getElementById('min-leader').innerHTML = '<option value="">— No Leader —</option>' +
+    all.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  document.getElementById('ministry-modal').classList.add('open');
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
