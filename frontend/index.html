@@ -1444,6 +1444,7 @@ function renderShiftCard(s, adminMode = false) {
   } else {
     actionBtn = `
       <button class="btn btn-outline btn-sm" onclick="editShift('${s.id}')">✏️ Edit</button>
+      <button class="btn btn-gold btn-sm" onclick="duplicateShift('${s.id}')">📋 Duplicate</button>
       <button class="btn btn-danger btn-sm" onclick="deleteShift('${s.id}')">🗑 Delete</button>`;
   }
 
@@ -1591,6 +1592,29 @@ async function deleteShift(shiftId) {
   renderManageShifts();
 }
 
+async function duplicateShift(shiftId) {
+  const s = await api.get('/api/shifts/' + shiftId);
+  // Advance date by 7 days
+  const orig = new Date(s.date + 'T00:00:00');
+  orig.setDate(orig.getDate() + 7);
+  const newDate = orig.toISOString().slice(0, 10);
+
+  document.getElementById('shift-modal-title').textContent = '📋 Duplicate Shift';
+  document.getElementById('sh-id').value       = '';          // no id = create new
+  document.getElementById('sh-title').value    = s.title;
+  document.getElementById('sh-ministry').value = s.ministry || '';
+  document.getElementById('sh-slots').value    = s.slots_needed || 1;
+  document.getElementById('sh-date').value     = newDate;
+  document.getElementById('sh-start').value    = s.start_time || '';
+  document.getElementById('sh-end').value      = s.end_time || '';
+  document.getElementById('sh-location').value = s.location_notes || '';
+  document.getElementById('sh-desc').value     = s.description || '';
+  document.getElementById('shift-save-btn').textContent = 'Save & Done';
+  await openShiftModal();                       // re-opens and loads rooms
+  document.getElementById('sh-room').value     = s.room_id || '';
+  document.getElementById('sh-date').value     = newDate;    // restore after modal open
+}
+
 async function editShift(shiftId) {
   const s = await api.get('/api/shifts/' + shiftId);
   document.getElementById('shift-modal-title').textContent = '✏️ Edit Shift';
@@ -1629,6 +1653,7 @@ async function saveShift() {
   document.getElementById('sh-id').value = '';
   document.getElementById('shift-modal-title').textContent = '🙋 Add Volunteer Shift';
   document.getElementById('shift-save-btn').textContent = 'Add Shift';
+  document.getElementById('sh-slots').value = '1';
   ['sh-title','sh-date','sh-start','sh-end','sh-location','sh-desc'].forEach(i => document.getElementById(i).value = '');
   renderManageShifts();
 }
