@@ -2458,13 +2458,27 @@ async function renderUsers() {
 }
 
 async function openUserModal() {
-  const members = await api.get('/api/members');
-  document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>' +
-    members.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
-  openModal('user-modal');
+  // Open immediately so the user sees the modal right away
+  document.getElementById('user-modal').classList.add('open');
+  document.getElementById('user-edit-id').value = '';
+  document.getElementById('user-modal-title').textContent = '🔐 Add User Account';
+  document.getElementById('user-save-btn').textContent = 'Add User';
+  document.getElementById('user-pass-hint').style.display = 'none';
+  document.getElementById('user-email').value = '';
+  document.getElementById('user-pass').value  = '';
+  document.getElementById('user-role').value  = 'member';
+  try {
+    const members = await api.get('/api/members');
+    document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>' +
+      members.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  } catch {
+    document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>';
+  }
 }
 
-function editUser(id, email, role, memberId, isActive) {
+async function editUser(id, email, role, memberId, isActive) {
+  // Open modal first, then load data
+  document.getElementById('user-modal').classList.add('open');
   document.getElementById('user-modal-title').textContent = '✏️ Edit User Account';
   document.getElementById('user-edit-id').value   = id;
   document.getElementById('user-email').value     = email;
@@ -2472,11 +2486,13 @@ function editUser(id, email, role, memberId, isActive) {
   document.getElementById('user-role').value      = role;
   document.getElementById('user-pass-hint').style.display = '';
   document.getElementById('user-save-btn').textContent = 'Save Changes';
-  api.get('/api/members').then(members => {
+  try {
+    const members = await api.get('/api/members');
     document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>' +
       members.map(m=>`<option value="${m.id}" ${m.id===memberId?'selected':''}>${m.first} ${m.last}</option>`).join('');
-    openModal('user-modal');
-  });
+  } catch {
+    document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>';
+  }
 }
 
 async function saveUser() {
