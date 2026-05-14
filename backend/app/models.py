@@ -4,7 +4,7 @@ SQLAlchemy ORM models for FFC Church Management System.
 import uuid
 from datetime import datetime, date
 from sqlalchemy import Column, String, Integer, Numeric, Date, DateTime, ForeignKey, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from app.database import Base
 
 
@@ -25,12 +25,31 @@ class Member(Base):
     since       = Column(Date)
     ministry    = Column(String(200))
     family_size = Column(Integer, default=1)
+    pronouns    = Column(String(50))                      # e.g. He/Him, She/Her, They/Them
     notes       = Column(Text)
     created_at  = Column(DateTime, default=datetime.utcnow)
     updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    giving      = relationship("GivingRecord", back_populates="member", cascade="all, delete-orphan")
-    pledges     = relationship("Pledge",        back_populates="member", cascade="all, delete-orphan")
+    giving      = relationship("GivingRecord",    back_populates="member",           cascade="all, delete-orphan")
+    pledges     = relationship("Pledge",          back_populates="member",           cascade="all, delete-orphan")
+    # Family relationships this member has with others (as the "from" side)
+    relationships_from = relationship("MemberRelationship", foreign_keys="MemberRelationship.member_id",  back_populates="member",  cascade="all, delete-orphan")
+    # Family relationships where this member is the related person (as the "to" side)
+    relationships_to   = relationship("MemberRelationship", foreign_keys="MemberRelationship.related_id", back_populates="related", cascade="all, delete-orphan")
+
+
+class MemberRelationship(Base):
+    """Links two members together with a relationship type (Partner, Child, Parent, etc.)"""
+    __tablename__ = "member_relationships"
+
+    id          = Column(String, primary_key=True, default=gen_id)
+    member_id   = Column(String, ForeignKey("members.id"), nullable=False)   # e.g. John
+    related_id  = Column(String, ForeignKey("members.id"), nullable=False)   # e.g. Jane
+    relation    = Column(String(50), nullable=False)                          # Partner | Child | Parent | Sibling | Guardian | Other
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+    member  = relationship("Member", foreign_keys=[member_id],  back_populates="relationships_from")
+    related = relationship("Member", foreign_keys=[related_id], back_populates="relationships_to")
 
 
 class Room(Base):

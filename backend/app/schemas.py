@@ -19,6 +19,7 @@ class MemberBase(BaseModel):
     since:       Optional[date] = None
     ministry:    Optional[str] = None
     family_size: Optional[int] = 1
+    pronouns:    Optional[str] = None
     notes:       Optional[str] = None
 
 class MemberCreate(MemberBase):
@@ -28,9 +29,22 @@ class MemberUpdate(MemberBase):
     first: Optional[str] = None
     last:  Optional[str] = None
 
+class MemberRelationshipCreate(BaseModel):
+    related_id: str
+    relation:   str   # Partner | Child | Parent | Sibling | Guardian | Other
+
+class MemberRelationshipOut(BaseModel):
+    id:           str
+    related_id:   str
+    related_name: str
+    relation:     str
+    class Config:
+        from_attributes = True
+
 class MemberOut(MemberBase):
-    id:         str
-    created_at: datetime
+    id:            str
+    created_at:    datetime
+    family:        Optional[List[MemberRelationshipOut]] = []
     class Config:
         from_attributes = True
 

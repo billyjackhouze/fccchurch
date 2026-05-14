@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FFC Church Management</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F4F8;color:#1F2937;min-height:100vh;display:flex}
+.sidebar{width:230px;min-height:100vh;background:#1E3A5F;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
+.sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(184,134,11,.4)}
+.sidebar-logo h1{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;line-height:1.2}
+.sidebar-logo span{font-size:11px;color:#B8860B;letter-spacing:1px;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{padding:8px 16px 4px;font-size:10px;color:#7B9EC4;letter-spacing:1.2px;text-transform:uppercase;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;color:#C8D8EA;font-size:13.5px;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(184,134,11,.18);color:#fff;border-left:3px solid #B8860B}
+.nav-item .icon{width:18px;text-align:center;font-size:15px}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#7B9EC4}
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:18px;font-weight:700;color:#1E3A5F}
+.topbar-right{display:flex;gap:10px;align-items:center}
+.btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .18s}
+.btn-primary{background:#1E3A5F;color:#fff}.btn-primary:hover{background:#163052}
+.btn-gold{background:#B8860B;color:#fff}.btn-gold:hover{background:#9a7009}
+.btn-outline{background:#fff;color:#1E3A5F;border:1.5px solid #1E3A5F}.btn-outline:hover{background:#EBF0F8}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{background:#DC2626;color:#fff}.btn-danger:hover{background:#b91c1c}
+.content{padding:28px;flex:1}
+.page{display:none}.page.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:10px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #1E3A5F}
+.stat-card.gold{border-left-color:#B8860B}.stat-card.green{border-left-color:#1A7A4A}.stat-card.red{border-left-color:#DC2626}
+.stat-card .label{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.stat-card .value{font-size:30px;font-weight:800;color:#1E3A5F;margin:4px 0 2px}
+.stat-card .sub{font-size:12px;color:#9CA3AF}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:22px}
+.card-header{padding:16px 20px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:14px;font-weight:700;color:#1E3A5F}
+.card-body{padding:18px 20px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#F9FAFB;color:#374151;font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid #E5E7EB;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+td{padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#374151;vertical-align:middle}
+tr:hover td{background:#FAFAFA}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-green{background:#DCFCE7;color:#166534}.badge-blue{background:#DBEAFE;color:#1E40AF}
+.badge-gold{background:#FEF9C3;color:#854D0E}.badge-red{background:#FEE2E2;color:#991B1B}
+.badge-gray{background:#F3F4F6;color:#6B7280}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-header h2{font-size:16px;font-weight:700;color:#1E3A5F}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day-name{text-align:center;font-size:11px;font-weight:700;color:#6B7280;padding:6px 0;text-transform:uppercase}
+.cal-cell{min-height:72px;background:#F9FAFB;border-radius:6px;padding:4px;font-size:12px}
+.cal-cell.today{background:#EBF0F8;border:1.5px solid #1E3A5F}
+.cal-cell.other-month{opacity:.4}
+.cal-num{font-weight:700;color:#374151;font-size:13px;margin-bottom:3px}
+.cal-cell.today .cal-num{color:#1E3A5F}
+.cal-event{background:#1E3A5F;color:#fff;font-size:10px;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-event.gold{background:#B8860B}.cal-event.green{background:#1A7A4A}.cal-event.red{background:#DC2626}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.cols-1{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.span-2{grid-column:span 2}
+.form-group label{font-size:12px;font-weight:600;color:#374151}
+.form-group input,.form-group select,.form-group textarea{padding:8px 11px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px;color:#1F2937;background:#fff;width:100%;transition:border .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1E3A5F}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #F3F4F6}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:26px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal h2{font-size:17px;font-weight:800;color:#1E3A5F;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #EBF0F8}
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.room-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:18px;border-top:4px solid #1E3A5F}
+.room-card.gold{border-top-color:#B8860B}.room-card.green{border-top-color:#1A7A4A}.room-card.red{border-top-color:#DC2626}
+.room-card h4{font-size:14px;font-weight:700;color:#1E3A5F;margin-bottom:4px}
+.room-card .cap{font-size:12px;color:#6B7280;margin-bottom:10px}
+.tabs{display:flex;gap:2px;background:#F3F4F6;border-radius:8px;padding:3px;margin-bottom:20px;width:fit-content}
+.tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:#6B7280;transition:all .15s}
+.tab.active{background:#fff;color:#1E3A5F;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.search-bar{position:relative;margin-bottom:16px}
+.search-bar input{padding:8px 14px 8px 36px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;width:300px;background:#fff}
+.search-bar input:focus{outline:none;border-color:#1E3A5F}
+.search-bar::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px}
+.giving-hero{background:linear-gradient(135deg,#1E3A5F,#2d5080);border-radius:12px;padding:24px 28px;color:#fff;margin-bottom:24px;display:flex;gap:40px;flex-wrap:wrap}
+.giving-hero .gh-item .lbl{font-size:11px;color:#90B4D4;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.giving-hero .gh-item .val{font-size:28px;font-weight:800;margin-top:4px}
+.giving-hero .gh-item .pct{font-size:13px;color:#B8D4F0;margin-top:2px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-header h2{font-size:20px;font-weight:800;color:#1E3A5F}
+.empty{text-align:center;padding:36px;color:#9CA3AF;font-size:14px}
+.text-green{color:#1A7A4A;font-weight:700}.text-navy{color:#1E3A5F;font-weight:700}.text-gold{color:#B8860B;font-weight:700}
+.flex{display:flex;gap:8px;align-items:center}
+.action-btns{display:flex;gap:6px}
+/* Loading spinner */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid #E5E7EB;border-top-color:#1E3A5F;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row td{text-align:center;padding:30px;color:#9CA3AF}
+/* API status indicator */
+.api-status{display:flex;align-items:center;gap:6px;font-size:12px}
+.api-dot{width:8px;height:8px;border-radius:50%;background:#1A7A4A}
+.api-dot.error{background:#DC2626}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>✝ FFC CHURCH</h1>
+    <span>Management System</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-section">Ministry</div>
+    <div class="nav-item" onclick="showPage('schedule')" id="nav-schedule"><span class="icon">📅</span> Schedule</div>
+    <div class="nav-item" onclick="showPage('rooms')" id="nav-rooms"><span class="icon">🏛️</span> Rooms &amp; Facilities</div>
+    <div class="nav-section">People</div>
+    <div class="nav-item" onclick="showPage('members')" id="nav-members"><span class="icon">👥</span> Members</div>
+    <div class="nav-section">Finance</div>
+    <div class="nav-item" onclick="showPage('giving')" id="nav-giving"><span class="icon">💰</span> Giving &amp; Pledges</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="api-status"><span class="api-dot" id="api-dot"></span><span id="api-status-text">Connecting…</span></div>
+    <div style="margin-top:4px">FFC Church v1.0 · 2026</div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:#6B7280" id="topbar-date"></span>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="dash-stats"><div class="stat-card"><div class="label">Loading…</div><div class="value"><span class="spinner"></span></div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+        <div class="card"><div class="card-header"><h3>📅 Upcoming Events</h3><button class="btn btn-outline btn-sm" onclick="showPage('schedule')">View All</button></div><div class="card-body" id="dash-events"><div class="spinner"></div></div></div>
+        <div class="card"><div class="card-header"><h3>💰 Recent Giving</h3><button class="btn btn-outline btn-sm" onclick="showPage('giving')">View All</button></div><div class="card-body" id="dash-giving"><div class="spinner"></div></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px">
+        <div class="card"><div class="card-header"><h3>🏛️ Room Status Today</h3></div><div class="card-body" id="dash-rooms"><div class="spinner"></div></div></div>
+        <div class="card"><div class="card-header"><h3>👥 Newest Members</h3></div><div class="card-body" id="dash-members"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="page" id="page-schedule">
+      <div class="page-header"><h2>📅 Schedule</h2><button class="btn btn-primary" onclick="openModal('event-modal')">+ Add Event</button></div>
+      <div class="card"><div class="card-body">
+        <div class="cal-header">
+          <button class="btn btn-outline btn-sm" onclick="prevMonth()">◀</button>
+          <h2 id="cal-month-label"></h2>
+          <button class="btn btn-outline btn-sm" onclick="nextMonth()">▶</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div></div>
+      <div class="card"><div class="card-header"><h3>All Events</h3></div>
+        <div class="card-body table-wrap"><table>
+          <thead><tr><th>Event</th><th>Date</th><th>Time</th><th>Room</th><th>Type</th><th>Actions</th></tr></thead>
+          <tbody id="events-tbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ROOMS -->
+    <div class="page" id="page-rooms">
+      <div class="page-header"><h2>🏛️ Rooms &amp; Facilities</h2><button class="btn btn-primary" onclick="openModal('room-modal')">+ Add Room</button></div>
+      <div class="rooms-grid" id="rooms-grid"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:4px"><div class="card-header"><h3>Room Bookings</h3></div>
+        <div class="card-body table-wrap"><table>
+          <thead><tr><th>Room</th><th>Event</th><th>Date</th><th>Time</th><th>Booked By</th><th>Status</th></tr></thead>
+          <tbody id="bookings-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="page" id="page-members">
+      <div class="page-header"><h2>👥 Members</h2><button class="btn btn-primary" onclick="openModal('member-modal')">+ Add Member</button></div>
+      <div class="card">
+        <div class="card-header"><h3>Member Directory</h3>
+          <div class="flex">
+            <div class="search-bar"><input type="text" placeholder="Search members…" oninput="filterMembers(this.value)" id="member-search"></div>
+            <select onchange="filterMemberStatus(this.value)" style="padding:8px 11px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px">
+              <option value="">All Statuses</option><option>Active</option><option>Visitor</option><option>Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body table-wrap"><table>
+          <thead><tr><th>Name</th><th>Pronouns</th><th>Email</th><th>Phone</th><th>Status</th><th>Family</th><th>Actions</th></tr></thead>
+          <tbody id="members-tbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- GIVING -->
+    <div class="page" id="page-giving">
+      <div class="page-header"><h2>💰 Giving &amp; Pledges</h2>
+        <div class="flex">
+          <button class="btn btn-outline" onclick="openModal('pledge-modal')">+ Add Pledge</button>
+          <button class="btn btn-primary" onclick="openModal('giving-modal')">+ Record Giving</button>
+        </div>
+      </div>
+      <div class="giving-hero" id="giving-hero"><div class="spinner" style="filter:brightness(5)"></div></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchGivingTab('tithe',this)">Tithes &amp; Offerings</div>
+        <div class="tab" onclick="switchGivingTab('pledges',this)">Pledges</div>
+      </div>
+      <div id="giving-tithe-view">
+        <div class="card"><div class="card-header"><h3>Giving History</h3>
+          <select onchange="filterGivingYear(this.value)" style="padding:6px 10px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px" id="giving-year-filter"></select>
+        </div>
+        <div class="card-body table-wrap"><table>
+          <thead><tr><th>Date</th><th>Member</th><th>Amount</th><th>Type</th><th>Fund</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="giving-tbody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table></div></div>
+      </div>
+      <div id="giving-pledges-view" style="display:none">
+        <div class="card"><div class="card-header"><h3>Pledge Commitments</h3></div>
+          <div class="card-body table-wrap"><table>
+            <thead><tr><th>Member</th><th>Campaign</th><th>Pledged</th><th>Paid</th><th>Balance</th><th>End Date</th><th>Status</th></tr></thead>
+            <tbody id="pledges-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── MODALS ── -->
+<div class="modal-backdrop" id="event-modal"><div class="modal">
+  <h2>📅 Add New Event</h2>
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Event Title *</label><input type="text" id="ev-title" placeholder="Sunday Service, Youth Group…"></div>
+    <div class="form-group"><label>Date *</label><input type="date" id="ev-date"></div>
+    <div class="form-group"><label>Type</label><select id="ev-type"><option>Service</option><option>Meeting</option><option>Volunteer Slot</option><option>Event</option><option>Class</option><option>Other</option></select></div>
+    <div class="form-group"><label>Start Time</label><input type="time" id="ev-start"></div>
+    <div class="form-group"><label>End Time</label><input type="time" id="ev-end"></div>
+    <div class="form-group"><label>Room</label><select id="ev-room"></select></div>
+    <div class="form-group"><label>Organizer</label><input type="text" id="ev-organizer"></div>
+    <div class="form-group span-2"><label>Description</label><textarea id="ev-desc"></textarea></div>
+    <div class="form-group"><label>Volunteer Slots Needed</label><input type="number" id="ev-slots" min="0" placeholder="0"></div>
+  </div>
+  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('event-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEvent()">Save Event</button></div>
+</div></div>
+
+<div class="modal-backdrop" id="room-modal"><div class="modal">
+  <h2>🏛️ Add Room / Facility</h2>
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Room Name *</label><input type="text" id="rm-name" placeholder="e.g. Fellowship Hall"></div>
+    <div class="form-group"><label>Capacity</label><input type="number" id="rm-cap" min="1"></div>
+    <div class="form-group"><label>Building / Location</label><input type="text" id="rm-loc"></div>
+    <div class="form-group span-2"><label>Features</label><input type="text" id="rm-features" placeholder="Projector, Sound System…"></div>
+    <div class="form-group span-2"><label>Notes</label><textarea id="rm-notes"></textarea></div>
+  </div>
+  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('room-modal')">Cancel</button><button class="btn btn-primary" onclick="saveRoom()">Add Room</button></div>
+</div></div>
+
+<div class="modal-backdrop" id="member-modal"><div class="modal">
+  <h2>👤 Add Member</h2>
+  <div class="form-grid">
+    <div class="form-group"><label>First Name *</label><input type="text" id="mb-first"></div>
+    <div class="form-group"><label>Last Name *</label><input type="text" id="mb-last"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="mb-email"></div>
+    <div class="form-group"><label>Phone</label><input type="tel" id="mb-phone"></div>
+    <div class="form-group span-2"><label>Address</label><input type="text" id="mb-address"></div>
+    <div class="form-group"><label>Status</label><select id="mb-status"><option>Active</option><option>Visitor</option><option>Inactive</option></select></div>
+    <div class="form-group"><label>Member Since</label><input type="date" id="mb-since"></div>
+    <div class="form-group"><label>Ministry / Role</label><input type="text" id="mb-ministry"></div>
+    <div class="form-group"><label>Family Size</label><input type="number" id="mb-family" min="1"></div>
+    <div class="form-group"><label>Preferred Pronouns</label>
+      <select id="mb-pronouns">
+        <option value="">— Not specified —</option>
+        <option>He/Him</option><option>She/Her</option><option>They/Them</option>
+        <option>He/They</option><option>She/They</option><option>Ze/Zir</option><option>Custom</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('member-modal')">Cancel</button><button class="btn btn-primary" onclick="saveMember()">Add Member</button></div>
+</div></div>
+
+<div class="modal-backdrop" id="giving-modal"><div class="modal">
+  <h2>💰 Record Giving</h2>
+  <div class="form-grid">
+    <div class="form-group"><label>Member</label><select id="gv-member"></select></div>
+    <div class="form-group"><label>Date *</label><input type="date" id="gv-date"></div>
+    <div class="form-group"><label>Amount ($) *</label><input type="number" id="gv-amount" min="0" step="0.01"></div>
+    <div class="form-group"><label>Type</label><select id="gv-type"><option>Tithe</option><option>Offering</option><option>Building Fund</option><option>Missions</option><option>Special Gift</option></select></div>
+    <div class="form-group span-2"><label>Notes</label><input type="text" id="gv-notes"></div>
+  </div>
+  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('giving-modal')">Cancel</button><button class="btn btn-primary" onclick="saveGiving()">Record</button></div>
+</div></div>
+
+<div class="modal-backdrop" id="pledge-modal"><div class="modal">
+  <h2>🤝 Add Pledge</h2>
+  <div class="form-grid">
+    <div class="form-group"><label>Member</label><select id="pl-member"></select></div>
+    <div class="form-group"><label>Campaign</label><input type="text" id="pl-campaign" placeholder="Building Fund 2026…"></div>
+    <div class="form-group"><label>Pledged Amount ($) *</label><input type="number" id="pl-amount" min="0" step="0.01"></div>
+    <div class="form-group"><label>Pledge Date</label><input type="date" id="pl-date"></div>
+    <div class="form-group"><label>End Date</label><input type="date" id="pl-end"></div>
+    <div class="form-group"><label>Frequency</label><select id="pl-freq"><option>One-time</option><option>Weekly</option><option>Monthly</option><option>Annual</option></select></div>
+  </div>
+  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('pledge-modal')">Cancel</button><button class="btn btn-primary" onclick="savePledge()">Add Pledge</button></div>
+</div></div>
+
+<script>
+// ── API LAYER ─────────────────────────────────────────────────────────────────
+// When served from FastAPI (http://server:8001) → relative URLs
+// When opened as a local file → point at the server directly
+const API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:8001'
+  : '';
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API_BASE + path, {
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts,
+  });
+  if (res.status === 204) return null;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+const api = {
+  get:    (path)       => apiFetch(path),
+  post:   (path, data) => apiFetch(path, { method: 'POST',   body: JSON.stringify(data) }),
+  put:    (path, data) => apiFetch(path, { method: 'PUT',    body: JSON.stringify(data) }),
+  delete: (path)       => apiFetch(path, { method: 'DELETE' }),
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const today   = new Date();
+const fmt$    = v => '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2 });
+const fmtDate = d => { const x = new Date(d + 'T00:00:00'); return x.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':'); const ap = +h >= 12 ? 'PM' : 'AM'; return ((+h % 12) || 12) + ':' + m + ' ' + ap; };
+const todayStr = today.toISOString().slice(0, 10);
+
+// ── API STATUS CHECK ──────────────────────────────────────────────────────────
+async function checkApiStatus() {
+  try {
+    await api.get('/api/health');
+    document.getElementById('api-dot').className = 'api-dot';
+    document.getElementById('api-status-text').textContent = 'Live (API connected)';
+  } catch {
+    document.getElementById('api-dot').className = 'api-dot error';
+    document.getElementById('api-status-text').textContent = 'API offline';
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', giving:'Giving & Pledges' };
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const nav = document.getElementById('nav-' + id);
+  if (nav) nav.classList.add('active');
+  document.getElementById('topbar-title').textContent = pageNames[id] || id;
+  renderPage(id);
+}
+
+function renderPage(id) {
+  if (id === 'dashboard') renderDashboard();
+  else if (id === 'schedule') renderSchedule();
+  else if (id === 'rooms')    renderRooms();
+  else if (id === 'members')  renderMembers();
+  else if (id === 'giving')   renderGiving();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+async function renderDashboard() {
+  try {
+    const [stats, events, giving, rooms, members] = await Promise.all([
+      api.get('/api/dashboard'),
+      api.get('/api/events?from_date=' + todayStr),
+      api.get('/api/giving'),
+      api.get('/api/rooms'),
+      api.get('/api/members'),
+    ]);
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card"><div class="label">Active Members</div><div class="value">${stats.active_members}</div><div class="sub">${stats.total_members} total registered</div></div>
+      <div class="stat-card gold"><div class="label">This Month Giving</div><div class="value">${fmt$(stats.month_giving)}</div><div class="sub">All funds combined</div></div>
+      <div class="stat-card green"><div class="label">Pledges Collected</div><div class="value">${fmt$(stats.total_paid)}</div><div class="sub">of ${fmt$(stats.total_pledged)} pledged · ${stats.pledge_pct}%</div></div>
+      <div class="stat-card"><div class="label">Upcoming Events</div><div class="value">${stats.upcoming_events}</div><div class="sub">From today forward</div></div>
+    `;
+
+    const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date));
+    document.getElementById('dash-events').innerHTML = sorted.slice(0, 5).map(e => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
+        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${e.title}</div>
+        <div style="font-size:12px;color:#6B7280">${fmtDate(e.date)}${e.start_time ? ' · ' + fmtTime(e.start_time) : ''}</div></div>
+        <span class="badge badge-blue">${e.type}</span>
+      </div>`).join('') || '<div class="empty">No upcoming events</div>';
+
+    const recent = [...giving].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
+    document.getElementById('dash-giving').innerHTML = recent.map(g => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
+        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${g.member_name || 'Anonymous'}</div>
+        <div style="font-size:12px;color:#6B7280">${fmtDate(g.date)} · ${g.type}</div></div>
+        <span class="text-green">${fmt$(g.amount)}</span>
+      </div>`).join('') || '<div class="empty">No giving records</div>';
+
+    const todayEvents = events.filter(e => e.date === todayStr);
+    document.getElementById('dash-rooms').innerHTML = rooms.slice(0, 5).map(r => {
+      const booked = todayEvents.find(e => e.room_id === r.id);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
+        <div style="font-weight:600;font-size:13px">${r.name}</div>
+        ${booked ? `<span class="badge badge-gold">In Use</span>` : `<span class="badge badge-green">Available</span>`}
+      </div>`;
+    }).join('');
+
+    const newest = [...members].sort((a,b) => (b.since||'').localeCompare(a.since||'')).slice(0, 5);
+    document.getElementById('dash-members').innerHTML = newest.map(m => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
+        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${m.first} ${m.last}</div>
+        <div style="font-size:12px;color:#6B7280">${m.ministry || 'No ministry yet'}</div></div>
+        <span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span>
+      </div>`).join('');
+
+  } catch (e) {
+    document.getElementById('dash-stats').innerHTML = `<div class="stat-card red"><div class="label">Error</div><div class="value" style="font-size:14px">Cannot reach API</div><div class="sub">${e.message}</div></div>`;
+  }
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+let calYear = today.getFullYear(), calMonth = today.getMonth();
+let calEvents = [];
+
+async function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+
+  // Fetch events for this month
+  const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const to   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${new Date(calYear,calMonth+1,0).getDate()}`;
+  try {
+    calEvents = await api.get(`/api/events?from_date=${from}&to_date=${to}`);
+  } catch { calEvents = []; }
+
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  const days        = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const typeColor   = t => ({ Service:'', Meeting:' gold', 'Volunteer Slot':' green', Event:' green', Class:' gold' }[t] || '');
+
+  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++)
+    html += `<div class="cal-cell other-month"><div class="cal-num">${daysInPrev-firstDay+i+1}</div></div>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds      = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = ds === todayStr;
+    const dayEvs  = calEvents.filter(e => e.date === ds);
+    html += `<div class="cal-cell${isToday?' today':''}">
+      <div class="cal-num">${day}</div>
+      ${dayEvs.slice(0,3).map(e=>`<div class="cal-event${typeColor(e.type)}" title="${e.title}">${e.title}</div>`).join('')}
+      ${dayEvs.length > 3 ? `<div style="font-size:10px;color:#6B7280">+${dayEvs.length-3} more</div>` : ''}
+    </div>`;
+  }
+  const rem = (firstDay + daysInMonth) % 7;
+  if (rem) for (let i = 1; i <= 7 - rem; i++) html += `<div class="cal-cell other-month"><div class="cal-num">${i}</div></div>`;
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function prevMonth() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); }
+function nextMonth() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); }
+
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+async function renderSchedule() {
+  renderCalendar();
+  try {
+    const [events, rooms] = await Promise.all([api.get('/api/events'), api.get('/api/rooms')]);
+    const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date) || (a.start_time||'').localeCompare(b.start_time||''));
+    const typeColor = t => ({ Service:'badge-blue', Meeting:'badge-gold', 'Volunteer Slot':'badge-green', Event:'badge-green', Class:'badge-gold', Other:'badge-gray' }[t] || 'badge-gray');
+
+    document.getElementById('events-tbody').innerHTML = sorted.map(e => `
+      <tr>
+        <td><strong>${e.title}</strong></td>
+        <td>${fmtDate(e.date)}</td>
+        <td>${fmtTime(e.start_time)}${e.end_time ? ' – ' + fmtTime(e.end_time) : ''}</td>
+        <td>${e.room_name || '—'}</td>
+        <td><span class="badge ${typeColor(e.type)}">${e.type}</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Delete</button></td>
+      </tr>`).join('') || '<tr><td colspan="6" class="empty">No events yet</td></tr>';
+
+    // Populate room selector in modal
+    const sel = document.getElementById('ev-room');
+    sel.innerHTML = '<option value="">— No Room —</option>' + rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  } catch (e) {
+    document.getElementById('events-tbody').innerHTML = `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  await api.delete('/api/events/' + id);
+  renderSchedule();
+}
+
+async function saveEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  const date  = document.getElementById('ev-date').value;
+  if (!title || !date) { alert('Title and date are required.'); return; }
+  await api.post('/api/events', {
+    title, date,
+    start_time:      document.getElementById('ev-start').value || null,
+    end_time:        document.getElementById('ev-end').value || null,
+    type:            document.getElementById('ev-type').value,
+    room_id:         document.getElementById('ev-room').value || null,
+    organizer:       document.getElementById('ev-organizer').value,
+    description:     document.getElementById('ev-desc').value,
+    volunteer_slots: parseInt(document.getElementById('ev-slots').value) || 0,
+  });
+  closeModal('event-modal');
+  ['ev-title','ev-date','ev-start','ev-end','ev-organizer','ev-desc','ev-slots'].forEach(i => document.getElementById(i).value = '');
+  renderSchedule();
+}
+
+// ── ROOMS ─────────────────────────────────────────────────────────────────────
+async function renderRooms() {
+  try {
+    const [rooms, events] = await Promise.all([api.get('/api/rooms'), api.get('/api/events')]);
+    const todayEvs = events.filter(e => e.date === todayStr);
+
+    document.getElementById('rooms-grid').innerHTML = rooms.map(r => {
+      const inUse = todayEvs.filter(e => e.room_id === r.id);
+      const next  = events.filter(e => e.room_id === r.id && e.date > todayStr).sort((a,b) => a.date.localeCompare(b.date))[0];
+      return `<div class="room-card ${r.color||'blue'}">
+        <h4>${r.name}</h4>
+        <div class="cap">Capacity: ${r.capacity} · ${r.location||''}</div>
+        <div style="font-size:12px;color:#6B7280;margin-bottom:10px">${r.features||''}</div>
+        ${inUse.length ? `<span class="badge badge-gold">In Use Today (${inUse.length})</span>` : `<span class="badge badge-green">Available Today</span>`}
+        ${next && next.date > todayStr ? `<div style="font-size:11px;color:#9CA3AF;margin-top:6px">Next: ${next.title} · ${fmtDate(next.date)}</div>` : ''}
+      </div>`;
+    }).join('') || '<div class="empty">No rooms added yet</div>';
+
+    const booked = events.filter(e => e.room_id).sort((a,b) => a.date.localeCompare(b.date));
+    document.getElementById('bookings-tbody').innerHTML = booked.map(e => {
+      const isPast = e.date < todayStr;
+      return `<tr>
+        <td>${e.room_name || '—'}</td><td><strong>${e.title}</strong></td>
+        <td>${fmtDate(e.date)}</td>
+        <td>${fmtTime(e.start_time)}${e.end_time ? ' – '+fmtTime(e.end_time) : ''}</td>
+        <td>${e.organizer||'—'}</td>
+        <td><span class="badge ${isPast?'badge-gray':'badge-green'}">${isPast?'Past':'Confirmed'}</span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="empty">No bookings</td></tr>';
+  } catch (e) {
+    document.getElementById('rooms-grid').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function saveRoom() {
+  const name = document.getElementById('rm-name').value.trim();
+  if (!name) { alert('Room name is required.'); return; }
+  const colors = ['blue','green','gold','red'];
+  await api.post('/api/rooms', {
+    name, capacity: parseInt(document.getElementById('rm-cap').value) || 0,
+    location: document.getElementById('rm-loc').value,
+    features: document.getElementById('rm-features').value,
+    notes:    document.getElementById('rm-notes').value,
+    color:    colors[Math.floor(Math.random() * colors.length)],
+  });
+  closeModal('room-modal');
+  ['rm-name','rm-cap','rm-loc','rm-features','rm-notes'].forEach(i => document.getElementById(i).value = '');
+  renderRooms();
+}
+
+// ── MEMBERS ───────────────────────────────────────────────────────────────────
+let memberSearch = '', memberStatus = '';
+
+async function renderMembers() {
+  try {
+    let url = '/api/members';
+    const params = [];
+    if (memberStatus) params.push('status=' + encodeURIComponent(memberStatus));
+    if (memberSearch) params.push('search=' + encodeURIComponent(memberSearch));
+    if (params.length) url += '?' + params.join('&');
+    const members = await api.get(url);
+
+    document.getElementById('members-tbody').innerHTML = members.map(m => {
+      const familyLinks = (m.family||[]).map(f =>
+        `<span class="badge badge-blue" style="margin:1px">${f.relation}: ${f.related_name}</span>`
+      ).join(' ');
+      return `<tr>
+        <td><strong>${m.first} ${m.last}</strong>${m.ministry ? `<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>` : ''}</td>
+        <td style="color:#6B7280;font-size:12px">${m.pronouns||'—'}</td>
+        <td><a href="mailto:${m.email}" style="color:#1E3A5F">${m.email||'—'}</a></td>
+        <td>${m.phone||'—'}</td>
+        <td><span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span></td>
+        <td>${familyLinks || '<span style="color:#9CA3AF;font-size:12px">—</span>'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">Remove</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty">No members found</td></tr>';
+  } catch (e) {
+    document.getElementById('members-tbody').innerHTML = `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function filterMembers(v)      { memberSearch = v; renderMembers(); }
+function filterMemberStatus(v) { memberStatus = v; renderMembers(); }
+
+async function deleteMember(id) {
+  if (!confirm('Remove this member?')) return;
+  await api.delete('/api/members/' + id);
+  renderMembers();
+}
+
+async function saveMember() {
+  const first = document.getElementById('mb-first').value.trim();
+  const last  = document.getElementById('mb-last').value.trim();
+  if (!first || !last) { alert('First and last name are required.'); return; }
+  await api.post('/api/members', {
+    first, last,
+    email:       document.getElementById('mb-email').value || null,
+    phone:       document.getElementById('mb-phone').value || null,
+    address:     document.getElementById('mb-address').value || null,
+    status:      document.getElementById('mb-status').value,
+    since:       document.getElementById('mb-since').value || null,
+    ministry:    document.getElementById('mb-ministry').value || null,
+    family_size: parseInt(document.getElementById('mb-family').value) || 1,
+    pronouns:    document.getElementById('mb-pronouns').value || null,
+  });
+  closeModal('member-modal');
+  ['mb-first','mb-last','mb-email','mb-phone','mb-address','mb-since','mb-ministry','mb-family'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('mb-pronouns').value = '';
+  renderMembers();
+}
+
+// ── GIVING ────────────────────────────────────────────────────────────────────
+let givingYear = String(today.getFullYear());
+
+async function renderGiving() {
+  try {
+    const [giving, pledges, members] = await Promise.all([
+      api.get('/api/giving?year=' + givingYear),
+      api.get('/api/pledges'),
+      api.get('/api/members'),
+    ]);
+
+    // Year selector
+    const allGiving = await api.get('/api/giving');
+    const years = [...new Set(allGiving.map(g => g.date.slice(0,4)))].sort().reverse();
+    document.getElementById('giving-year-filter').innerHTML = years.map(y => `<option value="${y}"${y===givingYear?' selected':''}>${y}</option>`).join('');
+
+    // Hero stats
+    const total    = giving.reduce((s,g) => s + Number(g.amount), 0);
+    const pledTot  = pledges.reduce((s,p) => s + Number(p.pledged_amount), 0);
+    const paidTot  = pledges.reduce((s,p) => s + Number(p.paid_amount), 0);
+    const thisMo   = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+    const moTotal  = allGiving.filter(g => g.date.startsWith(thisMo)).reduce((s,g) => s + Number(g.amount), 0);
+
+    document.getElementById('giving-hero').innerHTML = `
+      <div class="gh-item"><div class="lbl">${givingYear} Total</div><div class="val">${fmt$(total)}</div></div>
+      <div class="gh-item"><div class="lbl">This Month</div><div class="val">${fmt$(moTotal)}</div></div>
+      <div class="gh-item"><div class="lbl">Total Pledged</div><div class="val">${fmt$(pledTot)}</div><div class="pct">${fmt$(paidTot)} collected</div></div>
+      <div class="gh-item"><div class="lbl">Pledge Progress</div><div class="val">${pledTot > 0 ? Math.round(paidTot/pledTot*100) : 0}%</div><div class="pct">Fulfillment rate</div></div>
+    `;
+
+    const typeColor = t => ({ Tithe:'badge-blue', Offering:'badge-green', 'Building Fund':'badge-gold', Missions:'badge-gold', 'Special Gift':'badge-red' }[t] || 'badge-gray');
+    document.getElementById('giving-tbody').innerHTML = giving.map(g => `
+      <tr>
+        <td>${fmtDate(g.date)}</td>
+        <td>${g.member_name || 'Anonymous'}</td>
+        <td><strong class="text-green">${fmt$(g.amount)}</strong></td>
+        <td><span class="badge ${typeColor(g.type)}">${g.type}</span></td>
+        <td>${g.fund||'General Fund'}</td>
+        <td style="color:#9CA3AF;font-size:12px">${g.notes||'—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteGiving('${g.id}')">✕</button></td>
+      </tr>`).join('') || `<tr><td colspan="7" class="empty">No giving records for ${givingYear}</td></tr>`;
+
+    document.getElementById('pledges-tbody').innerHTML = pledges.map(p => {
+      const bal = Number(p.pledged_amount) - Number(p.paid_amount);
+      const pct = Math.round(Number(p.paid_amount) / Number(p.pledged_amount) * 100);
+      return `<tr>
+        <td>${p.member_name || 'Anonymous'}</td>
+        <td>${p.campaign}</td>
+        <td>${fmt$(p.pledged_amount)}</td>
+        <td>${fmt$(p.paid_amount)}</td>
+        <td class="${bal > 0 ? 'text-gold' : 'text-green'}">${fmt$(bal)}</td>
+        <td>${p.end_date ? fmtDate(p.end_date) : '—'}</td>
+        <td><span class="badge ${pct>=100?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}% funded</span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty">No pledges recorded</td></tr>';
+
+    // Populate member dropdowns in modals
+    const mOpts = '<option value="">— Anonymous —</option>' + members.filter(m => m.status !== 'Inactive').map(m => `<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+    document.getElementById('gv-member').innerHTML = mOpts;
+    document.getElementById('pl-member').innerHTML = mOpts;
+  } catch (e) {
+    document.getElementById('giving-hero').innerHTML = `<div style="color:#fff">Error: ${e.message}</div>`;
+  }
+}
+
+function filterGivingYear(y) { givingYear = y; renderGiving(); }
+
+function switchGivingTab(tab, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('giving-tithe-view').style.display  = tab === 'tithe'   ? '' : 'none';
+  document.getElementById('giving-pledges-view').style.display = tab === 'pledges' ? '' : 'none';
+}
+
+async function deleteGiving(id) {
+  if (!confirm('Delete this giving record?')) return;
+  await api.delete('/api/giving/' + id);
+  renderGiving();
+}
+
+async function saveGiving() {
+  const amount = parseFloat(document.getElementById('gv-amount').value);
+  const date   = document.getElementById('gv-date').value;
+  if (!amount || !date) { alert('Amount and date are required.'); return; }
+  const type = document.getElementById('gv-type').value;
+  await api.post('/api/giving', {
+    member_id: document.getElementById('gv-member').value || null,
+    date, amount, type, fund: type,
+    notes: document.getElementById('gv-notes').value || null,
+  });
+  closeModal('giving-modal');
+  ['gv-amount','gv-date','gv-notes'].forEach(i => document.getElementById(i).value = '');
+  renderGiving();
+}
+
+async function savePledge() {
+  const amount = parseFloat(document.getElementById('pl-amount').value);
+  if (!amount) { alert('Pledged amount is required.'); return; }
+  await api.post('/api/pledges', {
+    member_id:      document.getElementById('pl-member').value || null,
+    campaign:       document.getElementById('pl-campaign').value || 'General Pledge',
+    pledged_amount: amount,
+    paid_amount:    0,
+    pledge_date:    document.getElementById('pl-date').value || todayStr,
+    end_date:       document.getElementById('pl-end').value || null,
+    frequency:      document.getElementById('pl-freq').value,
+  });
+  closeModal('pledge-modal');
+  ['pl-campaign','pl-amount','pl-date','pl-end'].forEach(i => document.getElementById(i).value = '');
+  renderGiving();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.getElementById(id).querySelectorAll('input[type=date]').forEach(i => { if (!i.value) i.value = todayStr; });
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(b => b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); }));
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+checkApiStatus();
+renderDashboard();
+</script>
+</body>
+</html>
