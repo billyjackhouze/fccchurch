@@ -414,3 +414,31 @@ class VolunteerShiftOut(VolunteerShiftBase):
     created_at:   datetime
     class Config:
         from_attributes = True
+
+
+# ── Sermons ───────────────────────────────────────────────────────────────────
+
+class SermonBase(BaseModel):
+    title:        str
+    date:         date
+    series_name:  Optional[str] = None
+    scripture:    Optional[str] = None
+    preacher_id:  Optional[str] = None
+    plan_id:      Optional[str] = None
+    sermon_notes: Optional[str] = None
+    tags:         Optional[str] = None
+
+class SermonCreate(SermonBase):
+    pass
+
+class SermonUpdate(SermonBase):
+    title: Optional[str] = None
+    date:  Optional[date] = None
+
+class SermonOut(SermonBase):
+    id:            str
+    preacher_name: Optional[str] = None
+    plan_title:    Optional[str] = None
+    created_at:    datetime
+    class Config:
+        from_attributes = True

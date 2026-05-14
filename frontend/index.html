@@ -302,6 +302,25 @@ tr:last-child td{border-bottom:none}
 .group-card .gc-sub{font-size:12px;color:#6B7280;margin-bottom:10px}
 .group-card .gc-count{font-size:22px;font-weight:800;color:#1E3A5F}
 .group-card .gc-lbl{font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px}
+/* ── Sermon / Bible ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card-grid .card{margin-bottom:0;padding:18px 20px}
+.btn-secondary{background:#F3F4F6;color:#374151;border:1.5px solid #D1D5DB}.btn-secondary:hover{background:#E5E7EB}
+.admin-only{display:none}
+body.is-admin .admin-only{display:inline-flex}
+/* ── Toast ── */
+#toast{position:fixed;bottom:28px;right:28px;background:#1E3A5F;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+/* ── Page header h1 ── */
+.page-header h1{font-size:20px;font-weight:800;color:#1E3A5F}
+.page-header .subtitle{font-size:13px;color:#6B7280;margin-top:2px}
+/* ── Form row (two columns) ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0}
+.modal-box{background:#fff;border-radius:12px;padding:26px;width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #EBF0F8}
+.modal-header h2{font-size:17px;font-weight:800;color:#1E3A5F;margin:0;border:none;padding:0}
+.modal-close{background:none;border:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1}
+.modal-close:hover{color:#374151}
 </style>
 </head>
 <body>
@@ -342,6 +361,7 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-section">Worship</div>
     <div class="nav-item" onclick="showPage('services')" id="nav-services"><span class="icon">🎶</span> Service Planning</div>
+    <div class="nav-item" onclick="showPage('sermons')" id="nav-sermons"><span class="icon">📖</span> Sermons &amp; Bible</div>
     <div class="nav-section">Ministry</div>
     <div class="nav-item" onclick="showPage('schedule')" id="nav-schedule"><span class="icon">📅</span> Schedule</div>
     <div class="nav-item" onclick="showPage('rooms')" id="nav-rooms"><span class="icon">🏛️</span> Rooms &amp; Facilities</div>
@@ -630,6 +650,84 @@ tr:last-child td{border-bottom:none}
         <div class="card-body" id="hierarchy-tree"><div class="spinner"></div></div>
       </div>
     </div>
+
+        <!-- ═══════════════════════════════ SERMONS & BIBLE PAGE ═══════ -->
+        <div id="page-sermons" class="page">
+          <div class="page-header">
+            <div>
+              <h1>📖 Sermons &amp; Bible</h1>
+              <p class="subtitle">Sermon archive and verse lookup</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-secondary" onclick="showPage('bible-lookup')">🔍 Bible Lookup</button>
+              <button class="btn btn-primary admin-only" onclick="openSermonModal()">+ Add Sermon</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <input id="sermon-search" type="text" placeholder="Search title, scripture, tags…" style="flex:1;min-width:200px" oninput="filterSermons()">
+            <select id="sermon-series-filter" onchange="filterSermons()" style="min-width:160px">
+              <option value="">All Series</option>
+            </select>
+            <select id="sermon-preacher-filter" onchange="filterSermons()" style="min-width:160px">
+              <option value="">All Preachers</option>
+            </select>
+          </div>
+          <div id="sermon-grid" class="card-grid"></div>
+        </div>
+
+        <!-- ═══════════════════════════════ SERMON DETAIL PAGE ═══════════ -->
+        <div id="page-sermon-detail" class="page">
+          <div class="page-header">
+            <button class="btn btn-secondary" onclick="showPage('sermons')">← Back</button>
+            <div style="display:flex;gap:8px" class="admin-only">
+              <button class="btn btn-secondary" onclick="editCurrentSermon()">✏️ Edit</button>
+              <button class="btn btn-danger" onclick="deleteCurrentSermon()">🗑 Delete</button>
+            </div>
+          </div>
+          <div id="sermon-detail-body"></div>
+        </div>
+
+        <!-- ═══════════════════════════════ BIBLE LOOKUP PAGE ══════════════ -->
+        <div id="page-bible-lookup" class="page">
+          <div class="page-header">
+            <div>
+              <h1>📖 Bible Verse Lookup</h1>
+              <p class="subtitle">Look up any passage across multiple translations</p>
+            </div>
+            <button class="btn btn-secondary" onclick="showPage('sermons')">← Back</button>
+          </div>
+          <div class="card" style="max-width:700px;margin:0 auto">
+            <div class="card-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <input id="bible-ref-input" type="text" placeholder="e.g. John 3:16  or  Psalm 23:1-6"
+                     style="flex:1;min-width:200px"
+                     onkeydown="if(event.key==='Enter')lookupVerse()">
+              <select id="bible-translation" style="min-width:120px;padding:8px 11px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px">
+                <option value="kjv">KJV</option>
+                <option value="web">WEB</option>
+                <option value="darby">Darby</option>
+                <option value="bbe">BBE</option>
+                <option value="oeb-us">OEB</option>
+              </select>
+              <button class="btn btn-primary" onclick="lookupVerse()">🔍 Look Up</button>
+            </div>
+            <div id="bible-loading" style="display:none;text-align:center;padding:24px;color:#6b7280">Loading…</div>
+            <div id="bible-error" style="display:none;color:#ef4444;padding:12px;background:#fef2f2;border-radius:8px;margin-bottom:12px"></div>
+            <div id="bible-result" style="display:none">
+              <div id="bible-ref-display" style="font-size:0.85rem;color:#6b7280;margin-bottom:8px"></div>
+              <blockquote id="bible-verse-text" style="border-left:4px solid #6366f1;padding:12px 16px;margin:0 0 12px;background:#f9fafb;border-radius:0 8px 8px 0;font-size:1.05rem;line-height:1.7;white-space:pre-wrap;"></blockquote>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary" onclick="copyVerse()" style="font-size:0.85rem">📋 Copy</button>
+                <button class="btn btn-secondary" onclick="addVerseToSermon()" style="font-size:0.85rem">+ New Sermon from this verse</button>
+              </div>
+            </div>
+            <div id="bible-history-section" style="margin-top:24px;display:none">
+              <div style="font-weight:600;margin-bottom:8px;color:#374151">Recent Lookups</div>
+              <div id="bible-history-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+            </div>
+            </div>
+          </div>
+        </div>
 
     <!-- VOLUNTEER SHIFTS -->
     <div class="page" id="page-volunteer">
@@ -1061,6 +1159,64 @@ tr:last-child td{border-bottom:none}
   </div>
 </div></div>
 
+<!-- Sermon Modal -->
+<div class="modal-backdrop" id="sermon-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="sermon-modal-title">New Sermon</h2>
+      <button class="modal-close" onclick="closeModal('sermon-modal')">✕</button>
+    </div>
+    <form onsubmit="saveSermon(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Title *</label>
+          <input id="sermon-title" required>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input id="sermon-date" type="date" required>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>Series Name</label>
+          <input id="sermon-series" placeholder="e.g. Walking in Faith">
+        </div>
+        <div class="form-group">
+          <label>Scripture Reference</label>
+          <input id="sermon-scripture" placeholder="e.g. John 3:16-17">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>Preacher</label>
+          <select id="sermon-preacher">
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Linked Service Plan</label>
+          <select id="sermon-plan">
+            <option value="">— None —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label>Tags (comma-separated)</label>
+        <input id="sermon-tags" placeholder="e.g. faith, grace, community">
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label>Sermon Notes / Outline</label>
+        <textarea id="sermon-notes" rows="8" placeholder="Main points, scripture references, illustrations…" style="font-family:monospace;font-size:0.9rem;min-height:160px"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('sermon-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="sermon-save-btn">Save Sermon</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Forgot Password Modal -->
 <div class="modal-backdrop" id="forgot-modal"><div class="modal" style="width:420px">
   <h2>🔑 Reset Password</h2>
@@ -1073,6 +1229,8 @@ tr:last-child td{border-bottom:none}
     <button class="btn btn-primary" onclick="submitForgotPassword()">Send Reset Link</button>
   </div>
 </div></div>
+
+<div id="toast"></div>
 
 <script>
 // ── AUTH STATE ────────────────────────────────────────────────────────────────
@@ -1182,6 +1340,7 @@ function hideLoginScreen() {
   if (currentUser?.role === 'admin') {
     document.getElementById('nav-users').style.display = '';
     document.getElementById('nav-manage-shifts').style.display = '';
+    document.body.classList.add('is-admin');
   }
   document.getElementById('topbar-user').innerHTML =
     `<span>👤 ${currentUser?.email || ''}</span>`;
@@ -1240,7 +1399,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'bible-lookup':'Bible Verse Lookup' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1266,6 +1425,8 @@ function renderPage(id) {
   else if (id==='myshifts')  renderMyShifts();
   else if (id==='manage-shifts') renderManageShifts();
   else if (id==='users')     renderUsers();
+  else if (id==='sermons')   renderSermons();
+  else if (id==='bible-lookup') renderBibleHistory();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -3117,6 +3278,273 @@ async function deleteUser(id) {
   if (!confirm('Delete this user account?')) return;
   await api.delete('/api/users/'+id);
   renderUsers();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════ SERMON ARCHIVE ══════════════════════════════
+let allSermons = [];
+let currentSermonId = null;
+let _editingSermonId = null;
+
+async function renderSermons() {
+  try {
+    allSermons = await api.get('/api/sermons');
+    populateSermonFilters();
+    renderSermonGrid(allSermons);
+  } catch(e) {
+    document.getElementById('sermon-grid').innerHTML = `<p style="color:red">Failed to load sermons: ${e.message}</p>`;
+  }
+}
+
+function populateSermonFilters() {
+  const seriesSet = new Set(allSermons.map(s => s.series_name).filter(Boolean));
+  const preacherMap = {};
+  allSermons.forEach(s => { if (s.preacher_id && s.preacher_name) preacherMap[s.preacher_id] = s.preacher_name; });
+  const seriesSel = document.getElementById('sermon-series-filter');
+  if (seriesSel) {
+    seriesSel.innerHTML = '<option value="">All Series</option>' +
+      [...seriesSet].sort().map(sn => `<option value="${sn}">${sn}</option>`).join('');
+  }
+  const preacherSel = document.getElementById('sermon-preacher-filter');
+  if (preacherSel) {
+    preacherSel.innerHTML = '<option value="">All Preachers</option>' +
+      Object.entries(preacherMap).map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
+  }
+}
+
+function filterSermons() {
+  const q = (document.getElementById('sermon-search').value || '').toLowerCase();
+  const series = document.getElementById('sermon-series-filter').value;
+  const preacherId = document.getElementById('sermon-preacher-filter').value;
+  let filtered = allSermons;
+  if (q) filtered = filtered.filter(s =>
+    (s.title||'').toLowerCase().includes(q) ||
+    (s.scripture||'').toLowerCase().includes(q) ||
+    (s.series_name||'').toLowerCase().includes(q) ||
+    (s.tags||'').toLowerCase().includes(q)
+  );
+  if (series) filtered = filtered.filter(s => s.series_name === series);
+  if (preacherId) filtered = filtered.filter(s => s.preacher_id === preacherId);
+  renderSermonGrid(filtered);
+}
+
+function renderSermonGrid(sermons) {
+  const g = document.getElementById('sermon-grid');
+  if (!g) return;
+  if (!sermons.length) { g.innerHTML = '<p style="color:#6b7280;grid-column:1/-1">No sermons found. Add your first sermon!</p>'; return; }
+  g.innerHTML = sermons.map(s => `
+    <div class="card" style="cursor:pointer;transition:box-shadow 0.15s" onclick="showSermonDetail('${s.id}')"
+         onmouseenter="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'" onmouseleave="this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-weight:700;font-size:1.05rem">${s.title}</div>
+        <div style="font-size:0.8rem;color:#6b7280;white-space:nowrap;margin-left:8px">${s.date}</div>
+      </div>
+      ${s.series_name ? `<div style="font-size:0.82rem;color:#6366f1;margin-bottom:4px">📚 ${s.series_name}</div>` : ''}
+      ${s.scripture ? `<div style="font-size:0.85rem;color:#374151;margin-bottom:4px">📖 ${s.scripture}</div>` : ''}
+      ${s.preacher_name ? `<div style="font-size:0.82rem;color:#6b7280">🎤 ${s.preacher_name}</div>` : ''}
+      ${s.tags ? `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">${s.tags.split(',').map(t=>`<span style="background:#e0e7ff;color:#4338ca;font-size:0.75rem;padding:2px 8px;border-radius:9999px">${t.trim()}</span>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function showSermonDetail(id) {
+  currentSermonId = id;
+  showPage('sermon-detail');
+  const body = document.getElementById('sermon-detail-body');
+  body.innerHTML = '<p style="color:#6b7280;padding:32px">Loading…</p>';
+  try {
+    const s = await api.get(`/api/sermons/${id}`);
+    body.innerHTML = `
+      <div style="max-width:800px">
+        <div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap">
+          ${s.series_name ? `<span style="background:#e0e7ff;color:#4338ca;padding:3px 12px;border-radius:9999px;font-size:0.82rem">📚 ${s.series_name}</span>` : ''}
+          ${s.tags ? s.tags.split(',').map(t=>`<span style="background:#f3f4f6;color:#374151;padding:3px 10px;border-radius:9999px;font-size:0.78rem">${t.trim()}</span>`).join('') : ''}
+        </div>
+        <h1 style="font-size:1.8rem;font-weight:700;margin:0 0 4px">${s.title}</h1>
+        <div style="color:#6b7280;font-size:0.9rem;margin-bottom:24px">
+          ${s.date}${s.preacher_name ? ' · ' + s.preacher_name : ''}
+          ${s.plan_title ? ` · <a href="#" onclick="showServiceDetail('${s.plan_id}');return false" style="color:#6366f1">🗓 ${s.plan_title}</a>` : ''}
+        </div>
+        ${s.scripture ? `
+        <div class="card" style="background:#f9fafb;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.5rem">📖</span>
+          <div>
+            <div style="font-weight:600">${s.scripture}</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:6px"
+                    onclick="quickBibleLookup('${s.scripture.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">Look up verse</button>
+          </div>
+        </div>` : ''}
+        ${s.sermon_notes ? `
+        <div class="card">
+          <div class="card-body">
+          <div style="font-weight:600;margin-bottom:12px;font-size:1rem">📝 Sermon Notes</div>
+          <pre style="white-space:pre-wrap;font-family:inherit;font-size:0.92rem;line-height:1.7;margin:0">${s.sermon_notes}</pre>
+          </div>
+        </div>` : '<div class="card" style="color:#9ca3af;text-align:center;padding:32px">No sermon notes added yet.</div>'}
+      </div>
+    `;
+  } catch(e) {
+    body.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
+  }
+}
+
+async function openSermonModal(prefill) {
+  _editingSermonId = prefill && prefill.id ? prefill.id : null;
+  document.getElementById('sermon-modal-title').textContent = _editingSermonId ? 'Edit Sermon' : 'New Sermon';
+  document.getElementById('sermon-save-btn').textContent = _editingSermonId ? 'Update' : 'Save Sermon';
+  ['sermon-title','sermon-series','sermon-scripture','sermon-tags','sermon-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sermon-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('sermon-modal').classList.add('open');
+  try {
+    const [members, plans] = await Promise.all([api.get('/api/members'), api.get('/api/services')]);
+    document.getElementById('sermon-preacher').innerHTML = '<option value="">— Select —</option>' +
+      members.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+    document.getElementById('sermon-plan').innerHTML = '<option value="">— None —</option>' +
+      plans.map(p=>`<option value="${p.id}">${p.date} — ${p.title}</option>`).join('');
+  } catch(e) {}
+  if (prefill) {
+    if (prefill.title)        document.getElementById('sermon-title').value     = prefill.title;
+    if (prefill.date)         document.getElementById('sermon-date').value      = prefill.date;
+    if (prefill.series_name)  document.getElementById('sermon-series').value    = prefill.series_name;
+    if (prefill.scripture)    document.getElementById('sermon-scripture').value = prefill.scripture;
+    if (prefill.preacher_id)  document.getElementById('sermon-preacher').value  = prefill.preacher_id;
+    if (prefill.plan_id)      document.getElementById('sermon-plan').value      = prefill.plan_id;
+    if (prefill.tags)         document.getElementById('sermon-tags').value      = prefill.tags;
+    if (prefill.sermon_notes) document.getElementById('sermon-notes').value     = prefill.sermon_notes;
+  }
+}
+
+async function saveSermon(e) {
+  e.preventDefault();
+  const btn = document.getElementById('sermon-save-btn');
+  btn.disabled = true;
+  const data = {
+    title:        document.getElementById('sermon-title').value.trim(),
+    date:         document.getElementById('sermon-date').value,
+    series_name:  document.getElementById('sermon-series').value.trim() || null,
+    scripture:    document.getElementById('sermon-scripture').value.trim() || null,
+    preacher_id:  document.getElementById('sermon-preacher').value || null,
+    plan_id:      document.getElementById('sermon-plan').value || null,
+    tags:         document.getElementById('sermon-tags').value.trim() || null,
+    sermon_notes: document.getElementById('sermon-notes').value.trim() || null,
+  };
+  try {
+    if (_editingSermonId) {
+      await api.put(`/api/sermons/${_editingSermonId}`, data);
+      showToast('Sermon updated');
+    } else {
+      await api.post('/api/sermons', data);
+      showToast('Sermon saved');
+    }
+    closeModal('sermon-modal');
+    renderSermons();
+    if (_editingSermonId) showSermonDetail(_editingSermonId);
+  } catch(err) {
+    alert('Save failed: ' + err.message);
+  } finally { btn.disabled = false; }
+}
+
+async function editCurrentSermon() {
+  if (!currentSermonId) return;
+  try {
+    const s = await api.get(`/api/sermons/${currentSermonId}`);
+    openSermonModal(s);
+  } catch(e) { alert(e.message); }
+}
+
+async function deleteCurrentSermon() {
+  if (!currentSermonId) return;
+  if (!confirm('Delete this sermon? This cannot be undone.')) return;
+  try {
+    await api.delete(`/api/sermons/${currentSermonId}`);
+    showToast('Sermon deleted');
+    showPage('sermons');
+    renderSermons();
+  } catch(e) { alert(e.message); }
+}
+
+// ══════════════════════════════ BIBLE LOOKUP ═════════════════════════════════
+let bibleHistory = [];
+let lastVerseText = '';
+let lastVerseRef = '';
+
+function loadBibleHistory() {
+  try { bibleHistory = JSON.parse(localStorage.getItem('bibleHistory') || '[]'); } catch(e) { bibleHistory = []; }
+}
+
+async function lookupVerse() {
+  const ref = document.getElementById('bible-ref-input').value.trim();
+  const translation = document.getElementById('bible-translation').value;
+  if (!ref) return;
+  document.getElementById('bible-result').style.display = 'none';
+  document.getElementById('bible-error').style.display = 'none';
+  document.getElementById('bible-loading').style.display = 'block';
+  try {
+    const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${translation}`;
+    const resp = await fetch(url);
+    const json = await resp.json();
+    document.getElementById('bible-loading').style.display = 'none';
+    if (json.error) {
+      document.getElementById('bible-error').style.display = 'block';
+      document.getElementById('bible-error').textContent = '⚠️ ' + json.error;
+      return;
+    }
+    lastVerseText = json.text || (json.verses || []).map(v => `[${v.verse}] ${v.text}`).join('\n');
+    lastVerseRef = json.reference || ref;
+    document.getElementById('bible-ref-display').textContent = `${lastVerseRef}  (${translation.toUpperCase()})`;
+    document.getElementById('bible-verse-text').textContent = lastVerseText.trim();
+    document.getElementById('bible-result').style.display = 'block';
+    const entry = { ref: lastVerseRef, translation };
+    bibleHistory = [entry, ...bibleHistory.filter(h => !(h.ref === entry.ref && h.translation === entry.translation))].slice(0, 10);
+    try { localStorage.setItem('bibleHistory', JSON.stringify(bibleHistory)); } catch(e) {}
+    renderBibleHistory();
+  } catch(e) {
+    document.getElementById('bible-loading').style.display = 'none';
+    document.getElementById('bible-error').style.display = 'block';
+    document.getElementById('bible-error').textContent = '⚠️ Network error — check your connection.';
+  }
+}
+
+function renderBibleHistory() {
+  const sect = document.getElementById('bible-history-section');
+  const list = document.getElementById('bible-history-list');
+  if (!sect || !list) return;
+  loadBibleHistory();
+  if (!bibleHistory.length) return;
+  sect.style.display = 'block';
+  list.innerHTML = bibleHistory.map(h =>
+    `<button class="btn btn-ghost btn-sm"
+      onclick="document.getElementById('bible-ref-input').value='${h.ref.replace(/'/g,"\\'")}';document.getElementById('bible-translation').value='${h.translation}';lookupVerse()">
+      ${h.ref} (${h.translation.toUpperCase()})
+    </button>`
+  ).join('');
+}
+
+function copyVerse() {
+  const text = `"${lastVerseText.trim()}" — ${lastVerseRef}`;
+  navigator.clipboard.writeText(text).then(() => showToast('Verse copied!')).catch(() => showToast('Copy failed'));
+}
+
+function addVerseToSermon() {
+  showPage('sermons');
+  setTimeout(() => openSermonModal({ scripture: lastVerseRef }), 50);
+}
+
+function quickBibleLookup(ref) {
+  showPage('bible-lookup');
+  setTimeout(() => {
+    const inp = document.getElementById('bible-ref-input');
+    if (inp) { inp.value = ref; lookupVerse(); }
+  }, 50);
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────

@@ -283,3 +283,22 @@ class ShiftSignup(Base):
 
     shift  = relationship("VolunteerShift", back_populates="signups")
     member = relationship("Member")
+
+
+class Sermon(Base):
+    __tablename__ = "sermons"
+
+    id           = Column(String, primary_key=True, default=gen_id)
+    title        = Column(String(200), nullable=False)
+    date         = Column(Date, nullable=False)
+    series_name  = Column(String(200))
+    scripture    = Column(String(200))
+    preacher_id  = Column(String, ForeignKey("members.id"), nullable=True)
+    plan_id      = Column(String, ForeignKey("service_plans.id"), nullable=True)
+    sermon_notes = Column(Text)
+    tags         = Column(String(500))
+    created_at   = Column(DateTime, default=datetime.utcnow)
+    updated_at   = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    preacher = relationship("Member", foreign_keys=[preacher_id])
+    plan     = relationship("ServicePlan", foreign_keys=[plan_id])
