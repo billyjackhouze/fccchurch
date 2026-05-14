@@ -161,6 +161,31 @@ def add_family_member(member_id: str, data: schemas.MemberRelationshipCreate,
     )
 
 
+# ── Member Activity (giving + pledges summary) ───────────────────────────────
+
+@router.get("/{member_id}/activity")
+def get_member_activity(member_id: str, db: Session = Depends(get_db)):
+    from datetime import date as dt_date
+    m = db.query(models.Member).filter(models.Member.id == member_id).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Member not found")
+    now_year = dt_date.today().year
+    giving_records = db.query(models.GivingRecord).filter(
+        models.GivingRecord.member_id == member_id
+    ).order_by(models.GivingRecord.date.desc()).all()
+    pledges = db.query(models.Pledge).filter(
+        models.Pledge.member_id == member_id
+    ).all()
+    giving_total      = float(sum(g.amount for g in giving_records))
+    giving_this_year  = float(sum(g.amount for g in giving_records if g.date.year == now_year))
+    return {
+        "giving": [{"id":g.id,"date":str(g.date),"amount":float(g.amount),"type":g.type,"fund":g.fund,"notes":g.notes} for g in giving_records],
+        "pledges": [{"id":p.id,"campaign":p.campaign,"pledged_amount":float(p.pledged_amount),"paid_amount":float(p.paid_amount),"pledge_date":str(p.pledge_date) if p.pledge_date else None,"end_date":str(p.end_date) if p.end_date else None,"frequency":p.frequency,"status":p.status} for p in pledges],
+        "giving_total": giving_total,
+        "giving_this_year": giving_this_year,
+    }
+
+
 @router.delete("/{member_id}/family/{relation_id}", status_code=204)
 def remove_family_member(member_id: str, relation_id: str, db: Session = Depends(get_db)):
     rel = db.query(models.MemberRelationship).filter(

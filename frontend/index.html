@@ -155,6 +155,25 @@ tr:last-child td{border-bottom:none}
 .login-link{color:#1E3A5F;cursor:pointer;text-decoration:underline}
 /* ── User Mgmt ── */
 .user-chip{display:inline-flex;align-items:center;gap:6px;background:#F0F4F8;border-radius:6px;padding:3px 8px;font-size:12px}
+/* ── Member Detail Page ── */
+.detail-back-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.member-hero-card{background:#fff;border-radius:12px;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;gap:24px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
+.member-hero-photo{width:90px;height:90px;border-radius:50%;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#1E3A5F;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer;border:3px solid #E5E7EB}
+.member-hero-photo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.member-hero-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;font-size:18px;color:#fff}
+.member-hero-photo:hover .member-hero-overlay{opacity:1}
+.member-hero-name{font-size:22px;font-weight:800;color:#1E3A5F;margin-bottom:3px}
+.member-hero-sub{font-size:13px;color:#6B7280;margin-bottom:10px}
+.member-detail-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px}
+.mstat{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:3px solid #1E3A5F}
+.mstat.gold{border-left-color:#B8860B}.mstat.green{border-left-color:#1A7A4A}.mstat.purple{border-left-color:#7C3AED}
+.mstat .ms-lbl{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.mstat .ms-val{font-size:20px;font-weight:800;color:#1E3A5F;margin-top:2px}
+.pledge-bar{height:8px;background:#E5E7EB;border-radius:4px;margin-top:6px;overflow:hidden}
+.pledge-bar-fill{height:100%;background:#1A7A4A;border-radius:4px}
+.vol-coming{background:#F8FAFF;border:2px dashed #CBD5E1;border-radius:10px;padding:36px;text-align:center}
+.detail-contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px}
+.detail-tabs{display:flex;gap:2px;background:#F3F4F6;border-radius:8px;padding:3px;margin-bottom:22px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -284,6 +303,27 @@ tr:last-child td{border-bottom:none}
           <tbody id="members-tbody"><tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr></tbody>
         </table></div>
       </div>
+    </div>
+
+    <!-- MEMBER DETAIL PAGE -->
+    <div class="page" id="page-member-detail">
+      <div class="detail-back-bar">
+        <button class="btn btn-ghost btn-sm" onclick="backToMembers()">← Back to Members</button>
+      </div>
+      <div class="member-hero-card" id="detail-hero"></div>
+      <div class="member-detail-stats" id="detail-stats"></div>
+      <div class="detail-tabs" id="detail-tabs">
+        <div class="tab active" onclick="switchDetailTab('overview',this)">Overview</div>
+        <div class="tab" onclick="switchDetailTab('giving',this)">Giving &amp; Pledges</div>
+        <div class="tab" onclick="switchDetailTab('family',this)">Family</div>
+        <div class="tab" onclick="switchDetailTab('ministry',this)">Ministry</div>
+        <div class="tab" onclick="switchDetailTab('notes',this)">Notes</div>
+      </div>
+      <div id="detail-tab-overview"></div>
+      <div id="detail-tab-giving" style="display:none"></div>
+      <div id="detail-tab-family" style="display:none"></div>
+      <div id="detail-tab-ministry" style="display:none"></div>
+      <div id="detail-tab-notes" style="display:none"></div>
     </div>
 
     <!-- GIVING -->
@@ -673,7 +713,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', giving:'Giving & Pledges', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', giving:'Giving & Pledges', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -838,6 +878,166 @@ async function saveRoom(){
   renderRooms();
 }
 
+// ── MEMBER DETAIL PAGE ───────────────────────────────────────────────────────
+let detailMember   = null;
+let detailActivity = null;
+let editingFromDetail = false;
+
+async function showMemberDetail(id) {
+  profileMemberId = id;
+  try {
+    const [member, all, activity] = await Promise.all([
+      api.get('/api/members/' + id),
+      api.get('/api/members'),
+      api.get('/api/members/' + id + '/activity'),
+    ]);
+    allMembersCache = all; detailMember = member; detailActivity = activity;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-member-detail').classList.add('active');
+    document.getElementById('topbar-title').textContent = member.first + ' ' + member.last;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('nav-members').classList.add('active');
+    renderMemberDetail(member, activity);
+    switchDetailTab('overview', document.querySelector('#detail-tabs .tab'));
+  } catch(e) { alert('Error loading member: ' + e.message); }
+}
+
+function backToMembers() { showPage('members'); }
+
+function switchDetailTab(tab, el) {
+  document.querySelectorAll('#detail-tabs .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  ['overview','giving','family','ministry','notes'].forEach(t => {
+    document.getElementById('detail-tab-' + t).style.display = (t === tab) ? '' : 'none';
+  });
+}
+
+function renderMemberDetail(m, activity) {
+  const url = photoUrl(m.photo);
+  const photoInner = url
+    ? `<img src="${url}" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span style="display:none;align-items:center;justify-content:center;width:100%;height:100%">${initials(m)}</span><div class="member-hero-overlay">📷</div>`
+    : `<span style="pointer-events:none">${initials(m)}</span><div class="member-hero-overlay">📷</div>`;
+  document.getElementById('detail-hero').innerHTML = `
+    <div class="member-hero-photo" onclick="document.getElementById('detail-photo-input').click()">${photoInner}</div>
+    <input type="file" id="detail-photo-input" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+    <div style="flex:1">
+      <div class="member-hero-name">${m.first} ${m.last}</div>
+      <div class="member-hero-sub">${[m.pronouns, m.ministry].filter(Boolean).join(' · ') || 'No ministry assigned'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span>
+        ${m.since?`<span class="badge badge-blue">Since ${fmtDate(m.since)}</span>`:''}
+        ${m.family_size>1?`<span class="badge badge-purple">Family of ${m.family_size}</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-self:flex-start">
+      <button class="btn btn-outline btn-sm" onclick="editMemberFromProfile()">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteMemberFromProfile()">🗑 Delete</button>
+    </div>`;
+
+  const gTotal = activity ? activity.giving_total : 0;
+  const gYear  = activity ? activity.giving_this_year : 0;
+  const pledges = activity ? activity.pledges : [];
+  const activePledge = pledges.find(p => p.status === 'Active');
+  const pledgePct = activePledge && Number(activePledge.pledged_amount) > 0
+    ? Math.round(Number(activePledge.paid_amount) / Number(activePledge.pledged_amount) * 100) : 0;
+  document.getElementById('detail-stats').innerHTML = `
+    <div class="mstat gold"><div class="ms-lbl">Giving This Year</div><div class="ms-val">${fmt$(gYear)}</div></div>
+    <div class="mstat green"><div class="ms-lbl">All-Time Giving</div><div class="ms-val">${fmt$(gTotal)}</div></div>
+    <div class="mstat"><div class="ms-lbl">Member Since</div><div class="ms-val">${m.since ? fmtDate(m.since) : '—'}</div></div>
+    <div class="mstat purple"><div class="ms-lbl">Active Pledge</div><div class="ms-val">${activePledge ? fmt$(activePledge.pledged_amount) : '—'}</div>
+      ${activePledge ? `<div class="pledge-bar"><div class="pledge-bar-fill" style="width:${Math.min(pledgePct,100)}%"></div></div>` : ''}</div>`;
+
+  // Overview tab
+  document.getElementById('detail-tab-overview').innerHTML = `
+    <div class="card"><div class="card-header"><h3>Contact Information</h3></div>
+    <div class="card-body"><div class="detail-contact-grid">
+      <div class="profile-detail-item"><div class="lbl">Email</div><div class="val">${m.email?`<a href="mailto:${m.email}" style="color:#1E3A5F">${m.email}</a>`:'—'}</div></div>
+      <div class="profile-detail-item"><div class="lbl">Phone</div><div class="val">${m.phone||'—'}</div></div>
+      <div class="profile-detail-item"><div class="lbl">Address</div><div class="val">${m.address||'—'}</div></div>
+      <div class="profile-detail-item"><div class="lbl">Family Size</div><div class="val">${m.family_size||1}</div></div>
+    </div></div></div>`;
+
+  // Giving tab
+  const givingRows = (activity?.giving || []).map(g =>
+    `<tr><td>${fmtDate(g.date)}</td><td><strong class="text-green">${fmt$(g.amount)}</strong></td>
+     <td><span class="badge badge-blue">${g.type||'—'}</span></td>
+     <td>${g.fund||'General Fund'}</td>
+     <td style="color:#9CA3AF;font-size:12px">${g.notes||'—'}</td></tr>`
+  ).join('') || '<tr><td colspan="5" class="empty">No giving records</td></tr>';
+  const pledgeRows = (activity?.pledges || []).map(p => {
+    const bal = Number(p.pledged_amount) - Number(p.paid_amount);
+    const pct = Number(p.pledged_amount) > 0 ? Math.round(Number(p.paid_amount)/Number(p.pledged_amount)*100) : 0;
+    return `<tr><td>${p.campaign||'—'}</td><td>${fmt$(p.pledged_amount)}</td><td>${fmt$(p.paid_amount)}</td>
+      <td class="${bal>0?'text-gold':'text-green'}">${fmt$(bal)}</td>
+      <td>${p.end_date?fmtDate(p.end_date):'—'}</td>
+      <td><span class="badge ${pct>=100?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}% funded</span></td>
+      <td><span class="badge ${p.status==='Active'?'badge-green':'badge-gray'}">${p.status}</span></td></tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">No pledges recorded</td></tr>';
+  document.getElementById('detail-tab-giving').innerHTML = `
+    <div class="card"><div class="card-header"><h3>Giving History</h3></div>
+    <div class="card-body table-wrap"><table>
+      <thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Fund</th><th>Notes</th></tr></thead>
+      <tbody>${givingRows}</tbody>
+    </table></div></div>
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3>Pledge Commitments</h3></div>
+    <div class="card-body table-wrap"><table>
+      <thead><tr><th>Campaign</th><th>Pledged</th><th>Paid</th><th>Balance</th><th>End Date</th><th>Progress</th><th>Status</th></tr></thead>
+      <tbody>${pledgeRows}</tbody>
+    </table></div></div>`;
+
+  // Family tab
+  const fam = m.family || [];
+  const famContent = fam.length === 0
+    ? '<span style="font-size:13px;color:#9CA3AF">No family connections linked yet.</span>'
+    : fam.map(f => {
+        const fUrl = photoUrl(f.related_photo);
+        const fAvatar = fUrl
+          ? `<img src="${fUrl}" class="family-avatar" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="family-avatar" style="display:none">${(f.related_name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase()}</span>`
+          : `<span class="family-avatar">${(f.related_name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase()}</span>`;
+        return `<span class="family-chip" onclick="showMemberDetail('${f.related_id}')">
+          ${fAvatar}
+          <span><div class="rel-type">${f.relation}</div><div class="rel-name">${f.related_name}</div></span>
+          <span class="rel-del" onclick="event.stopPropagation();removeFamilyLink('${f.id}','${m.id}')" title="Remove">✕</span>
+        </span>`;
+      }).join('');
+  document.getElementById('detail-tab-family').innerHTML = `
+    <div class="card"><div class="card-header"><h3>Family Connections</h3>
+      <button class="btn btn-outline btn-sm" onclick="openAddFamily()">+ Link Family Member</button>
+    </div><div class="card-body">${famContent}</div></div>`;
+
+  // Ministry tab
+  document.getElementById('detail-tab-ministry').innerHTML = `
+    <div class="card"><div class="card-header"><h3>Ministry &amp; Volunteer</h3></div>
+    <div class="card-body">
+      <div class="profile-detail-item" style="margin-bottom:20px">
+        <div class="lbl">Ministry / Role</div>
+        <div class="val" style="font-size:16px;font-weight:700;color:#1E3A5F;margin-top:4px">${m.ministry||'None assigned'}</div>
+      </div>
+      <div class="vol-coming">
+        <div style="font-size:32px;margin-bottom:10px">🙋</div>
+        <div style="font-size:15px;font-weight:700;color:#1E3A5F;margin-bottom:6px">Volunteer Schedule Coming Soon</div>
+        <div style="font-size:13px;color:#6B7280">Volunteer sign-up, shift management, and attendance tracking<br>will be available in a future update.</div>
+      </div>
+    </div></div>`;
+
+  // Notes tab
+  document.getElementById('detail-tab-notes').innerHTML = `
+    <div class="card"><div class="card-header"><h3>Notes</h3>
+      <button class="btn btn-outline btn-sm" id="detail-notes-save-btn" onclick="saveDetailNotes()">Save Notes</button>
+    </div>
+    <div class="card-body">
+      <textarea id="detail-notes-area" style="width:100%;min-height:220px;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:14px;resize:vertical;font-family:inherit" placeholder="Add notes about this member…">${(m.notes||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+    </div></div>`;
+}
+
+async function saveDetailNotes() {
+  const notes = document.getElementById('detail-notes-area').value;
+  await api.put('/api/members/' + profileMemberId, { notes });
+  if (detailMember) detailMember.notes = notes;
+  const btn = document.getElementById('detail-notes-save-btn');
+  if (btn) { btn.textContent = '✓ Saved!'; setTimeout(() => btn.textContent = 'Save Notes', 1800); }
+}
+
 // ── MEMBERS ───────────────────────────────────────────────────────────────────
 let memberSearch='', memberStatus='';
 async function renderMembers() {
@@ -853,13 +1053,13 @@ async function renderMembers() {
       const moreFamily=(m.family||[]).length>3?`<span style="font-size:10px;color:#9CA3AF">+${m.family.length-3}</span>`:'';
       return `<tr>
         <td>${avatarHtml(m,34)}</td>
-        <td><span class="member-name-link" onclick="openProfile('${m.id}')">${m.first} ${m.last}</span>${m.ministry?`<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>`:''}</td>
+        <td><span class="member-name-link" onclick="showMemberDetail('${m.id}')">${m.first} ${m.last}</span>${m.ministry?`<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>`:''}</td>
         <td style="color:#6B7280;font-size:12px">${m.pronouns||'—'}</td>
         <td><a href="mailto:${m.email}" style="color:#1E3A5F">${m.email||'—'}</a></td>
         <td>${m.phone||'—'}</td>
         <td><span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span></td>
         <td>${familyLinks}${moreFamily||'<span style="color:#9CA3AF;font-size:12px">—</span>'}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="openProfile('${m.id}')">View</button></td>
+        <td><button class="btn btn-outline btn-sm" onclick="showMemberDetail('${m.id}')">View</button></td>
       </tr>`;
     }).join('')||'<tr><td colspan="8" class="empty">No members found</td></tr>';
   } catch(e){document.getElementById('members-tbody').innerHTML=`<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;}
@@ -946,15 +1146,21 @@ async function uploadPhoto(input) {
     });
     if (!res.ok) throw new Error('Upload failed');
     const data = await res.json();
-    const photoCircle = document.getElementById('profile-photo-circle');
-    photoCircle.innerHTML = `<img src="${API_BASE}/static/photos/${data.photo}?t=${Date.now()}" style="width:110px;height:110px;border-radius:50%;object-fit:cover">`;
+    const onDetailPage = document.getElementById('page-member-detail').classList.contains('active');
+    if (onDetailPage) {
+      await showMemberDetail(profileMemberId);
+    } else {
+      const photoCircle = document.getElementById('profile-photo-circle');
+      photoCircle.innerHTML = `<img src="${API_BASE}/static/photos/${data.photo}?t=${Date.now()}" style="width:110px;height:110px;border-radius:50%;object-fit:cover">`;
+    }
     renderMembers();
   } catch(e) { alert('Photo upload failed: ' + e.message); }
   input.value = '';
 }
 
 function editMemberFromProfile() {
-  closeModal('profile-modal');
+  editingFromDetail = document.getElementById('page-member-detail').classList.contains('active');
+  if (!editingFromDetail) closeModal('profile-modal');
   api.get('/api/members/'+profileMemberId).then(m => {
     document.getElementById('member-modal-title').textContent = '✏️ Edit Member';
     document.getElementById('mb-id').value       = m.id;
@@ -977,8 +1183,13 @@ function editMemberFromProfile() {
 async function deleteMemberFromProfile() {
   if (!confirm('Permanently delete this member? This cannot be undone.')) return;
   await api.delete('/api/members/'+profileMemberId);
-  closeModal('profile-modal');
-  renderMembers();
+  const onDetailPage = document.getElementById('page-member-detail').classList.contains('active');
+  if (onDetailPage) {
+    showPage('members');
+  } else {
+    closeModal('profile-modal');
+    renderMembers();
+  }
 }
 
 async function saveMember() {
@@ -1002,12 +1213,18 @@ async function saveMember() {
   else    { await api.post('/api/members', data); }
   closeModal('member-modal');
   // Reset form
+  const savedId = id;
   document.getElementById('mb-id').value = '';
   document.getElementById('member-modal-title').textContent = '👤 Add Member';
   document.getElementById('member-save-btn').textContent = 'Add Member';
   ['mb-first','mb-last','mb-email','mb-phone','mb-address','mb-since','mb-ministry','mb-family','mb-notes'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mb-pronouns').value='';
-  renderMembers();
+  if (editingFromDetail && savedId) {
+    editingFromDetail = false;
+    await showMemberDetail(savedId);
+  } else {
+    renderMembers();
+  }
 }
 
 // ── FAMILY ────────────────────────────────────────────────────────────────────
@@ -1032,14 +1249,28 @@ async function addFamilyMember() {
   closeModal('family-modal');
   const m = await api.get('/api/members/'+profileMemberId);
   allMembersCache = await api.get('/api/members');
-  renderProfileModal(m);
+  const onDetailPage = document.getElementById('page-member-detail').classList.contains('active');
+  if (onDetailPage) {
+    detailMember = m;
+    renderMemberDetail(m, detailActivity);
+    switchDetailTab('family', document.querySelectorAll('#detail-tabs .tab')[2]);
+  } else {
+    renderProfileModal(m);
+  }
 }
 
 async function removeFamilyLink(relationId, memberId) {
   if (!confirm('Remove this family connection?')) return;
   await api.delete('/api/members/'+memberId+'/family/'+relationId);
   const m = await api.get('/api/members/'+profileMemberId);
-  renderProfileModal(m);
+  const onDetailPage = document.getElementById('page-member-detail').classList.contains('active');
+  if (onDetailPage) {
+    detailMember = m;
+    renderMemberDetail(m, detailActivity);
+    switchDetailTab('family', document.querySelectorAll('#detail-tabs .tab')[2]);
+  } else {
+    renderProfileModal(m);
+  }
 }
 
 // ── GIVING ────────────────────────────────────────────────────────────────────
