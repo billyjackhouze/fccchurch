@@ -297,6 +297,7 @@ class Sermon(Base):
     plan_id      = Column(String, ForeignKey("service_plans.id"), nullable=True)
     sermon_notes = Column(Text)
     tags         = Column(String(500))
+    outline_json = Column(Text)       # JSON string for structured outline
     created_at   = Column(DateTime, default=datetime.utcnow)
     updated_at   = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

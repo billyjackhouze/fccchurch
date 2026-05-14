@@ -321,6 +321,12 @@ body.is-admin .admin-only{display:inline-flex}
 .modal-header h2{font-size:17px;font-weight:800;color:#1E3A5F;margin:0;border:none;padding:0}
 .modal-close{background:none;border:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1}
 .modal-close:hover{color:#374151}
+        /* Outline builder */
+        .outline-point { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:16px; }
+        .outline-point-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+        .outline-badge { width:32px; height:32px; border-radius:50%; background:#6366f1; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; }
+        .outline-sub-label { font-size:0.78rem; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+        .outline-sub-group { margin-bottom:10px; }
 </style>
 </head>
 <body>
@@ -685,6 +691,54 @@ body.is-admin .admin-only{display:inline-flex}
             </div>
           </div>
           <div id="sermon-detail-body"></div>
+        </div>
+
+        <!-- ═══════════════════════════════ SERMON OUTLINE BUILDER ══════════ -->
+        <div id="page-sermon-outline" class="page">
+          <div class="page-header">
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="btn btn-secondary" onclick="goBackToSermonDetail()">← Back</button>
+              <div>
+                <h1 id="outline-page-title" style="margin:0">Sermon Outline</h1>
+                <p class="subtitle" id="outline-page-meta" style="margin:0"></p>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" onclick="exportSermonPdf()">⬇️ Export PDF</button>
+              <button class="btn btn-primary admin-only" onclick="saveOutline()">💾 Save Outline</button>
+            </div>
+          </div>
+
+          <!-- Introduction -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:8px;color:#6366f1">📋 Introduction</div>
+            <div class="outline-sub-label">Opening / Hook / Context</div>
+            <textarea id="outline-intro" rows="4" placeholder="How will you open the sermon? Set the stage…" style="width:100%;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Main Points -->
+          <div id="outline-points-container">
+            <!-- Populated by JS -->
+          </div>
+
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button class="btn btn-secondary admin-only" onclick="addOutlinePoint()">+ Add Point</button>
+            <button class="btn btn-secondary admin-only" id="remove-point-btn" onclick="removeOutlinePoint()" style="display:none">− Remove Last Point</button>
+          </div>
+
+          <!-- Conclusion -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:8px;color:#6366f1">🎯 Conclusion</div>
+            <div class="outline-sub-label">Wrap-up / Summary</div>
+            <textarea id="outline-conclusion" rows="4" placeholder="Bring it home…" style="width:100%;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Call to Action -->
+          <div class="card">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:8px;color:#6366f1">✋ Call to Action</div>
+            <div class="outline-sub-label">Response / Next steps for the congregation</div>
+            <textarea id="outline-cta" rows="3" placeholder="What do you want people to do or feel?" style="width:100%;box-sizing:border-box"></textarea>
+          </div>
         </div>
 
         <!-- ═══════════════════════════════ BIBLE LOOKUP PAGE ══════════════ -->
@@ -1399,7 +1453,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'bible-lookup':'Bible Verse Lookup' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1426,6 +1480,7 @@ function renderPage(id) {
   else if (id==='manage-shifts') renderManageShifts();
   else if (id==='users')     renderUsers();
   else if (id==='sermons')   renderSermons();
+  else if (id==='sermon-outline') { /* handled by showOutlineBuilder */ }
   else if (id==='bible-lookup') renderBibleHistory();
 }
 
@@ -3390,6 +3445,10 @@ async function showSermonDetail(id) {
           <pre style="white-space:pre-wrap;font-family:inherit;font-size:0.92rem;line-height:1.7;margin:0">${s.sermon_notes}</pre>
           </div>
         </div>` : '<div class="card" style="color:#9ca3af;text-align:center;padding:32px">No sermon notes added yet.</div>'}
+              <div style="margin-top:20px">
+                <button class="btn btn-secondary" style="margin-right:8px" onclick="showOutlineBuilder('${s.id}')">📋 Outline Builder</button>
+                <button class="btn btn-secondary" onclick="exportSermonPdf_fromDetail('${s.id}')">⬇️ Export PDF</button>
+              </div>
       </div>
     `;
   } catch(e) {
@@ -3470,6 +3529,180 @@ async function deleteCurrentSermon() {
     showPage('sermons');
     renderSermons();
   } catch(e) { alert(e.message); }
+}
+
+// ══════════════════════════════ OUTLINE BUILDER ══════════════════════════════
+let outlineSermonId = null;
+let outlinePointCount = 3; // default 3 main points
+const ROMAN = ['I','II','III','IV','V'];
+
+async function showOutlineBuilder(sermonId) {
+  outlineSermonId = sermonId;
+  showPage('sermon-outline');
+  try {
+    const s = await api.get(`/api/sermons/${sermonId}`);
+    document.getElementById('outline-page-title').textContent = s.title;
+    const meta = [s.date, s.preacher_name, s.scripture].filter(Boolean).join(' · ');
+    document.getElementById('outline-page-meta').textContent = meta;
+
+    let outline = {};
+    if (s.outline_json) {
+      try { outline = JSON.parse(s.outline_json); } catch(e) {}
+    }
+
+    // Introduction
+    document.getElementById('outline-intro').value = outline.introduction || '';
+    // Conclusion / CTA
+    document.getElementById('outline-conclusion').value = outline.conclusion || '';
+    document.getElementById('outline-cta').value = outline.call_to_action || '';
+
+    // Main points
+    const points = outline.main_points && outline.main_points.length ? outline.main_points : [{},{},{}];
+    outlinePointCount = points.length;
+    renderOutlinePoints(points);
+  } catch(e) {
+    document.getElementById('outline-page-title').textContent = 'Outline Builder';
+    document.getElementById('outline-page-meta').textContent = '';
+    outlinePointCount = 3;
+    renderOutlinePoints([{},{},{}]);
+  }
+}
+
+function renderOutlinePoints(points) {
+  const container = document.getElementById('outline-points-container');
+  container.innerHTML = '';
+  for (let i = 0; i < points.length; i++) {
+    const pt = points[i] || {};
+    const label = ROMAN[i] || (i+1).toString();
+    container.innerHTML += `
+      <div class="card outline-point" id="outline-point-${i}">
+        <div class="outline-point-header">
+          <div class="outline-badge">${label}</div>
+          <input type="text" id="point-heading-${i}" placeholder="Main point heading…"
+                 value="${(pt.heading||'').replace(/"/g,'&quot;')}"
+                 style="flex:1;font-weight:600;font-size:1rem">
+        </div>
+        <div class="outline-sub-group">
+          <div class="outline-sub-label">📖 Scripture Reference</div>
+          <input type="text" id="point-scripture-${i}" placeholder="e.g. Romans 8:28"
+                 value="${(pt.scripture||'').replace(/"/g,'&quot;')}" style="width:100%;box-sizing:border-box">
+        </div>
+        <div class="outline-sub-group">
+          <div class="outline-sub-label">💡 Illustration / Story</div>
+          <textarea id="point-illustration-${i}" rows="3"
+                    placeholder="Story, analogy, or example that supports this point…"
+                    style="width:100%;box-sizing:border-box">${pt.illustration||''}</textarea>
+        </div>
+        <div class="outline-sub-group">
+          <div class="outline-sub-label">✅ Application</div>
+          <textarea id="point-application-${i}" rows="3"
+                    placeholder="How does this apply to people's lives?"
+                    style="width:100%;box-sizing:border-box">${pt.application||''}</textarea>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('remove-point-btn').style.display = points.length > 1 ? '' : 'none';
+}
+
+function addOutlinePoint() {
+  if (outlinePointCount >= 5) { showToast('Max 5 main points'); return; }
+  const currentPoints = collectOutlinePoints();
+  outlinePointCount++;
+  currentPoints.push({});
+  renderOutlinePoints(currentPoints);
+}
+
+function removeOutlinePoint() {
+  if (outlinePointCount <= 1) return;
+  const currentPoints = collectOutlinePoints();
+  currentPoints.pop();
+  outlinePointCount--;
+  renderOutlinePoints(currentPoints);
+}
+
+function collectOutlinePoints() {
+  const points = [];
+  for (let i = 0; i < outlinePointCount; i++) {
+    points.push({
+      heading:      (document.getElementById(`point-heading-${i}`)?.value || '').trim(),
+      scripture:    (document.getElementById(`point-scripture-${i}`)?.value || '').trim(),
+      illustration: (document.getElementById(`point-illustration-${i}`)?.value || '').trim(),
+      application:  (document.getElementById(`point-application-${i}`)?.value || '').trim(),
+    });
+  }
+  return points;
+}
+
+function buildOutlineObject() {
+  return {
+    introduction:   (document.getElementById('outline-intro')?.value || '').trim(),
+    main_points:    collectOutlinePoints(),
+    conclusion:     (document.getElementById('outline-conclusion')?.value || '').trim(),
+    call_to_action: (document.getElementById('outline-cta')?.value || '').trim(),
+  };
+}
+
+async function saveOutline() {
+  if (!outlineSermonId) return;
+  try {
+    await api.patch(`/api/sermons/${outlineSermonId}/outline`, { outline: buildOutlineObject() });
+    showToast('Outline saved!');
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+  }
+}
+
+async function exportSermonPdf() {
+  if (!outlineSermonId) return;
+  // Save first, then download
+  try {
+    await api.patch(`/api/sermons/${outlineSermonId}/outline`, { outline: buildOutlineObject() });
+  } catch(e) {}
+  const token = localStorage.getItem('token');
+  const url = `/api/sermons/${outlineSermonId}/export-pdf`;
+  try {
+    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!resp.ok) throw new Error('PDF generation failed');
+    const blob = await resp.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objUrl;
+    const cd = resp.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="?([^"]+)"?/);
+    link.download = match ? match[1] : 'sermon.pdf';
+    link.click();
+    URL.revokeObjectURL(objUrl);
+    showToast('PDF downloaded!');
+  } catch(err) {
+    alert('Export failed: ' + err.message);
+  }
+}
+
+async function exportSermonPdf_fromDetail(sermonId) {
+  const token = localStorage.getItem('token');
+  const url = `/api/sermons/${sermonId}/export-pdf`;
+  try {
+    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!resp.ok) throw new Error('PDF generation failed');
+    const blob = await resp.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objUrl;
+    const cd = resp.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="?([^"]+)"?/);
+    link.download = match ? match[1] : 'sermon.pdf';
+    link.click();
+    URL.revokeObjectURL(objUrl);
+    showToast('PDF downloaded!');
+  } catch(err) {
+    alert('Export failed: ' + err.message);
+  }
+}
+
+function goBackToSermonDetail() {
+  if (outlineSermonId) showSermonDetail(outlineSermonId);
+  else showPage('sermons');
 }
 
 // ══════════════════════════════ BIBLE LOOKUP ═════════════════════════════════

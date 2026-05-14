@@ -427,6 +427,7 @@ class SermonBase(BaseModel):
     plan_id:      Optional[str] = None
     sermon_notes: Optional[str] = None
     tags:         Optional[str] = None
+    outline_json: Optional[str] = None
 
 class SermonCreate(SermonBase):
     pass

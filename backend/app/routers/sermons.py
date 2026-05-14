@@ -23,6 +23,7 @@ def enrich_sermon(s: models.Sermon) -> schemas.SermonOut:
         plan_id=s.plan_id,
         sermon_notes=s.sermon_notes,
         tags=s.tags,
+        outline_json=s.outline_json,
         preacher_name=f"{s.preacher.first} {s.preacher.last}" if s.preacher else None,
         plan_title=s.plan.title if s.plan else None,
         created_at=s.created_at,
@@ -101,3 +102,149 @@ def delete_sermon(sermon_id: str, db: Session = Depends(get_db),
         raise HTTPException(status_code=404, detail="Sermon not found")
     db.delete(s)
     db.commit()
+
+
+# ── Outline save (admin) ──────────────────────────────────────────────────────
+
+@router.patch("/{sermon_id}/outline", response_model=schemas.SermonOut)
+def save_outline(sermon_id: str, body: dict, db: Session = Depends(get_db),
+                 _: models.User = Depends(require_admin)):
+    import json
+    s = db.query(models.Sermon).filter(models.Sermon.id == sermon_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Sermon not found")
+    s.outline_json = json.dumps(body.get("outline", {}))
+    db.commit()
+    return enrich_sermon(q_sermons(db).filter(models.Sermon.id == sermon_id).first())
+
+
+# ── PDF export ────────────────────────────────────────────────────────────────
+
+@router.get("/{sermon_id}/export-pdf")
+def export_pdf(sermon_id: str, db: Session = Depends(get_db),
+               _: models.User = Depends(get_current_user)):
+    import json
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle
+    except ImportError:
+        raise HTTPException(status_code=500, detail="reportlab not installed")
+
+    s = q_sermons(db).filter(models.Sermon.id == sermon_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Sermon not found")
+
+    outline = {}
+    if s.outline_json:
+        try:
+            outline = json.loads(s.outline_json)
+        except Exception:
+            outline = {}
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter,
+                            rightMargin=inch, leftMargin=inch,
+                            topMargin=inch, bottomMargin=inch)
+
+    styles = getSampleStyleSheet()
+    PURPLE = colors.HexColor("#6366f1")
+    GRAY   = colors.HexColor("#6b7280")
+    LIGHT  = colors.HexColor("#f9fafb")
+
+    title_style = ParagraphStyle('STitle', parent=styles['Title'],
+                                 fontSize=22, textColor=PURPLE, spaceAfter=4)
+    meta_style  = ParagraphStyle('SMeta',  parent=styles['Normal'],
+                                 fontSize=10, textColor=GRAY, spaceAfter=16)
+    h2_style    = ParagraphStyle('SH2',    parent=styles['Heading2'],
+                                 fontSize=13, textColor=PURPLE, spaceBefore=16, spaceAfter=6)
+    h3_style    = ParagraphStyle('SH3',    parent=styles['Heading3'],
+                                 fontSize=11, textColor=colors.HexColor("#374151"),
+                                 spaceBefore=10, spaceAfter=4)
+    body_style  = ParagraphStyle('SBody',  parent=styles['Normal'],
+                                 fontSize=10, leading=15, spaceAfter=6)
+    label_style = ParagraphStyle('SLabel', parent=styles['Normal'],
+                                 fontSize=9, textColor=GRAY, spaceAfter=2)
+
+    def safe(text):
+        return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def section_block(heading, content):
+        items = []
+        if heading:
+            items.append(Paragraph(safe(heading), h3_style))
+        if content:
+            for line in content.split("\n"):
+                items.append(Paragraph(safe(line) or "&nbsp;", body_style))
+        return items
+
+    story = []
+
+    # Header
+    story.append(Paragraph(safe(s.title), title_style))
+    meta_parts = [s.date.strftime("%B %d, %Y") if s.date else ""]
+    if s.preacher and s.preacher.first:
+        meta_parts.append(f"{s.preacher.first} {s.preacher.last}")
+    if s.series_name:
+        meta_parts.append(f"Series: {s.series_name}")
+    if s.scripture:
+        meta_parts.append(f"Scripture: {s.scripture}")
+    story.append(Paragraph("  ·  ".join(p for p in meta_parts if p), meta_style))
+    story.append(HRFlowable(width="100%", thickness=2, color=PURPLE, spaceAfter=16))
+
+    # Introduction
+    intro = outline.get("introduction", "")
+    if intro:
+        story.append(Paragraph("Introduction", h2_style))
+        for line in intro.split("\n"):
+            story.append(Paragraph(safe(line) or "&nbsp;", body_style))
+
+    # Main Points
+    main_points = outline.get("main_points", [])
+    roman = ["I", "II", "III", "IV", "V"]
+    for idx, pt in enumerate(main_points):
+        label = roman[idx] if idx < len(roman) else str(idx + 1)
+        heading = pt.get("heading", "")
+        story.append(Paragraph(f"Point {label}{': ' + safe(heading) if heading else ''}", h2_style))
+
+        if pt.get("scripture"):
+            story.append(Paragraph("Scripture", label_style))
+            story.append(Paragraph(safe(pt["scripture"]), body_style))
+
+        if pt.get("illustration"):
+            story.append(Paragraph("Illustration / Story", label_style))
+            for line in pt["illustration"].split("\n"):
+                story.append(Paragraph(safe(line) or "&nbsp;", body_style))
+
+        if pt.get("application"):
+            story.append(Paragraph("Application", label_style))
+            for line in pt["application"].split("\n"):
+                story.append(Paragraph(safe(line) or "&nbsp;", body_style))
+
+    # Conclusion
+    conclusion = outline.get("conclusion", "")
+    if conclusion:
+        story.append(Paragraph("Conclusion", h2_style))
+        for line in conclusion.split("\n"):
+            story.append(Paragraph(safe(line) or "&nbsp;", body_style))
+
+    cta = outline.get("call_to_action", "")
+    if cta:
+        story.append(Paragraph("Call to Action", h2_style))
+        for line in cta.split("\n"):
+            story.append(Paragraph(safe(line) or "&nbsp;", body_style))
+
+    # Footer note
+    story.append(Spacer(1, 24))
+    story.append(HRFlowable(width="100%", thickness=1, color=GRAY))
+    story.append(Paragraph("Generated by FFC Church Management System", meta_style))
+
+    doc.build(story)
+    buf.seek(0)
+    filename = f"sermon_{s.date}_{s.title[:30].replace(' ','_')}.pdf"
+    return StreamingResponse(buf, media_type="application/pdf",
+                             headers={"Content-Disposition": f'attachment; filename="{filename}"'})
