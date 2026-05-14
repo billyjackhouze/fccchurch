@@ -14,31 +14,39 @@ import os
 from app.database import engine, get_db, Base
 from app import models, schemas
 from app.routers import members, events, rooms, giving, pledges
+from app.routers import auth, users
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="FFC Church Management API",
-    description="Church management system for FFC Church — members, scheduling, rooms, giving, and pledges.",
-    version="1.0.0",
+    description="Church management system for FFC Church.",
+    version="1.1.0",
 )
 
-# ── CORS (allow the frontend to call the API) ─────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Tighten to your domain in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(auth.router)
+app.include_router(users.router)
 app.include_router(members.router)
 app.include_router(events.router)
 app.include_router(rooms.router)
 app.include_router(giving.router)
 app.include_router(pledges.router)
+
+# ── Static files (member photos) ──────────────────────────────────────────────
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
+PHOTOS_DIR = os.path.join(STATIC_DIR, "photos")
+os.makedirs(PHOTOS_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 # ── Dashboard endpoint ────────────────────────────────────────────────────────
@@ -75,7 +83,7 @@ def dashboard(db: Session = Depends(get_db)):
 # ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/api/health", tags=["System"])
 def health():
-    return {"status": "ok", "app": "FFC Church Management", "version": "1.0.0"}
+    return {"status": "ok", "app": "FFC Church Management", "version": "1.1.0"}
 
 
 # ── Serve frontend (production) ───────────────────────────────────────────────

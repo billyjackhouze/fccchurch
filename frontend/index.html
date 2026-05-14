@@ -7,6 +7,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F4F8;color:#1F2937;min-height:100vh;display:flex}
+/* ── Sidebar ── */
 .sidebar{width:230px;min-height:100vh;background:#1E3A5F;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
 .sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(184,134,11,.4)}
 .sidebar-logo h1{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;line-height:1.2}
@@ -18,16 +19,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F4F8;color:#1F2937;mi
 .nav-item.active{background:rgba(184,134,11,.18);color:#fff;border-left:3px solid #B8860B}
 .nav-item .icon{width:18px;text-align:center;font-size:15px}
 .sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#7B9EC4}
+/* ── Main ── */
 .main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .topbar-title{font-size:18px;font-weight:700;color:#1E3A5F}
 .topbar-right{display:flex;gap:10px;align-items:center}
+.topbar-user{font-size:12px;color:#6B7280;display:flex;align-items:center;gap:6px}
+/* ── Buttons ── */
 .btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .18s}
 .btn-primary{background:#1E3A5F;color:#fff}.btn-primary:hover{background:#163052}
 .btn-gold{background:#B8860B;color:#fff}.btn-gold:hover{background:#9a7009}
 .btn-outline{background:#fff;color:#1E3A5F;border:1.5px solid #1E3A5F}.btn-outline:hover{background:#EBF0F8}
 .btn-sm{padding:5px 12px;font-size:12px}
 .btn-danger{background:#DC2626;color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-ghost{background:transparent;color:#6B7280;border:1.5px solid #D1D5DB}.btn-ghost:hover{background:#F3F4F6}
+/* ── Layout ── */
 .content{padding:28px;flex:1}
 .page{display:none}.page.active{display:block}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:28px}
@@ -49,7 +55,8 @@ tr:last-child td{border-bottom:none}
 .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
 .badge-green{background:#DCFCE7;color:#166534}.badge-blue{background:#DBEAFE;color:#1E40AF}
 .badge-gold{background:#FEF9C3;color:#854D0E}.badge-red{background:#FEE2E2;color:#991B1B}
-.badge-gray{background:#F3F4F6;color:#6B7280}
+.badge-gray{background:#F3F4F6;color:#6B7280}.badge-purple{background:#F3E8FF;color:#7C3AED}
+/* ── Calendar ── */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-header h2{font-size:16px;font-weight:700;color:#1E3A5F}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
@@ -61,6 +68,7 @@ tr:last-child td{border-bottom:none}
 .cal-cell.today .cal-num{color:#1E3A5F}
 .cal-event{background:#1E3A5F;color:#fff;font-size:10px;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-event.gold{background:#B8860B}.cal-event.green{background:#1A7A4A}.cal-event.red{background:#DC2626}
+/* ── Forms ── */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-grid.cols-1{grid-template-columns:1fr}
 .form-group{display:flex;flex-direction:column;gap:4px}
@@ -70,10 +78,34 @@ tr:last-child td{border-bottom:none}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1E3A5F}
 .form-group textarea{resize:vertical;min-height:70px}
 .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #F3F4F6}
+/* ── Modals ── */
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
 .modal-backdrop.open{display:flex}
 .modal{background:#fff;border-radius:12px;padding:26px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
 .modal h2{font-size:17px;font-weight:800;color:#1E3A5F;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #EBF0F8}
+/* ── Member Profile Modal ── */
+.profile-modal{width:700px;max-width:96vw}
+.profile-header{display:flex;gap:24px;align-items:flex-start;margin-bottom:22px;padding-bottom:18px;border-bottom:2px solid #EBF0F8}
+.profile-photo-wrap{position:relative;flex-shrink:0}
+.profile-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #E5E7EB;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#1E3A5F;overflow:hidden}
+.profile-photo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.photo-upload-btn{position:absolute;bottom:4px;right:4px;background:#1E3A5F;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.profile-info{flex:1}
+.profile-name{font-size:22px;font-weight:800;color:#1E3A5F;margin-bottom:3px}
+.profile-sub{font-size:13px;color:#6B7280;margin-bottom:8px}
+.profile-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.profile-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.profile-detail-item .lbl{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.profile-detail-item .val{font-size:13px;color:#1F2937;font-weight:500}
+.profile-section{margin-bottom:18px}
+.profile-section-title{font-size:12px;font-weight:700;color:#1E3A5F;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #F3F4F6}
+.family-chip{display:inline-flex;align-items:center;gap:8px;background:#F0F4F8;border-radius:8px;padding:6px 12px;margin:3px;font-size:12px;cursor:pointer;transition:background .15s}
+.family-chip:hover{background:#DBEAFE}
+.family-chip .rel-type{font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase}
+.family-chip .rel-name{font-weight:700;color:#1E3A5F}
+.family-chip .rel-del{color:#DC2626;font-size:11px;margin-left:4px;cursor:pointer}
+.family-avatar{width:28px;height:28px;border-radius:50%;background:#1E3A5F;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;object-fit:cover;flex-shrink:0}
+/* ── Misc ── */
 .rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .room-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:18px;border-top:4px solid #1E3A5F}
 .room-card.gold{border-top-color:#B8860B}.room-card.green{border-top-color:#1A7A4A}.room-card.red{border-top-color:#DC2626}
@@ -96,17 +128,61 @@ tr:last-child td{border-bottom:none}
 .text-green{color:#1A7A4A;font-weight:700}.text-navy{color:#1E3A5F;font-weight:700}.text-gold{color:#B8860B;font-weight:700}
 .flex{display:flex;gap:8px;align-items:center}
 .action-btns{display:flex;gap:6px}
-/* Loading spinner */
 .spinner{display:inline-block;width:18px;height:18px;border:2px solid #E5E7EB;border-top-color:#1E3A5F;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-row td{text-align:center;padding:30px;color:#9CA3AF}
-/* API status indicator */
 .api-status{display:flex;align-items:center;gap:6px;font-size:12px}
 .api-dot{width:8px;height:8px;border-radius:50%;background:#1A7A4A}
 .api-dot.error{background:#DC2626}
+/* Member avatar in table */
+.member-avatar{width:34px;height:34px;border-radius:50%;background:#1E3A5F;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;object-fit:cover;flex-shrink:0;vertical-align:middle;margin-right:8px}
+.member-name-link{color:#1E3A5F;font-weight:700;cursor:pointer;text-decoration:none}
+.member-name-link:hover{text-decoration:underline}
+/* ── Login Screen ── */
+.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1E3A5F 0%,#2d5080 100%);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border-radius:16px;padding:40px 44px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:24px;font-weight:900;color:#1E3A5F}
+.login-logo p{font-size:12px;color:#B8860B;text-transform:uppercase;letter-spacing:1.2px;margin-top:4px}
+.login-box .form-group{margin-bottom:16px}
+.login-box .form-group label{font-size:13px;font-weight:700;color:#374151;display:block;margin-bottom:6px}
+.login-box .form-group input{padding:11px 14px;font-size:14px;width:100%;border:1.5px solid #D1D5DB;border-radius:8px}
+.login-box .form-group input:focus{outline:none;border-color:#1E3A5F;box-shadow:0 0 0 3px rgba(30,58,95,.1)}
+.login-btn{width:100%;padding:12px;background:#1E3A5F;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+.login-btn:hover{background:#163052}
+.login-error{background:#FEE2E2;color:#991B1B;border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.login-footer{text-align:center;margin-top:18px;font-size:12px;color:#9CA3AF}
+.login-link{color:#1E3A5F;cursor:pointer;text-decoration:underline}
+/* ── User Mgmt ── */
+.user-chip{display:inline-flex;align-items:center;gap:6px;background:#F0F4F8;border-radius:6px;padding:3px 8px;font-size:12px}
 </style>
 </head>
 <body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>✝ FFC CHURCH</h1>
+      <p>Management System</p>
+    </div>
+    <div id="login-error" class="login-error"></div>
+    <div id="login-form">
+      <div class="form-group"><label>Email Address</label><input type="email" id="login-email" placeholder="admin@fccchurch.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="login-btn" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="setup-form" style="display:none">
+      <p style="font-size:13px;color:#6B7280;margin-bottom:16px">Welcome! Create your administrator account to get started.</p>
+      <div class="form-group"><label>Admin Email</label><input type="email" id="setup-email" placeholder="admin@fccchurch.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="setup-pass" placeholder="Choose a strong password"></div>
+      <button class="login-btn" onclick="doSetup()">Create Admin Account</button>
+    </div>
+    <div class="login-footer">
+      <span class="login-link" onclick="showForgotPassword()">Forgot password?</span>
+    </div>
+  </div>
+</div>
 
 <!-- ── SIDEBAR ── -->
 <aside class="sidebar">
@@ -124,10 +200,15 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item" onclick="showPage('members')" id="nav-members"><span class="icon">👥</span> Members</div>
     <div class="nav-section">Finance</div>
     <div class="nav-item" onclick="showPage('giving')" id="nav-giving"><span class="icon">💰</span> Giving &amp; Pledges</div>
+    <div class="nav-section" id="admin-nav-section">Admin</div>
+    <div class="nav-item" onclick="showPage('users')" id="nav-users" style="display:none"><span class="icon">🔐</span> User Accounts</div>
   </nav>
   <div class="sidebar-footer">
     <div class="api-status"><span class="api-dot" id="api-dot"></span><span id="api-status-text">Connecting…</span></div>
-    <div style="margin-top:4px">FFC Church v1.0 · 2026</div>
+    <div style="margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+      <span>FFC Church v1.1</span>
+      <span class="login-link" style="font-size:11px" onclick="doLogout()">Sign out</span>
+    </div>
   </div>
 </aside>
 
@@ -137,6 +218,7 @@ tr:last-child td{border-bottom:none}
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <span style="font-size:12px;color:#6B7280" id="topbar-date"></span>
+      <div class="topbar-user" id="topbar-user"></div>
     </div>
   </div>
   <div class="content">
@@ -198,8 +280,8 @@ tr:last-child td{border-bottom:none}
           </div>
         </div>
         <div class="card-body table-wrap"><table>
-          <thead><tr><th>Name</th><th>Pronouns</th><th>Email</th><th>Phone</th><th>Status</th><th>Family</th><th>Actions</th></tr></thead>
-          <tbody id="members-tbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span> Loading…</td></tr></tbody>
+          <thead><tr><th>Photo</th><th>Name</th><th>Pronouns</th><th>Email</th><th>Phone</th><th>Status</th><th>Family</th><th>Actions</th></tr></thead>
+          <tbody id="members-tbody"><tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr></tbody>
         </table></div>
       </div>
     </div>
@@ -236,14 +318,25 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+    <!-- USER ACCOUNTS (admin only) -->
+    <div class="page" id="page-users">
+      <div class="page-header"><h2>🔐 User Accounts</h2><button class="btn btn-primary" onclick="openModal('user-modal')">+ Add User</button></div>
+      <div class="card"><div class="card-body table-wrap"><table>
+        <thead><tr><th>Email</th><th>Role</th><th>Linked Member</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="users-tbody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span> Loading…</td></tr></tbody>
+      </table></div></div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ── MODALS ── -->
+
+<!-- Event Modal -->
 <div class="modal-backdrop" id="event-modal"><div class="modal">
   <h2>📅 Add New Event</h2>
   <div class="form-grid">
-    <div class="form-group span-2"><label>Event Title *</label><input type="text" id="ev-title" placeholder="Sunday Service, Youth Group…"></div>
+    <div class="form-group span-2"><label>Event Title *</label><input type="text" id="ev-title"></div>
     <div class="form-group"><label>Date *</label><input type="date" id="ev-date"></div>
     <div class="form-group"><label>Type</label><select id="ev-type"><option>Service</option><option>Meeting</option><option>Volunteer Slot</option><option>Event</option><option>Class</option><option>Other</option></select></div>
     <div class="form-group"><label>Start Time</label><input type="time" id="ev-start"></div>
@@ -251,25 +344,28 @@ tr:last-child td{border-bottom:none}
     <div class="form-group"><label>Room</label><select id="ev-room"></select></div>
     <div class="form-group"><label>Organizer</label><input type="text" id="ev-organizer"></div>
     <div class="form-group span-2"><label>Description</label><textarea id="ev-desc"></textarea></div>
-    <div class="form-group"><label>Volunteer Slots Needed</label><input type="number" id="ev-slots" min="0" placeholder="0"></div>
+    <div class="form-group"><label>Volunteer Slots Needed</label><input type="number" id="ev-slots" min="0" value="0"></div>
   </div>
   <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('event-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEvent()">Save Event</button></div>
 </div></div>
 
+<!-- Room Modal -->
 <div class="modal-backdrop" id="room-modal"><div class="modal">
   <h2>🏛️ Add Room / Facility</h2>
   <div class="form-grid">
-    <div class="form-group span-2"><label>Room Name *</label><input type="text" id="rm-name" placeholder="e.g. Fellowship Hall"></div>
+    <div class="form-group span-2"><label>Room Name *</label><input type="text" id="rm-name"></div>
     <div class="form-group"><label>Capacity</label><input type="number" id="rm-cap" min="1"></div>
     <div class="form-group"><label>Building / Location</label><input type="text" id="rm-loc"></div>
-    <div class="form-group span-2"><label>Features</label><input type="text" id="rm-features" placeholder="Projector, Sound System…"></div>
+    <div class="form-group span-2"><label>Features</label><input type="text" id="rm-features"></div>
     <div class="form-group span-2"><label>Notes</label><textarea id="rm-notes"></textarea></div>
   </div>
   <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('room-modal')">Cancel</button><button class="btn btn-primary" onclick="saveRoom()">Add Room</button></div>
 </div></div>
 
+<!-- Add Member Modal -->
 <div class="modal-backdrop" id="member-modal"><div class="modal">
-  <h2>👤 Add Member</h2>
+  <h2 id="member-modal-title">👤 Add Member</h2>
+  <input type="hidden" id="mb-id">
   <div class="form-grid">
     <div class="form-group"><label>First Name *</label><input type="text" id="mb-first"></div>
     <div class="form-group"><label>Last Name *</label><input type="text" id="mb-last"></div>
@@ -287,10 +383,15 @@ tr:last-child td{border-bottom:none}
         <option>He/They</option><option>She/They</option><option>Ze/Zir</option><option>Custom</option>
       </select>
     </div>
+    <div class="form-group span-2"><label>Notes</label><textarea id="mb-notes" style="min-height:60px"></textarea></div>
   </div>
-  <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('member-modal')">Cancel</button><button class="btn btn-primary" onclick="saveMember()">Add Member</button></div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('member-modal')">Cancel</button>
+    <button class="btn btn-primary" id="member-save-btn" onclick="saveMember()">Add Member</button>
+  </div>
 </div></div>
 
+<!-- Giving Modal -->
 <div class="modal-backdrop" id="giving-modal"><div class="modal">
   <h2>💰 Record Giving</h2>
   <div class="form-grid">
@@ -303,11 +404,12 @@ tr:last-child td{border-bottom:none}
   <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('giving-modal')">Cancel</button><button class="btn btn-primary" onclick="saveGiving()">Record</button></div>
 </div></div>
 
+<!-- Pledge Modal -->
 <div class="modal-backdrop" id="pledge-modal"><div class="modal">
   <h2>🤝 Add Pledge</h2>
   <div class="form-grid">
     <div class="form-group"><label>Member</label><select id="pl-member"></select></div>
-    <div class="form-group"><label>Campaign</label><input type="text" id="pl-campaign" placeholder="Building Fund 2026…"></div>
+    <div class="form-group"><label>Campaign</label><input type="text" id="pl-campaign"></div>
     <div class="form-group"><label>Pledged Amount ($) *</label><input type="number" id="pl-amount" min="0" step="0.01"></div>
     <div class="form-group"><label>Pledge Date</label><input type="date" id="pl-date"></div>
     <div class="form-group"><label>End Date</label><input type="date" id="pl-end"></div>
@@ -316,19 +418,111 @@ tr:last-child td{border-bottom:none}
   <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('pledge-modal')">Cancel</button><button class="btn btn-primary" onclick="savePledge()">Add Pledge</button></div>
 </div></div>
 
+<!-- Member Profile Modal -->
+<div class="modal-backdrop" id="profile-modal"><div class="modal profile-modal">
+  <div class="profile-header">
+    <div class="profile-photo-wrap">
+      <div class="profile-photo" id="profile-photo-circle"></div>
+      <button class="photo-upload-btn" onclick="document.getElementById('photo-file-input').click()" title="Upload photo">📷</button>
+      <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+    </div>
+    <div class="profile-info">
+      <div class="profile-name" id="profile-name"></div>
+      <div class="profile-sub" id="profile-sub"></div>
+      <div class="profile-badges" id="profile-badges"></div>
+      <div class="profile-detail-grid" id="profile-details"></div>
+    </div>
+  </div>
+  <div class="profile-section">
+    <div class="profile-section-title">Family Connections</div>
+    <div id="profile-family"></div>
+    <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="openAddFamily()">+ Link Family Member</button>
+  </div>
+  <div class="profile-section" id="profile-notes-section" style="display:none">
+    <div class="profile-section-title">Notes</div>
+    <div id="profile-notes" style="font-size:13px;color:#374151;white-space:pre-wrap"></div>
+  </div>
+  <div class="form-actions" style="margin-top:0">
+    <button class="btn btn-outline" onclick="closeModal('profile-modal')">Close</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteMemberFromProfile()">Delete Member</button>
+    <button class="btn btn-gold" onclick="editMemberFromProfile()">✏️ Edit</button>
+  </div>
+</div></div>
+
+<!-- Add Family Member Modal -->
+<div class="modal-backdrop" id="family-modal"><div class="modal" style="width:440px">
+  <h2>👨‍👩‍👧 Link Family Member</h2>
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Family Member *</label>
+      <select id="fam-related-id"></select>
+    </div>
+    <div class="form-group"><label>Relationship to <span id="fam-member-name-label"></span> *</label>
+      <select id="fam-relation">
+        <option>Partner</option>
+        <option>Child</option>
+        <option>Parent</option>
+        <option>Grandparent</option>
+        <option>Grandchild</option>
+        <option>Sibling</option>
+        <option>Aunt/Uncle</option>
+        <option>Niece/Nephew</option>
+        <option>Guardian</option>
+        <option>Ward</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('family-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="addFamilyMember()">Link Member</button>
+  </div>
+</div></div>
+
+<!-- User Account Modal -->
+<div class="modal-backdrop" id="user-modal"><div class="modal" style="width:460px">
+  <h2 id="user-modal-title">🔐 Add User Account</h2>
+  <input type="hidden" id="user-edit-id">
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Email Address *</label><input type="email" id="user-email"></div>
+    <div class="form-group"><label>Password <span id="user-pass-hint" style="color:#9CA3AF;font-weight:400">(leave blank to keep current)</span></label><input type="password" id="user-pass" placeholder="Enter password"></div>
+    <div class="form-group"><label>Role</label>
+      <select id="user-role"><option value="member">Member</option><option value="admin">Admin</option></select>
+    </div>
+    <div class="form-group"><label>Linked Member (optional)</label><select id="user-member-id"></select></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('user-modal')">Cancel</button>
+    <button class="btn btn-primary" id="user-save-btn" onclick="saveUser()">Add User</button>
+  </div>
+</div></div>
+
+<!-- Forgot Password Modal -->
+<div class="modal-backdrop" id="forgot-modal"><div class="modal" style="width:420px">
+  <h2>🔑 Reset Password</h2>
+  <div class="form-grid cols-1">
+    <div class="form-group"><label>Email Address</label><input type="email" id="forgot-email"></div>
+  </div>
+  <div id="forgot-result" style="display:none;padding:10px;background:#DCFCE7;color:#166534;border-radius:6px;font-size:13px;margin-top:10px"></div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('forgot-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="submitForgotPassword()">Send Reset Link</button>
+  </div>
+</div></div>
+
 <script>
-// ── API LAYER ─────────────────────────────────────────────────────────────────
-// When served from FastAPI (http://server:8001) → relative URLs
-// When opened as a local file → point at the server directly
+// ── AUTH STATE ────────────────────────────────────────────────────────────────
+let authToken  = localStorage.getItem('fcc_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('fcc_user') || 'null');
+
 const API_BASE = window.location.protocol === 'file:'
   ? 'http://localhost:8001'
   : '';
 
 async function apiFetch(path, opts = {}) {
-  const res = await fetch(API_BASE + path, {
-    headers: { 'Content-Type': 'application/json', ...opts.headers },
-    ...opts,
-  });
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const res = await fetch(API_BASE + path, { headers, ...opts });
+  if (res.status === 401) { doLogout(); return null; }
   if (res.status === 204) return null;
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -338,20 +532,135 @@ async function apiFetch(path, opts = {}) {
 }
 
 const api = {
-  get:    (path)       => apiFetch(path),
-  post:   (path, data) => apiFetch(path, { method: 'POST',   body: JSON.stringify(data) }),
-  put:    (path, data) => apiFetch(path, { method: 'PUT',    body: JSON.stringify(data) }),
-  delete: (path)       => apiFetch(path, { method: 'DELETE' }),
+  get:    path       => apiFetch(path),
+  post:   (path, d)  => apiFetch(path, { method:'POST',   body: JSON.stringify(d) }),
+  put:    (path, d)  => apiFetch(path, { method:'PUT',    body: JSON.stringify(d) }),
+  delete: path       => apiFetch(path, { method:'DELETE' }),
 };
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────────────────────────
+async function initAuth() {
+  const status = await fetch(API_BASE + '/api/auth/setup-status').then(r=>r.json()).catch(()=>null);
+  if (!status) { showLoginError('Cannot reach server. Please check the app is running.'); return; }
+
+  if (status.needs_setup) {
+    document.getElementById('login-form').style.display  = 'none';
+    document.getElementById('setup-form').style.display  = '';
+    return;
+  }
+
+  if (authToken) {
+    try {
+      const me = await apiFetch('/api/auth/me');
+      if (me) { currentUser = me; hideLoginScreen(); return; }
+    } catch { /* token invalid */ }
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if (!email || !pass) { showLoginError('Please enter email and password.'); return; }
+  try {
+    const body = new URLSearchParams({ username: email, password: pass });
+    const res  = await fetch(API_BASE + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      showLoginError(err.detail || 'Login failed');
+      return;
+    }
+    const data = await res.json();
+    authToken   = data.access_token;
+    currentUser = { id: data.user_id, role: data.role, email, member_id: data.member_id };
+    localStorage.setItem('fcc_token', authToken);
+    localStorage.setItem('fcc_user',  JSON.stringify(currentUser));
+    hideLoginScreen();
+  } catch (e) {
+    showLoginError('Cannot connect to server.');
+  }
+}
+
+async function doSetup() {
+  const email = document.getElementById('setup-email').value.trim();
+  const pass  = document.getElementById('setup-pass').value;
+  if (!email || !pass) { showLoginError('Email and password required.'); return; }
+  try {
+    const res = await fetch(API_BASE + '/api/auth/setup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pass, role:'admin' }),
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); showLoginError(e.detail||'Setup failed'); return; }
+    const data = await res.json();
+    authToken   = data.access_token;
+    currentUser = { id: data.user_id, role: 'admin', email, member_id: null };
+    localStorage.setItem('fcc_token', authToken);
+    localStorage.setItem('fcc_user',  JSON.stringify(currentUser));
+    hideLoginScreen();
+  } catch (e) { showLoginError('Cannot connect to server.'); }
+}
+
+function doLogout() {
+  authToken = null; currentUser = null;
+  localStorage.removeItem('fcc_token');
+  localStorage.removeItem('fcc_user');
+  location.reload();
+}
+
+function hideLoginScreen() {
+  document.getElementById('login-screen').style.display = 'none';
+  if (currentUser?.role === 'admin') {
+    document.getElementById('nav-users').style.display = '';
+  }
+  document.getElementById('topbar-user').innerHTML =
+    `<span>👤 ${currentUser?.email || ''}</span>`;
+  checkApiStatus();
+  renderDashboard();
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = '';
+}
+
+function showForgotPassword() { openModal('forgot-modal'); }
+
+async function submitForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) return;
+  const res = await fetch(API_BASE + '/api/auth/forgot-password', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email }),
+  }).then(r=>r.json()).catch(()=>({}));
+  const el = document.getElementById('forgot-result');
+  el.style.display = '';
+  if (res.reset_token) {
+    el.innerHTML = `Reset link ready. Token: <strong>${res.reset_token}</strong><br><small>Share this with the user or configure SMTP for automatic emails.</small>`;
+  } else {
+    el.textContent = res.message || 'Request processed.';
+  }
+}
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 const today   = new Date();
 const fmt$    = v => '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2 });
-const fmtDate = d => { const x = new Date(d + 'T00:00:00'); return x.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
-const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':'); const ap = +h >= 12 ? 'PM' : 'AM'; return ((+h % 12) || 12) + ':' + m + ' ' + ap; };
-const todayStr = today.toISOString().slice(0, 10);
+const fmtDate = d => { const x = new Date(d + 'T00:00:00'); return x.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); };
+const fmtTime = t => { if (!t) return ''; const [h,m] = t.split(':'); const ap = +h>=12?'PM':'AM'; return ((+h%12)||12)+':'+m+' '+ap; };
+const todayStr = today.toISOString().slice(0,10);
+const initials = m => ((m.first||'')[0]||'').toUpperCase() + ((m.last||'')[0]||'').toUpperCase();
+const photoUrl = filename => filename ? `${API_BASE}/static/photos/${filename}` : null;
 
-// ── API STATUS CHECK ──────────────────────────────────────────────────────────
+function avatarHtml(member, size=34) {
+  const url = photoUrl(member.photo);
+  if (url) return `<img src="${url}" class="member-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="member-avatar" style="width:${size}px;height:${size}px;font-size:${size*0.35}px;display:none">${initials(member)}</span>`;
+  return `<span class="member-avatar" style="width:${size}px;height:${size}px;font-size:${size*0.35}px">${initials(member)}</span>`;
+}
+
+// ── API STATUS ────────────────────────────────────────────────────────────────
 async function checkApiStatus() {
   try {
     await api.get('/api/health');
@@ -364,7 +673,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', giving:'Giving & Pledges' };
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', giving:'Giving & Pledges', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -377,11 +686,12 @@ function showPage(id) {
 }
 
 function renderPage(id) {
-  if (id === 'dashboard') renderDashboard();
-  else if (id === 'schedule') renderSchedule();
-  else if (id === 'rooms')    renderRooms();
-  else if (id === 'members')  renderMembers();
-  else if (id === 'giving')   renderGiving();
+  if (id==='dashboard') renderDashboard();
+  else if (id==='schedule') renderSchedule();
+  else if (id==='rooms')    renderRooms();
+  else if (id==='members')  renderMembers();
+  else if (id==='giving')   renderGiving();
+  else if (id==='users')    renderUsers();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -394,142 +704,102 @@ async function renderDashboard() {
       api.get('/api/rooms'),
       api.get('/api/members'),
     ]);
-
     document.getElementById('dash-stats').innerHTML = `
       <div class="stat-card"><div class="label">Active Members</div><div class="value">${stats.active_members}</div><div class="sub">${stats.total_members} total registered</div></div>
       <div class="stat-card gold"><div class="label">This Month Giving</div><div class="value">${fmt$(stats.month_giving)}</div><div class="sub">All funds combined</div></div>
       <div class="stat-card green"><div class="label">Pledges Collected</div><div class="value">${fmt$(stats.total_paid)}</div><div class="sub">of ${fmt$(stats.total_pledged)} pledged · ${stats.pledge_pct}%</div></div>
-      <div class="stat-card"><div class="label">Upcoming Events</div><div class="value">${stats.upcoming_events}</div><div class="sub">From today forward</div></div>
-    `;
-
-    const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date));
-    document.getElementById('dash-events').innerHTML = sorted.slice(0, 5).map(e => `
+      <div class="stat-card"><div class="label">Upcoming Events</div><div class="value">${stats.upcoming_events}</div><div class="sub">From today forward</div></div>`;
+    const sorted = [...events].sort((a,b)=>a.date.localeCompare(b.date));
+    document.getElementById('dash-events').innerHTML = sorted.slice(0,5).map(e=>`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
         <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${e.title}</div>
-        <div style="font-size:12px;color:#6B7280">${fmtDate(e.date)}${e.start_time ? ' · ' + fmtTime(e.start_time) : ''}</div></div>
+        <div style="font-size:12px;color:#6B7280">${fmtDate(e.date)}${e.start_time?' · '+fmtTime(e.start_time):''}</div></div>
         <span class="badge badge-blue">${e.type}</span>
-      </div>`).join('') || '<div class="empty">No upcoming events</div>';
-
-    const recent = [...giving].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
-    document.getElementById('dash-giving').innerHTML = recent.map(g => `
+      </div>`).join('')||'<div class="empty">No upcoming events</div>';
+    const recent = [...giving].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+    document.getElementById('dash-giving').innerHTML = recent.map(g=>`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
-        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${g.member_name || 'Anonymous'}</div>
+        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${g.member_name||'Anonymous'}</div>
         <div style="font-size:12px;color:#6B7280">${fmtDate(g.date)} · ${g.type}</div></div>
         <span class="text-green">${fmt$(g.amount)}</span>
-      </div>`).join('') || '<div class="empty">No giving records</div>';
-
-    const todayEvents = events.filter(e => e.date === todayStr);
-    document.getElementById('dash-rooms').innerHTML = rooms.slice(0, 5).map(r => {
-      const booked = todayEvents.find(e => e.room_id === r.id);
+      </div>`).join('')||'<div class="empty">No giving records</div>';
+    const todayEvs = events.filter(e=>e.date===todayStr);
+    document.getElementById('dash-rooms').innerHTML = rooms.slice(0,5).map(r=>{
+      const booked = todayEvs.find(e=>e.room_id===r.id);
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
         <div style="font-weight:600;font-size:13px">${r.name}</div>
-        ${booked ? `<span class="badge badge-gold">In Use</span>` : `<span class="badge badge-green">Available</span>`}
+        ${booked?`<span class="badge badge-gold">In Use</span>`:`<span class="badge badge-green">Available</span>`}
       </div>`;
     }).join('');
-
-    const newest = [...members].sort((a,b) => (b.since||'').localeCompare(a.since||'')).slice(0, 5);
-    document.getElementById('dash-members').innerHTML = newest.map(m => `
+    const newest = [...members].sort((a,b)=>(b.since||'').localeCompare(a.since||'')).slice(0,5);
+    document.getElementById('dash-members').innerHTML = newest.map(m=>`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
-        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${m.first} ${m.last}</div>
-        <div style="font-size:12px;color:#6B7280">${m.ministry || 'No ministry yet'}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">${avatarHtml(m,30)}<div>
+          <div style="font-weight:700;font-size:13px;color:#1E3A5F">${m.first} ${m.last}</div>
+          <div style="font-size:12px;color:#6B7280">${m.ministry||'No ministry yet'}</div></div></div>
         <span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span>
       </div>`).join('');
-
-  } catch (e) {
+  } catch(e) {
     document.getElementById('dash-stats').innerHTML = `<div class="stat-card red"><div class="label">Error</div><div class="value" style="font-size:14px">Cannot reach API</div><div class="sub">${e.message}</div></div>`;
   }
 }
 
 // ── CALENDAR ──────────────────────────────────────────────────────────────────
-let calYear = today.getFullYear(), calMonth = today.getMonth();
-let calEvents = [];
-
+let calYear = today.getFullYear(), calMonth = today.getMonth(), calEvents = [];
 async function renderCalendar() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
-
-  // Fetch events for this month
-  const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
-  const to   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${new Date(calYear,calMonth+1,0).getDate()}`;
-  try {
-    calEvents = await api.get(`/api/events?from_date=${from}&to_date=${to}`);
-  } catch { calEvents = []; }
-
-  const firstDay    = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
-  const days        = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const typeColor   = t => ({ Service:'', Meeting:' gold', 'Volunteer Slot':' green', Event:' green', Class:' gold' }[t] || '');
-
-  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
-  for (let i = 0; i < firstDay; i++)
-    html += `<div class="cal-cell other-month"><div class="cal-num">${daysInPrev-firstDay+i+1}</div></div>`;
-  for (let day = 1; day <= daysInMonth; day++) {
-    const ds      = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const isToday = ds === todayStr;
-    const dayEvs  = calEvents.filter(e => e.date === ds);
-    html += `<div class="cal-cell${isToday?' today':''}">
-      <div class="cal-num">${day}</div>
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = months[calMonth]+' '+calYear;
+  const from=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const to=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${new Date(calYear,calMonth+1,0).getDate()}`;
+  try { calEvents = await api.get(`/api/events?from_date=${from}&to_date=${to}`); } catch { calEvents=[]; }
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const typeColor=t=>({Service:'',Meeting:' gold','Volunteer Slot':' green',Event:' green',Class:' gold'}[t]||'');
+  let html=days.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell other-month"><div class="cal-num">${daysInPrev-firstDay+i+1}</div></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday=ds===todayStr;
+    const dayEvs=calEvents.filter(e=>e.date===ds);
+    html+=`<div class="cal-cell${isToday?' today':''}"><div class="cal-num">${day}</div>
       ${dayEvs.slice(0,3).map(e=>`<div class="cal-event${typeColor(e.type)}" title="${e.title}">${e.title}</div>`).join('')}
-      ${dayEvs.length > 3 ? `<div style="font-size:10px;color:#6B7280">+${dayEvs.length-3} more</div>` : ''}
-    </div>`;
+      ${dayEvs.length>3?`<div style="font-size:10px;color:#6B7280">+${dayEvs.length-3} more</div>`:''}</div>`;
   }
-  const rem = (firstDay + daysInMonth) % 7;
-  if (rem) for (let i = 1; i <= 7 - rem; i++) html += `<div class="cal-cell other-month"><div class="cal-num">${i}</div></div>`;
-  document.getElementById('cal-grid').innerHTML = html;
+  const rem=(firstDay+daysInMonth)%7;
+  if(rem) for(let i=1;i<=7-rem;i++) html+=`<div class="cal-cell other-month"><div class="cal-num">${i}</div></div>`;
+  document.getElementById('cal-grid').innerHTML=html;
 }
-
-function prevMonth() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); }
-function nextMonth() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); }
+function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 
 // ── SCHEDULE ──────────────────────────────────────────────────────────────────
 async function renderSchedule() {
   renderCalendar();
   try {
     const [events, rooms] = await Promise.all([api.get('/api/events'), api.get('/api/rooms')]);
-    const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date) || (a.start_time||'').localeCompare(b.start_time||''));
-    const typeColor = t => ({ Service:'badge-blue', Meeting:'badge-gold', 'Volunteer Slot':'badge-green', Event:'badge-green', Class:'badge-gold', Other:'badge-gray' }[t] || 'badge-gray');
-
-    document.getElementById('events-tbody').innerHTML = sorted.map(e => `
-      <tr>
-        <td><strong>${e.title}</strong></td>
-        <td>${fmtDate(e.date)}</td>
-        <td>${fmtTime(e.start_time)}${e.end_time ? ' – ' + fmtTime(e.end_time) : ''}</td>
-        <td>${e.room_name || '—'}</td>
-        <td><span class="badge ${typeColor(e.type)}">${e.type}</span></td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Delete</button></td>
-      </tr>`).join('') || '<tr><td colspan="6" class="empty">No events yet</td></tr>';
-
-    // Populate room selector in modal
-    const sel = document.getElementById('ev-room');
-    sel.innerHTML = '<option value="">— No Room —</option>' + rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-  } catch (e) {
-    document.getElementById('events-tbody').innerHTML = `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
-  }
+    const sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||(a.start_time||'').localeCompare(b.start_time||''));
+    const typeColor=t=>({Service:'badge-blue',Meeting:'badge-gold','Volunteer Slot':'badge-green',Event:'badge-green',Class:'badge-gold',Other:'badge-gray'}[t]||'badge-gray');
+    document.getElementById('events-tbody').innerHTML=sorted.map(e=>`
+      <tr><td><strong>${e.title}</strong></td><td>${fmtDate(e.date)}</td>
+      <td>${fmtTime(e.start_time)}${e.end_time?' – '+fmtTime(e.end_time):''}</td>
+      <td>${e.room_name||'—'}</td>
+      <td><span class="badge ${typeColor(e.type)}">${e.type}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Delete</button></td></tr>`)
+      .join('')||'<tr><td colspan="6" class="empty">No events yet</td></tr>';
+    const sel=document.getElementById('ev-room');
+    sel.innerHTML='<option value="">— No Room —</option>'+rooms.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  } catch(e) { document.getElementById('events-tbody').innerHTML=`<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`; }
 }
-
-async function deleteEvent(id) {
-  if (!confirm('Delete this event?')) return;
-  await api.delete('/api/events/' + id);
-  renderSchedule();
-}
-
-async function saveEvent() {
-  const title = document.getElementById('ev-title').value.trim();
-  const date  = document.getElementById('ev-date').value;
-  if (!title || !date) { alert('Title and date are required.'); return; }
-  await api.post('/api/events', {
-    title, date,
-    start_time:      document.getElementById('ev-start').value || null,
-    end_time:        document.getElementById('ev-end').value || null,
-    type:            document.getElementById('ev-type').value,
-    room_id:         document.getElementById('ev-room').value || null,
-    organizer:       document.getElementById('ev-organizer').value,
-    description:     document.getElementById('ev-desc').value,
-    volunteer_slots: parseInt(document.getElementById('ev-slots').value) || 0,
-  });
+async function deleteEvent(id){if(!confirm('Delete this event?'))return;await api.delete('/api/events/'+id);renderSchedule();}
+async function saveEvent(){
+  const title=document.getElementById('ev-title').value.trim();
+  const date=document.getElementById('ev-date').value;
+  if(!title||!date){alert('Title and date are required.');return;}
+  await api.post('/api/events',{title,date,start_time:document.getElementById('ev-start').value||null,end_time:document.getElementById('ev-end').value||null,type:document.getElementById('ev-type').value,room_id:document.getElementById('ev-room').value||null,organizer:document.getElementById('ev-organizer').value,description:document.getElementById('ev-desc').value,volunteer_slots:parseInt(document.getElementById('ev-slots').value)||0});
   closeModal('event-modal');
-  ['ev-title','ev-date','ev-start','ev-end','ev-organizer','ev-desc','ev-slots'].forEach(i => document.getElementById(i).value = '');
+  ['ev-title','ev-date','ev-start','ev-end','ev-organizer','ev-desc','ev-slots'].forEach(i=>document.getElementById(i).value='');
   renderSchedule();
 }
 
@@ -537,237 +807,392 @@ async function saveEvent() {
 async function renderRooms() {
   try {
     const [rooms, events] = await Promise.all([api.get('/api/rooms'), api.get('/api/events')]);
-    const todayEvs = events.filter(e => e.date === todayStr);
-
-    document.getElementById('rooms-grid').innerHTML = rooms.map(r => {
-      const inUse = todayEvs.filter(e => e.room_id === r.id);
-      const next  = events.filter(e => e.room_id === r.id && e.date > todayStr).sort((a,b) => a.date.localeCompare(b.date))[0];
-      return `<div class="room-card ${r.color||'blue'}">
-        <h4>${r.name}</h4>
+    const todayEvs=events.filter(e=>e.date===todayStr);
+    document.getElementById('rooms-grid').innerHTML=rooms.map(r=>{
+      const inUse=todayEvs.filter(e=>e.room_id===r.id);
+      const next=events.filter(e=>e.room_id===r.id&&e.date>todayStr).sort((a,b)=>a.date.localeCompare(b.date))[0];
+      return `<div class="room-card ${r.color||'blue'}"><h4>${r.name}</h4>
         <div class="cap">Capacity: ${r.capacity} · ${r.location||''}</div>
         <div style="font-size:12px;color:#6B7280;margin-bottom:10px">${r.features||''}</div>
-        ${inUse.length ? `<span class="badge badge-gold">In Use Today (${inUse.length})</span>` : `<span class="badge badge-green">Available Today</span>`}
-        ${next && next.date > todayStr ? `<div style="font-size:11px;color:#9CA3AF;margin-top:6px">Next: ${next.title} · ${fmtDate(next.date)}</div>` : ''}
+        ${inUse.length?`<span class="badge badge-gold">In Use Today</span>`:`<span class="badge badge-green">Available Today</span>`}
+        ${next?`<div style="font-size:11px;color:#9CA3AF;margin-top:6px">Next: ${next.title} · ${fmtDate(next.date)}</div>`:''}
       </div>`;
-    }).join('') || '<div class="empty">No rooms added yet</div>';
-
-    const booked = events.filter(e => e.room_id).sort((a,b) => a.date.localeCompare(b.date));
-    document.getElementById('bookings-tbody').innerHTML = booked.map(e => {
-      const isPast = e.date < todayStr;
-      return `<tr>
-        <td>${e.room_name || '—'}</td><td><strong>${e.title}</strong></td>
-        <td>${fmtDate(e.date)}</td>
-        <td>${fmtTime(e.start_time)}${e.end_time ? ' – '+fmtTime(e.end_time) : ''}</td>
-        <td>${e.organizer||'—'}</td>
-        <td><span class="badge ${isPast?'badge-gray':'badge-green'}">${isPast?'Past':'Confirmed'}</span></td>
-      </tr>`;
-    }).join('') || '<tr><td colspan="6" class="empty">No bookings</td></tr>';
-  } catch (e) {
-    document.getElementById('rooms-grid').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
-  }
+    }).join('')||'<div class="empty">No rooms added yet</div>';
+    const booked=events.filter(e=>e.room_id).sort((a,b)=>a.date.localeCompare(b.date));
+    document.getElementById('bookings-tbody').innerHTML=booked.map(e=>`
+      <tr><td>${e.room_name||'—'}</td><td><strong>${e.title}</strong></td>
+      <td>${fmtDate(e.date)}</td>
+      <td>${fmtTime(e.start_time)}${e.end_time?' – '+fmtTime(e.end_time):''}</td>
+      <td>${e.organizer||'—'}</td>
+      <td><span class="badge ${e.date<todayStr?'badge-gray':'badge-green'}">${e.date<todayStr?'Past':'Confirmed'}</span></td></tr>`)
+      .join('')||'<tr><td colspan="6" class="empty">No bookings</td></tr>';
+  } catch(e){document.getElementById('rooms-grid').innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
-
-async function saveRoom() {
-  const name = document.getElementById('rm-name').value.trim();
-  if (!name) { alert('Room name is required.'); return; }
-  const colors = ['blue','green','gold','red'];
-  await api.post('/api/rooms', {
-    name, capacity: parseInt(document.getElementById('rm-cap').value) || 0,
-    location: document.getElementById('rm-loc').value,
-    features: document.getElementById('rm-features').value,
-    notes:    document.getElementById('rm-notes').value,
-    color:    colors[Math.floor(Math.random() * colors.length)],
-  });
+async function saveRoom(){
+  const name=document.getElementById('rm-name').value.trim();
+  if(!name){alert('Room name is required.');return;}
+  const colors=['blue','green','gold','red'];
+  await api.post('/api/rooms',{name,capacity:parseInt(document.getElementById('rm-cap').value)||0,location:document.getElementById('rm-loc').value,features:document.getElementById('rm-features').value,notes:document.getElementById('rm-notes').value,color:colors[Math.floor(Math.random()*colors.length)]});
   closeModal('room-modal');
-  ['rm-name','rm-cap','rm-loc','rm-features','rm-notes'].forEach(i => document.getElementById(i).value = '');
+  ['rm-name','rm-cap','rm-loc','rm-features','rm-notes'].forEach(i=>document.getElementById(i).value='');
   renderRooms();
 }
 
 // ── MEMBERS ───────────────────────────────────────────────────────────────────
-let memberSearch = '', memberStatus = '';
-
+let memberSearch='', memberStatus='';
 async function renderMembers() {
   try {
-    let url = '/api/members';
-    const params = [];
-    if (memberStatus) params.push('status=' + encodeURIComponent(memberStatus));
-    if (memberSearch) params.push('search=' + encodeURIComponent(memberSearch));
-    if (params.length) url += '?' + params.join('&');
+    let url='/api/members';
+    const params=[];
+    if(memberStatus) params.push('status='+encodeURIComponent(memberStatus));
+    if(memberSearch)  params.push('search='+encodeURIComponent(memberSearch));
+    if(params.length) url+='?'+params.join('&');
     const members = await api.get(url);
-
-    document.getElementById('members-tbody').innerHTML = members.map(m => {
-      const familyLinks = (m.family||[]).map(f =>
-        `<span class="badge badge-blue" style="margin:1px">${f.relation}: ${f.related_name}</span>`
-      ).join(' ');
+    document.getElementById('members-tbody').innerHTML=members.map(m=>{
+      const familyLinks=(m.family||[]).slice(0,3).map(f=>`<span class="badge badge-blue" style="margin:1px;font-size:10px">${f.relation}: ${f.related_name.split(' ')[0]}</span>`).join(' ');
+      const moreFamily=(m.family||[]).length>3?`<span style="font-size:10px;color:#9CA3AF">+${m.family.length-3}</span>`:'';
       return `<tr>
-        <td><strong>${m.first} ${m.last}</strong>${m.ministry ? `<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>` : ''}</td>
+        <td>${avatarHtml(m,34)}</td>
+        <td><span class="member-name-link" onclick="openProfile('${m.id}')">${m.first} ${m.last}</span>${m.ministry?`<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>`:''}</td>
         <td style="color:#6B7280;font-size:12px">${m.pronouns||'—'}</td>
         <td><a href="mailto:${m.email}" style="color:#1E3A5F">${m.email||'—'}</a></td>
         <td>${m.phone||'—'}</td>
         <td><span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span></td>
-        <td>${familyLinks || '<span style="color:#9CA3AF;font-size:12px">—</span>'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">Remove</button></td>
+        <td>${familyLinks}${moreFamily||'<span style="color:#9CA3AF;font-size:12px">—</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="openProfile('${m.id}')">View</button></td>
       </tr>`;
-    }).join('') || '<tr><td colspan="7" class="empty">No members found</td></tr>';
-  } catch (e) {
-    document.getElementById('members-tbody').innerHTML = `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
+    }).join('')||'<tr><td colspan="8" class="empty">No members found</td></tr>';
+  } catch(e){document.getElementById('members-tbody').innerHTML=`<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;}
+}
+function filterMembers(v){memberSearch=v;renderMembers();}
+function filterMemberStatus(v){memberStatus=v;renderMembers();}
+
+// ── MEMBER PROFILE ────────────────────────────────────────────────────────────
+let profileMemberId = null;
+let allMembersCache = [];
+
+async function openProfile(id) {
+  profileMemberId = id;
+  try {
+    const [m, all] = await Promise.all([api.get('/api/members/'+id), api.get('/api/members')]);
+    allMembersCache = all;
+    renderProfileModal(m);
+    openModal('profile-modal');
+  } catch(e) { alert('Error loading member: ' + e.message); }
+}
+
+function renderProfileModal(m) {
+  // Photo
+  const photoCircle = document.getElementById('profile-photo-circle');
+  const url = photoUrl(m.photo);
+  if (url) {
+    photoCircle.innerHTML = `<img src="${url}" style="width:110px;height:110px;border-radius:50%;object-fit:cover" onerror="this.parentElement.textContent='${initials(m)}'">`;
+  } else {
+    photoCircle.textContent = initials(m);
+    photoCircle.style.display = 'flex';
+  }
+
+  document.getElementById('profile-name').textContent = `${m.first} ${m.last}`;
+  document.getElementById('profile-sub').textContent = [m.pronouns, m.ministry].filter(Boolean).join(' · ') || 'No ministry assigned';
+  document.getElementById('profile-badges').innerHTML = `
+    <span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span>
+    ${m.since?`<span class="badge badge-blue">Since ${fmtDate(m.since)}</span>`:''}
+    ${m.family_size>1?`<span class="badge badge-purple">Family of ${m.family_size}</span>`:''}`;
+
+  document.getElementById('profile-details').innerHTML = `
+    <div class="profile-detail-item"><div class="lbl">Email</div><div class="val">${m.email?`<a href="mailto:${m.email}" style="color:#1E3A5F">${m.email}</a>`:'—'}</div></div>
+    <div class="profile-detail-item"><div class="lbl">Phone</div><div class="val">${m.phone||'—'}</div></div>
+    <div class="profile-detail-item"><div class="lbl">Address</div><div class="val">${m.address||'—'}</div></div>
+    <div class="profile-detail-item"><div class="lbl">Member Since</div><div class="val">${m.since?fmtDate(m.since):'—'}</div></div>`;
+
+  // Family
+  const fam = m.family || [];
+  if (fam.length === 0) {
+    document.getElementById('profile-family').innerHTML = '<span style="font-size:13px;color:#9CA3AF">No family connections linked yet.</span>';
+  } else {
+    document.getElementById('profile-family').innerHTML = fam.map(f => {
+      const famAvatarUrl = photoUrl(f.related_photo);
+      const famAvatarHtml = famAvatarUrl
+        ? `<img src="${famAvatarUrl}" class="family-avatar" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'">`
+        + `<span class="family-avatar" style="display:none">${(f.related_name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase()}</span>`
+        : `<span class="family-avatar">${(f.related_name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase()}</span>`;
+      return `<span class="family-chip" onclick="openProfile('${f.related_id}')">
+        ${famAvatarHtml}
+        <span><div class="rel-type">${f.relation}</div><div class="rel-name">${f.related_name}</div></span>
+        <span class="rel-del" onclick="event.stopPropagation();removeFamilyLink('${f.id}','${m.id}')" title="Remove">✕</span>
+      </span>`;
+    }).join('');
+  }
+
+  // Notes
+  if (m.notes) {
+    document.getElementById('profile-notes-section').style.display = '';
+    document.getElementById('profile-notes').textContent = m.notes;
+  } else {
+    document.getElementById('profile-notes-section').style.display = 'none';
   }
 }
 
-function filterMembers(v)      { memberSearch = v; renderMembers(); }
-function filterMemberStatus(v) { memberStatus = v; renderMembers(); }
+async function uploadPhoto(input) {
+  const file = input.files[0];
+  if (!file || !profileMemberId) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const headers = {};
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+    const res = await fetch(API_BASE + '/api/members/' + profileMemberId + '/photo', {
+      method: 'POST', headers, body: formData,
+    });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    const photoCircle = document.getElementById('profile-photo-circle');
+    photoCircle.innerHTML = `<img src="${API_BASE}/static/photos/${data.photo}?t=${Date.now()}" style="width:110px;height:110px;border-radius:50%;object-fit:cover">`;
+    renderMembers();
+  } catch(e) { alert('Photo upload failed: ' + e.message); }
+  input.value = '';
+}
 
-async function deleteMember(id) {
-  if (!confirm('Remove this member?')) return;
-  await api.delete('/api/members/' + id);
+function editMemberFromProfile() {
+  closeModal('profile-modal');
+  api.get('/api/members/'+profileMemberId).then(m => {
+    document.getElementById('member-modal-title').textContent = '✏️ Edit Member';
+    document.getElementById('mb-id').value       = m.id;
+    document.getElementById('mb-first').value    = m.first;
+    document.getElementById('mb-last').value     = m.last;
+    document.getElementById('mb-email').value    = m.email||'';
+    document.getElementById('mb-phone').value    = m.phone||'';
+    document.getElementById('mb-address').value  = m.address||'';
+    document.getElementById('mb-status').value   = m.status;
+    document.getElementById('mb-since').value    = m.since||'';
+    document.getElementById('mb-ministry').value = m.ministry||'';
+    document.getElementById('mb-family').value   = m.family_size||1;
+    document.getElementById('mb-pronouns').value = m.pronouns||'';
+    document.getElementById('mb-notes').value    = m.notes||'';
+    document.getElementById('member-save-btn').textContent = 'Save Changes';
+    openModal('member-modal');
+  });
+}
+
+async function deleteMemberFromProfile() {
+  if (!confirm('Permanently delete this member? This cannot be undone.')) return;
+  await api.delete('/api/members/'+profileMemberId);
+  closeModal('profile-modal');
   renderMembers();
 }
 
 async function saveMember() {
+  const id    = document.getElementById('mb-id').value;
   const first = document.getElementById('mb-first').value.trim();
   const last  = document.getElementById('mb-last').value.trim();
   if (!first || !last) { alert('First and last name are required.'); return; }
-  await api.post('/api/members', {
+  const data = {
     first, last,
-    email:       document.getElementById('mb-email').value || null,
-    phone:       document.getElementById('mb-phone').value || null,
-    address:     document.getElementById('mb-address').value || null,
+    email:       document.getElementById('mb-email').value||null,
+    phone:       document.getElementById('mb-phone').value||null,
+    address:     document.getElementById('mb-address').value||null,
     status:      document.getElementById('mb-status').value,
-    since:       document.getElementById('mb-since').value || null,
-    ministry:    document.getElementById('mb-ministry').value || null,
-    family_size: parseInt(document.getElementById('mb-family').value) || 1,
-    pronouns:    document.getElementById('mb-pronouns').value || null,
-  });
+    since:       document.getElementById('mb-since').value||null,
+    ministry:    document.getElementById('mb-ministry').value||null,
+    family_size: parseInt(document.getElementById('mb-family').value)||1,
+    pronouns:    document.getElementById('mb-pronouns').value||null,
+    notes:       document.getElementById('mb-notes').value||null,
+  };
+  if (id) { await api.put('/api/members/'+id, data); }
+  else    { await api.post('/api/members', data); }
   closeModal('member-modal');
-  ['mb-first','mb-last','mb-email','mb-phone','mb-address','mb-since','mb-ministry','mb-family'].forEach(i => document.getElementById(i).value = '');
-  document.getElementById('mb-pronouns').value = '';
+  // Reset form
+  document.getElementById('mb-id').value = '';
+  document.getElementById('member-modal-title').textContent = '👤 Add Member';
+  document.getElementById('member-save-btn').textContent = 'Add Member';
+  ['mb-first','mb-last','mb-email','mb-phone','mb-address','mb-since','mb-ministry','mb-family','mb-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('mb-pronouns').value='';
   renderMembers();
+}
+
+// ── FAMILY ────────────────────────────────────────────────────────────────────
+function openAddFamily() {
+  const m = allMembersCache.find(x => x.id === profileMemberId);
+  if (!m) return;
+  const linkedIds = new Set((m.family||[]).map(f=>f.related_id));
+  const opts = allMembersCache
+    .filter(x => x.id !== profileMemberId && !linkedIds.has(x.id))
+    .map(x => `<option value="${x.id}">${x.first} ${x.last}</option>`)
+    .join('');
+  document.getElementById('fam-related-id').innerHTML = opts || '<option>No other members</option>';
+  document.getElementById('fam-member-name-label').textContent = `${m.first}`;
+  openModal('family-modal');
+}
+
+async function addFamilyMember() {
+  const related_id = document.getElementById('fam-related-id').value;
+  const relation   = document.getElementById('fam-relation').value;
+  if (!related_id) { alert('Please select a family member.'); return; }
+  await api.post('/api/members/'+profileMemberId+'/family', { related_id, relation });
+  closeModal('family-modal');
+  const m = await api.get('/api/members/'+profileMemberId);
+  allMembersCache = await api.get('/api/members');
+  renderProfileModal(m);
+}
+
+async function removeFamilyLink(relationId, memberId) {
+  if (!confirm('Remove this family connection?')) return;
+  await api.delete('/api/members/'+memberId+'/family/'+relationId);
+  const m = await api.get('/api/members/'+profileMemberId);
+  renderProfileModal(m);
 }
 
 // ── GIVING ────────────────────────────────────────────────────────────────────
 let givingYear = String(today.getFullYear());
-
 async function renderGiving() {
   try {
-    const [giving, pledges, members] = await Promise.all([
-      api.get('/api/giving?year=' + givingYear),
-      api.get('/api/pledges'),
-      api.get('/api/members'),
-    ]);
-
-    // Year selector
+    const [giving, pledges, members] = await Promise.all([api.get('/api/giving?year='+givingYear),api.get('/api/pledges'),api.get('/api/members')]);
     const allGiving = await api.get('/api/giving');
-    const years = [...new Set(allGiving.map(g => g.date.slice(0,4)))].sort().reverse();
-    document.getElementById('giving-year-filter').innerHTML = years.map(y => `<option value="${y}"${y===givingYear?' selected':''}>${y}</option>`).join('');
-
-    // Hero stats
-    const total    = giving.reduce((s,g) => s + Number(g.amount), 0);
-    const pledTot  = pledges.reduce((s,p) => s + Number(p.pledged_amount), 0);
-    const paidTot  = pledges.reduce((s,p) => s + Number(p.paid_amount), 0);
-    const thisMo   = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
-    const moTotal  = allGiving.filter(g => g.date.startsWith(thisMo)).reduce((s,g) => s + Number(g.amount), 0);
-
-    document.getElementById('giving-hero').innerHTML = `
+    const years=[...new Set(allGiving.map(g=>g.date.slice(0,4)))].sort().reverse();
+    document.getElementById('giving-year-filter').innerHTML=years.map(y=>`<option value="${y}"${y===givingYear?' selected':''}>${y}</option>`).join('');
+    const total=giving.reduce((s,g)=>s+Number(g.amount),0);
+    const pledTot=pledges.reduce((s,p)=>s+Number(p.pledged_amount),0);
+    const paidTot=pledges.reduce((s,p)=>s+Number(p.paid_amount),0);
+    const thisMo=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+    const moTotal=allGiving.filter(g=>g.date.startsWith(thisMo)).reduce((s,g)=>s+Number(g.amount),0);
+    document.getElementById('giving-hero').innerHTML=`
       <div class="gh-item"><div class="lbl">${givingYear} Total</div><div class="val">${fmt$(total)}</div></div>
       <div class="gh-item"><div class="lbl">This Month</div><div class="val">${fmt$(moTotal)}</div></div>
       <div class="gh-item"><div class="lbl">Total Pledged</div><div class="val">${fmt$(pledTot)}</div><div class="pct">${fmt$(paidTot)} collected</div></div>
-      <div class="gh-item"><div class="lbl">Pledge Progress</div><div class="val">${pledTot > 0 ? Math.round(paidTot/pledTot*100) : 0}%</div><div class="pct">Fulfillment rate</div></div>
-    `;
-
-    const typeColor = t => ({ Tithe:'badge-blue', Offering:'badge-green', 'Building Fund':'badge-gold', Missions:'badge-gold', 'Special Gift':'badge-red' }[t] || 'badge-gray');
-    document.getElementById('giving-tbody').innerHTML = giving.map(g => `
-      <tr>
-        <td>${fmtDate(g.date)}</td>
-        <td>${g.member_name || 'Anonymous'}</td>
-        <td><strong class="text-green">${fmt$(g.amount)}</strong></td>
-        <td><span class="badge ${typeColor(g.type)}">${g.type}</span></td>
-        <td>${g.fund||'General Fund'}</td>
-        <td style="color:#9CA3AF;font-size:12px">${g.notes||'—'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteGiving('${g.id}')">✕</button></td>
-      </tr>`).join('') || `<tr><td colspan="7" class="empty">No giving records for ${givingYear}</td></tr>`;
-
-    document.getElementById('pledges-tbody').innerHTML = pledges.map(p => {
-      const bal = Number(p.pledged_amount) - Number(p.paid_amount);
-      const pct = Math.round(Number(p.paid_amount) / Number(p.pledged_amount) * 100);
-      return `<tr>
-        <td>${p.member_name || 'Anonymous'}</td>
-        <td>${p.campaign}</td>
-        <td>${fmt$(p.pledged_amount)}</td>
-        <td>${fmt$(p.paid_amount)}</td>
-        <td class="${bal > 0 ? 'text-gold' : 'text-green'}">${fmt$(bal)}</td>
-        <td>${p.end_date ? fmtDate(p.end_date) : '—'}</td>
-        <td><span class="badge ${pct>=100?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}% funded</span></td>
-      </tr>`;
-    }).join('') || '<tr><td colspan="7" class="empty">No pledges recorded</td></tr>';
-
-    // Populate member dropdowns in modals
-    const mOpts = '<option value="">— Anonymous —</option>' + members.filter(m => m.status !== 'Inactive').map(m => `<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
-    document.getElementById('gv-member').innerHTML = mOpts;
-    document.getElementById('pl-member').innerHTML = mOpts;
-  } catch (e) {
-    document.getElementById('giving-hero').innerHTML = `<div style="color:#fff">Error: ${e.message}</div>`;
-  }
+      <div class="gh-item"><div class="lbl">Pledge Progress</div><div class="val">${pledTot>0?Math.round(paidTot/pledTot*100):0}%</div><div class="pct">Fulfillment rate</div></div>`;
+    const typeColor=t=>({Tithe:'badge-blue',Offering:'badge-green','Building Fund':'badge-gold',Missions:'badge-gold','Special Gift':'badge-red'}[t]||'badge-gray');
+    document.getElementById('giving-tbody').innerHTML=giving.map(g=>`
+      <tr><td>${fmtDate(g.date)}</td><td>${g.member_name||'Anonymous'}</td>
+      <td><strong class="text-green">${fmt$(g.amount)}</strong></td>
+      <td><span class="badge ${typeColor(g.type)}">${g.type}</span></td>
+      <td>${g.fund||'General Fund'}</td>
+      <td style="color:#9CA3AF;font-size:12px">${g.notes||'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteGiving('${g.id}')">✕</button></td></tr>`)
+      .join('')||`<tr><td colspan="7" class="empty">No giving records for ${givingYear}</td></tr>`;
+    document.getElementById('pledges-tbody').innerHTML=pledges.map(p=>{
+      const bal=Number(p.pledged_amount)-Number(p.paid_amount);
+      const pct=Math.round(Number(p.paid_amount)/Number(p.pledged_amount)*100);
+      return `<tr><td>${p.member_name||'Anonymous'}</td><td>${p.campaign}</td>
+        <td>${fmt$(p.pledged_amount)}</td><td>${fmt$(p.paid_amount)}</td>
+        <td class="${bal>0?'text-gold':'text-green'}">${fmt$(bal)}</td>
+        <td>${p.end_date?fmtDate(p.end_date):'—'}</td>
+        <td><span class="badge ${pct>=100?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}% funded</span></td></tr>`;
+    }).join('')||'<tr><td colspan="7" class="empty">No pledges recorded</td></tr>';
+    const mOpts='<option value="">— Anonymous —</option>'+members.filter(m=>m.status!=='Inactive').map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+    document.getElementById('gv-member').innerHTML=mOpts;
+    document.getElementById('pl-member').innerHTML=mOpts;
+  } catch(e){document.getElementById('giving-hero').innerHTML=`<div style="color:#fff">Error: ${e.message}</div>`;}
 }
-
-function filterGivingYear(y) { givingYear = y; renderGiving(); }
-
-function switchGivingTab(tab, el) {
-  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+function filterGivingYear(y){givingYear=y;renderGiving();}
+function switchGivingTab(tab,el){
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('giving-tithe-view').style.display  = tab === 'tithe'   ? '' : 'none';
-  document.getElementById('giving-pledges-view').style.display = tab === 'pledges' ? '' : 'none';
+  document.getElementById('giving-tithe-view').style.display=tab==='tithe'?'':'none';
+  document.getElementById('giving-pledges-view').style.display=tab==='pledges'?'':'none';
 }
-
-async function deleteGiving(id) {
-  if (!confirm('Delete this giving record?')) return;
-  await api.delete('/api/giving/' + id);
-  renderGiving();
-}
-
-async function saveGiving() {
-  const amount = parseFloat(document.getElementById('gv-amount').value);
-  const date   = document.getElementById('gv-date').value;
-  if (!amount || !date) { alert('Amount and date are required.'); return; }
-  const type = document.getElementById('gv-type').value;
-  await api.post('/api/giving', {
-    member_id: document.getElementById('gv-member').value || null,
-    date, amount, type, fund: type,
-    notes: document.getElementById('gv-notes').value || null,
-  });
+async function deleteGiving(id){if(!confirm('Delete this giving record?'))return;await api.delete('/api/giving/'+id);renderGiving();}
+async function saveGiving(){
+  const amount=parseFloat(document.getElementById('gv-amount').value);
+  const date=document.getElementById('gv-date').value;
+  if(!amount||!date){alert('Amount and date are required.');return;}
+  const type=document.getElementById('gv-type').value;
+  await api.post('/api/giving',{member_id:document.getElementById('gv-member').value||null,date,amount,type,fund:type,notes:document.getElementById('gv-notes').value||null});
   closeModal('giving-modal');
-  ['gv-amount','gv-date','gv-notes'].forEach(i => document.getElementById(i).value = '');
+  ['gv-amount','gv-date','gv-notes'].forEach(i=>document.getElementById(i).value='');
+  renderGiving();
+}
+async function savePledge(){
+  const amount=parseFloat(document.getElementById('pl-amount').value);
+  if(!amount){alert('Pledged amount is required.');return;}
+  await api.post('/api/pledges',{member_id:document.getElementById('pl-member').value||null,campaign:document.getElementById('pl-campaign').value||'General Pledge',pledged_amount:amount,paid_amount:0,pledge_date:document.getElementById('pl-date').value||todayStr,end_date:document.getElementById('pl-end').value||null,frequency:document.getElementById('pl-freq').value});
+  closeModal('pledge-modal');
+  ['pl-campaign','pl-amount','pl-date','pl-end'].forEach(i=>document.getElementById(i).value='');
   renderGiving();
 }
 
-async function savePledge() {
-  const amount = parseFloat(document.getElementById('pl-amount').value);
-  if (!amount) { alert('Pledged amount is required.'); return; }
-  await api.post('/api/pledges', {
-    member_id:      document.getElementById('pl-member').value || null,
-    campaign:       document.getElementById('pl-campaign').value || 'General Pledge',
-    pledged_amount: amount,
-    paid_amount:    0,
-    pledge_date:    document.getElementById('pl-date').value || todayStr,
-    end_date:       document.getElementById('pl-end').value || null,
-    frequency:      document.getElementById('pl-freq').value,
+// ── USER ACCOUNTS ─────────────────────────────────────────────────────────────
+async function renderUsers() {
+  try {
+    const users = await api.get('/api/users');
+    document.getElementById('users-tbody').innerHTML = users.map(u => `
+      <tr>
+        <td><strong>${u.email}</strong></td>
+        <td><span class="badge ${u.role==='admin'?'badge-red':'badge-blue'}">${u.role}</span></td>
+        <td>${u.member_name||'<span style="color:#9CA3AF">Not linked</span>'}</td>
+        <td><span class="badge ${u.is_active?'badge-green':'badge-gray'}">${u.is_active?'Active':'Inactive'}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editUser('${u.id}','${u.email}','${u.role}','${u.member_id||''}',${u.is_active})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Delete</button>
+        </td>
+      </tr>`).join('')||'<tr><td colspan="5" class="empty">No user accounts</td></tr>';
+  } catch(e) { document.getElementById('users-tbody').innerHTML=`<tr><td colspan="5" class="empty">Error: ${e.message}</td></tr>`; }
+}
+
+async function openUserModal() {
+  const members = await api.get('/api/members');
+  document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>' +
+    members.map(m=>`<option value="${m.id}">${m.first} ${m.last}</option>`).join('');
+  openModal('user-modal');
+}
+
+function editUser(id, email, role, memberId, isActive) {
+  document.getElementById('user-modal-title').textContent = '✏️ Edit User Account';
+  document.getElementById('user-edit-id').value   = id;
+  document.getElementById('user-email').value     = email;
+  document.getElementById('user-pass').value      = '';
+  document.getElementById('user-role').value      = role;
+  document.getElementById('user-pass-hint').style.display = '';
+  document.getElementById('user-save-btn').textContent = 'Save Changes';
+  api.get('/api/members').then(members => {
+    document.getElementById('user-member-id').innerHTML = '<option value="">— Not linked —</option>' +
+      members.map(m=>`<option value="${m.id}" ${m.id===memberId?'selected':''}>${m.first} ${m.last}</option>`).join('');
+    openModal('user-modal');
   });
-  closeModal('pledge-modal');
-  ['pl-campaign','pl-amount','pl-date','pl-end'].forEach(i => document.getElementById(i).value = '');
-  renderGiving();
+}
+
+async function saveUser() {
+  const id    = document.getElementById('user-edit-id').value;
+  const email = document.getElementById('user-email').value.trim();
+  const pass  = document.getElementById('user-pass').value;
+  const role  = document.getElementById('user-role').value;
+  const mId   = document.getElementById('user-member-id').value;
+  if (!email) { alert('Email is required.'); return; }
+  if (!id && !pass) { alert('Password is required for new users.'); return; }
+  try {
+    if (id) {
+      const data = { email, role, member_id: mId||null };
+      if (pass) data.password = pass;
+      await api.put('/api/users/'+id, data);
+    } else {
+      await api.post('/api/users', { email, password: pass, role, member_id: mId||null });
+    }
+    closeModal('user-modal');
+    document.getElementById('user-edit-id').value = '';
+    document.getElementById('user-modal-title').textContent = '🔐 Add User Account';
+    document.getElementById('user-save-btn').textContent = 'Add User';
+    document.getElementById('user-pass-hint').style.display = 'none';
+    renderUsers();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user account?')) return;
+  await api.delete('/api/users/'+id);
+  renderUsers();
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
 function openModal(id) {
+  if (id==='user-modal') { openUserModal(); return; }
   document.getElementById(id).classList.add('open');
-  document.getElementById(id).querySelectorAll('input[type=date]').forEach(i => { if (!i.value) i.value = todayStr; });
+  document.getElementById(id).querySelectorAll('input[type=date]').forEach(i=>{if(!i.value)i.value=todayStr;});
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(b => b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); }));
+document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-checkApiStatus();
-renderDashboard();
+document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+initAuth();
 </script>
 </body>
 </html>

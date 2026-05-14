@@ -1,22 +1,38 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os, shutil
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app import models, schemas
 
 router = APIRouter(prefix="/api/members", tags=["Members"])
 
+RELATION_REVERSE = {
+    'Partner':    'Partner',
+    'Child':      'Parent',
+    'Parent':     'Child',
+    'Sibling':    'Sibling',
+    'Guardian':   'Ward',
+    'Ward':       'Guardian',
+    'Grandparent':'Grandchild',
+    'Grandchild': 'Grandparent',
+    'Aunt/Uncle': 'Niece/Nephew',
+    'Niece/Nephew':'Aunt/Uncle',
+    'Other':      'Other',
+}
+
 
 def enrich_member(m: models.Member) -> schemas.MemberOut:
-    """Convert ORM member to schema, including family relationships."""
     out = schemas.MemberOut.from_orm(m)
     family = []
     for r in m.relationships_from:
         if r.related:
             family.append(schemas.MemberRelationshipOut(
-                id=r.id, related_id=r.related_id,
+                id=r.id,
+                related_id=r.related_id,
                 related_name=f"{r.related.first} {r.related.last}",
-                relation=r.relation
+                relation=r.relation,
+                related_photo=r.related.photo,
             ))
     out.family = family
     return out
@@ -85,40 +101,72 @@ def delete_member(member_id: str, db: Session = Depends(get_db)):
     db.commit()
 
 
+# ── Photo Upload ──────────────────────────────────────────────────────────────
+
+@router.post("/{member_id}/photo")
+async def upload_photo(member_id: str, file: UploadFile = File(...),
+                       db: Session = Depends(get_db)):
+    m = db.query(models.Member).filter(models.Member.id == member_id).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Member not found")
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    ext = (file.filename or "photo.jpg").rsplit(".", 1)[-1].lower()
+    if ext not in ("jpg", "jpeg", "png", "gif", "webp"):
+        ext = "jpg"
+    filename = f"{member_id}.{ext}"
+
+    photos_dir = os.path.join(os.path.dirname(__file__), "..", "..", "static", "photos")
+    os.makedirs(photos_dir, exist_ok=True)
+
+    # Remove old photo if different extension
+    for old_ext in ("jpg", "jpeg", "png", "gif", "webp"):
+        old_path = os.path.join(photos_dir, f"{member_id}.{old_ext}")
+        if os.path.exists(old_path) and old_ext != ext:
+            os.remove(old_path)
+
+    file_path = os.path.join(photos_dir, filename)
+    with open(file_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
+    m.photo = filename
+    db.commit()
+    return {"photo": filename, "url": f"/static/photos/{filename}"}
+
+
 # ── Family Relationships ──────────────────────────────────────────────────────
 
 @router.post("/{member_id}/family", response_model=schemas.MemberRelationshipOut, status_code=201)
-def add_family_member(member_id: str, data: schemas.MemberRelationshipCreate, db: Session = Depends(get_db)):
-    """Link two members as family. Creates both directions automatically."""
+def add_family_member(member_id: str, data: schemas.MemberRelationshipCreate,
+                      db: Session = Depends(get_db)):
     if not db.query(models.Member).filter(models.Member.id == member_id).first():
         raise HTTPException(status_code=404, detail="Member not found")
-    if not db.query(models.Member).filter(models.Member.id == data.related_id).first():
+    related = db.query(models.Member).filter(models.Member.id == data.related_id).first()
+    if not related:
         raise HTTPException(status_code=404, detail="Related member not found")
 
-    # Reverse relation map
-    reverse = {
-        'Partner': 'Partner', 'Child': 'Parent', 'Parent': 'Child',
-        'Sibling': 'Sibling', 'Guardian': 'Ward', 'Ward': 'Guardian', 'Other': 'Other'
-    }
     rel = models.MemberRelationship(member_id=member_id, related_id=data.related_id, relation=data.relation)
-    rev = models.MemberRelationship(member_id=data.related_id, related_id=member_id, relation=reverse.get(data.relation, 'Other'))
+    rev = models.MemberRelationship(member_id=data.related_id, related_id=member_id,
+                                    relation=RELATION_REVERSE.get(data.relation, "Other"))
     db.add(rel); db.add(rev)
     db.commit(); db.refresh(rel)
-    related = db.query(models.Member).filter(models.Member.id == data.related_id).first()
+
     return schemas.MemberRelationshipOut(
         id=rel.id, related_id=rel.related_id,
         related_name=f"{related.first} {related.last}",
-        relation=rel.relation
+        relation=rel.relation,
+        related_photo=related.photo,
     )
 
 
 @router.delete("/{member_id}/family/{relation_id}", status_code=204)
 def remove_family_member(member_id: str, relation_id: str, db: Session = Depends(get_db)):
-    """Remove a family link (removes both directions)."""
-    rel = db.query(models.MemberRelationship).filter(models.MemberRelationship.id == relation_id).first()
+    rel = db.query(models.MemberRelationship).filter(
+        models.MemberRelationship.id == relation_id).first()
     if not rel:
         raise HTTPException(status_code=404, detail="Relationship not found")
-    # Remove the reverse link too
     reverse = db.query(models.MemberRelationship).filter(
         models.MemberRelationship.member_id == rel.related_id,
         models.MemberRelationship.related_id == rel.member_id

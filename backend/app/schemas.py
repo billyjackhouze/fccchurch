@@ -21,6 +21,7 @@ class MemberBase(BaseModel):
     family_size: Optional[int] = 1
     pronouns:    Optional[str] = None
     notes:       Optional[str] = None
+    photo:       Optional[str] = None
 
 class MemberCreate(MemberBase):
     pass
@@ -31,13 +32,14 @@ class MemberUpdate(MemberBase):
 
 class MemberRelationshipCreate(BaseModel):
     related_id: str
-    relation:   str   # Partner | Child | Parent | Sibling | Guardian | Other
+    relation:   str
 
 class MemberRelationshipOut(BaseModel):
     id:           str
     related_id:   str
     related_name: str
     relation:     str
+    related_photo: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -95,7 +97,7 @@ class EventUpdate(EventBase):
 class EventOut(EventBase):
     id:         str
     created_at: datetime
-    room_name:  Optional[str] = None  # Joined from rooms table
+    room_name:  Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -115,7 +117,7 @@ class GivingCreate(GivingBase):
 
 class GivingOut(GivingBase):
     id:          str
-    member_name: Optional[str] = None  # Joined from members table
+    member_name: Optional[str] = None
     created_at:  datetime
     class Config:
         from_attributes = True
@@ -160,3 +162,48 @@ class DashboardStats(BaseModel):
     total_pledged:     Decimal
     total_paid:        Decimal
     pledge_pct:        int
+
+
+# ── Auth / Users ──────────────────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    email:     str
+    password:  str
+    role:      Optional[str] = "member"
+    member_id: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    email:     Optional[str] = None
+    password:  Optional[str] = None
+    role:      Optional[str] = None
+    is_active: Optional[bool] = None
+    member_id: Optional[str] = None
+
+class UserOut(BaseModel):
+    id:        str
+    email:     str
+    role:      str
+    is_active: bool
+    member_id: Optional[str] = None
+    member_name: Optional[str] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type:   str
+    role:         str
+    user_id:      str
+    member_id:    Optional[str] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password:     str
+
+class ForgotPassword(BaseModel):
+    email: str
+
+class ResetPassword(BaseModel):
+    token:        str
+    new_password: str
