@@ -155,6 +155,25 @@ tr:last-child td{border-bottom:none}
 .login-link{color:#1E3A5F;cursor:pointer;text-decoration:underline}
 /* ── User Mgmt ── */
 .user-chip{display:inline-flex;align-items:center;gap:6px;background:#F0F4F8;border-radius:6px;padding:3px 8px;font-size:12px}
+/* ── Volunteer Shifts ── */
+.shift-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:18px 20px;margin-bottom:14px;border-left:4px solid #1E3A5F}
+.shift-card.gold{border-left-color:#B8860B}.shift-card.green{border-left-color:#1A7A4A}.shift-card.urgent{border-left-color:#DC2626}
+.shift-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.shift-title{font-size:14px;font-weight:700;color:#1E3A5F;margin-bottom:3px}
+.shift-meta{font-size:12px;color:#6B7280}
+.shift-slots{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.slot-chip{display:inline-flex;align-items:center;gap:5px;background:#F0F4F8;border-radius:6px;padding:4px 10px;font-size:12px;color:#374151;border:1px solid #E5E7EB}
+.slot-chip.mine{background:#EBF0F8;border-color:#93B4D9;color:#1E3A5F;font-weight:600}
+.slot-chip.open{border-style:dashed;color:#9CA3AF;background:#fff}
+.slot-avatar{width:20px;height:20px;border-radius:50%;background:#1E3A5F;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.vol-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.vol-filters select,.vol-filters input{padding:7px 11px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff}
+.notify-bar{background:#EBF0F8;border:1px solid #93B4D9;border-radius:8px;padding:10px 16px;font-size:13px;color:#1E3A5F;display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.vol-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px}
+.vs-card{background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);text-align:center;border-top:3px solid #1E3A5F}
+.vs-card.gold{border-top-color:#B8860B}.vs-card.green{border-top-color:#1A7A4A}
+.vs-card .vsv{font-size:26px;font-weight:800;color:#1E3A5F}.vs-card .vsl{font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.empty-vol{text-align:center;padding:48px;color:#9CA3AF;font-size:14px}
 /* ── Member Detail Page ── */
 .detail-back-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .member-hero-card{background:#fff;border-radius:12px;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;gap:24px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
@@ -219,7 +238,11 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item" onclick="showPage('members')" id="nav-members"><span class="icon">👥</span> Members</div>
     <div class="nav-section">Finance</div>
     <div class="nav-item" onclick="showPage('giving')" id="nav-giving"><span class="icon">💰</span> Giving &amp; Pledges</div>
+    <div class="nav-section">Volunteer</div>
+    <div class="nav-item" onclick="showPage('volunteer')" id="nav-volunteer"><span class="icon">🙋</span> Sign Up for Shifts</div>
+    <div class="nav-item" onclick="showPage('myshifts')" id="nav-myshifts"><span class="icon">📋</span> My Schedule</div>
     <div class="nav-section" id="admin-nav-section">Admin</div>
+    <div class="nav-item" onclick="showPage('manage-shifts')" id="nav-manage-shifts" style="display:none"><span class="icon">⚙️</span> Manage Shifts</div>
     <div class="nav-item" onclick="showPage('users')" id="nav-users" style="display:none"><span class="icon">🔐</span> User Accounts</div>
   </nav>
   <div class="sidebar-footer">
@@ -356,6 +379,53 @@ tr:last-child td{border-bottom:none}
           </table></div>
         </div>
       </div>
+    </div>
+
+    <!-- VOLUNTEER SHIFTS -->
+    <div class="page" id="page-volunteer">
+      <div class="page-header"><h2>🙋 Sign Up for Shifts</h2>
+        <div class="flex">
+          <button class="btn btn-outline" onclick="renderVolunteer()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="vol-stats" id="vol-stats"></div>
+      <div id="vol-notify-bar" style="display:none" class="notify-bar">📣 <span id="vol-notify-text"></span></div>
+      <div class="vol-filters">
+        <select id="vol-ministry-filter" onchange="renderVolunteer()">
+          <option value="">All Ministries</option>
+        </select>
+        <select id="vol-month-filter" onchange="renderVolunteer()"></select>
+        <div class="tabs" style="margin:0">
+          <div class="tab active" id="vtab-open" onclick="switchVolTab('open',this)">Open Shifts</div>
+          <div class="tab" id="vtab-all" onclick="switchVolTab('all',this)">All Shifts</div>
+        </div>
+      </div>
+      <div id="vol-shifts-list"></div>
+    </div>
+
+    <!-- MY SCHEDULE -->
+    <div class="page" id="page-myshifts">
+      <div class="page-header"><h2>📋 My Volunteer Schedule</h2>
+        <button class="btn btn-outline" onclick="renderMyShifts()">↻ Refresh</button>
+      </div>
+      <div id="myshifts-list"></div>
+    </div>
+
+    <!-- MANAGE SHIFTS (admin) -->
+    <div class="page" id="page-manage-shifts">
+      <div class="page-header"><h2>⚙️ Manage Volunteer Shifts</h2>
+        <div class="flex">
+          <button class="btn btn-outline" onclick="sendReminders()" id="reminder-btn">📧 Send Reminders</button>
+          <button class="btn btn-primary" onclick="openModal('shift-modal')">+ Add Shift</button>
+        </div>
+      </div>
+      <div class="vol-filters">
+        <select id="admin-month-filter" onchange="renderManageShifts()"></select>
+        <select id="admin-ministry-filter2" onchange="renderManageShifts()">
+          <option value="">All Ministries</option>
+        </select>
+      </div>
+      <div id="manage-shifts-list"></div>
     </div>
 
     <!-- USER ACCOUNTS (admin only) -->
@@ -536,6 +606,34 @@ tr:last-child td{border-bottom:none}
   </div>
 </div></div>
 
+<!-- Volunteer Shift Modal -->
+<div class="modal-backdrop" id="shift-modal"><div class="modal" style="width:580px">
+  <h2 id="shift-modal-title">🙋 Add Volunteer Shift</h2>
+  <input type="hidden" id="sh-id">
+  <div class="form-grid">
+    <div class="form-group span-2"><label>Shift Title *</label><input type="text" id="sh-title" placeholder="e.g. Sunday Morning Greeter"></div>
+    <div class="form-group"><label>Ministry</label>
+      <select id="sh-ministry">
+        <option value="">— General / All —</option>
+        <option>Worship</option><option>Children's Ministry</option><option>Youth</option>
+        <option>Greeter / Hospitality</option><option>AV / Tech</option><option>Parking Lot</option>
+        <option>Prayer Team</option><option>Kitchen / Meals</option><option>Missions</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Slots Needed</label><input type="number" id="sh-slots" min="1" value="1"></div>
+    <div class="form-group"><label>Date *</label><input type="date" id="sh-date"></div>
+    <div class="form-group"><label>Room</label><select id="sh-room"></select></div>
+    <div class="form-group"><label>Start Time</label><input type="time" id="sh-start"></div>
+    <div class="form-group"><label>End Time</label><input type="time" id="sh-end"></div>
+    <div class="form-group span-2"><label>Location Notes</label><input type="text" id="sh-location" placeholder="e.g. Main Entrance, Room 104"></div>
+    <div class="form-group span-2"><label>Description</label><textarea id="sh-desc" style="min-height:60px"></textarea></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('shift-modal')">Cancel</button>
+    <button class="btn btn-primary" id="shift-save-btn" onclick="saveShift()">Add Shift</button>
+  </div>
+</div></div>
+
 <!-- Forgot Password Modal -->
 <div class="modal-backdrop" id="forgot-modal"><div class="modal" style="width:420px">
   <h2>🔑 Reset Password</h2>
@@ -655,6 +753,7 @@ function hideLoginScreen() {
   document.getElementById('login-screen').style.display = 'none';
   if (currentUser?.role === 'admin') {
     document.getElementById('nav-users').style.display = '';
+    document.getElementById('nav-manage-shifts').style.display = '';
   }
   document.getElementById('topbar-user').innerHTML =
     `<span>👤 ${currentUser?.email || ''}</span>`;
@@ -713,7 +812,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', giving:'Giving & Pledges', users:'User Accounts' };
+const pageNames = { dashboard:'Dashboard', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -726,12 +825,15 @@ function showPage(id) {
 }
 
 function renderPage(id) {
-  if (id==='dashboard') renderDashboard();
-  else if (id==='schedule') renderSchedule();
-  else if (id==='rooms')    renderRooms();
-  else if (id==='members')  renderMembers();
-  else if (id==='giving')   renderGiving();
-  else if (id==='users')    renderUsers();
+  if (id==='dashboard')      renderDashboard();
+  else if (id==='schedule')  renderSchedule();
+  else if (id==='rooms')     renderRooms();
+  else if (id==='members')   renderMembers();
+  else if (id==='giving')    renderGiving();
+  else if (id==='volunteer') renderVolunteer();
+  else if (id==='myshifts')  renderMyShifts();
+  else if (id==='manage-shifts') renderManageShifts();
+  else if (id==='users')     renderUsers();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -1273,6 +1375,276 @@ async function removeFamilyLink(relationId, memberId) {
   }
 }
 
+// ── VOLUNTEER ────────────────────────────────────────────────────────────────
+let volTab = 'open';
+
+const MINISTRIES = ['Worship','Children\'s Ministry','Youth','Greeter / Hospitality','AV / Tech','Parking Lot','Prayer Team','Kitchen / Meals','Missions','Other'];
+
+function initVolMonthFilter(selId) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const now = new Date();
+  sel.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const lbl = d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    sel.innerHTML += `<option value="${val}"${i===0?' selected':''}>${lbl}</option>`;
+  }
+}
+
+function switchVolTab(tab, el) {
+  volTab = tab;
+  document.querySelectorAll('#page-volunteer .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderVolunteer();
+}
+
+function shiftColor(s) {
+  if (!s) return '';
+  const pct = s.slots_needed > 0 ? s.slots_filled / s.slots_needed : 1;
+  if (s.slots_open === 0) return '';
+  if (s.slots_filled === 0) return ' urgent';
+  return ' gold';
+}
+
+function fmtShiftTime(s) {
+  if (!s.start_time) return '';
+  const ft = t => { const [h,m]=t.split(':'); return ((+h%12)||12)+':'+m+(+h>=12?' PM':' AM'); };
+  return ft(s.start_time) + (s.end_time ? ' – ' + ft(s.end_time) : '');
+}
+
+function renderShiftCard(s, adminMode = false) {
+  const timeStr = fmtShiftTime(s);
+  const loc = s.location_notes || s.room_name || '';
+  const slotHtml = [];
+  s.signups.forEach(sg => {
+    const initls = sg.member_name.split(' ').map(w=>w[0]||'').join('').toUpperCase();
+    const url = sg.member_photo ? `${API_BASE}/static/photos/${sg.member_photo}` : null;
+    const avatar = url
+      ? `<img src="${url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="slot-avatar" style="display:none">${initls}</span>`
+      : `<span class="slot-avatar">${initls}</span>`;
+    const isMine = sg.member_id === currentUser?.member_id;
+    const delBtn = adminMode ? `<span onclick="adminRemoveSignup('${s.id}','${sg.id}')" style="color:#DC2626;cursor:pointer;margin-left:4px;font-size:11px">✕</span>` : '';
+    slotHtml.push(`<span class="slot-chip${isMine?' mine':''}">${avatar} ${sg.member_name}${delBtn}</span>`);
+  });
+  for (let i = s.slots_filled; i < (s.slots_needed||1); i++) {
+    slotHtml.push(`<span class="slot-chip open">＋ Open slot</span>`);
+  }
+
+  let actionBtn = '';
+  if (!adminMode) {
+    if (s.is_signed_up) {
+      actionBtn = `<button class="btn btn-outline btn-sm" onclick="cancelShiftSignup('${s.id}')">Cancel my signup</button>`;
+    } else if (s.slots_open > 0) {
+      actionBtn = `<button class="btn btn-primary btn-sm" onclick="signUpForShift('${s.id}')">Sign up</button>`;
+    } else {
+      actionBtn = `<button class="btn btn-sm" disabled style="opacity:.45">Shift full</button>`;
+    }
+  } else {
+    actionBtn = `
+      <button class="btn btn-outline btn-sm" onclick="editShift('${s.id}')">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteShift('${s.id}')">🗑 Delete</button>`;
+  }
+
+  const badge = s.slots_open === 0
+    ? '<span class="badge badge-gray">Full</span>'
+    : s.slots_filled === 0
+    ? '<span class="badge badge-red">Needs volunteers</span>'
+    : `<span class="badge badge-gold">${s.slots_open} slot${s.slots_open>1?'s':''} open</span>`;
+
+  return `<div class="shift-card${shiftColor(s)}">
+    <div class="shift-top">
+      <div>
+        <div class="shift-title">${s.title}</div>
+        <div class="shift-meta">
+          📅 ${fmtDate(s.date)}${timeStr?' · '+timeStr:''}${loc?' · '+loc:''}
+          ${s.ministry?`&nbsp;·&nbsp;<span class="badge badge-blue" style="font-size:10px">${s.ministry}</span>`:''}
+        </div>
+      </div>
+      <div class="flex" style="gap:6px;flex-shrink:0">${badge}</div>
+    </div>
+    <div class="shift-slots">${slotHtml.join('')}</div>
+    ${s.description?`<div style="font-size:12px;color:#6B7280;margin-bottom:8px">${s.description}</div>`:''}
+    <div class="flex" style="gap:6px">${actionBtn}</div>
+  </div>`;
+}
+
+async function renderVolunteer() {
+  initVolMonthFilter('vol-month-filter');
+  const monthVal = document.getElementById('vol-month-filter')?.value || '';
+  const [yr, mo] = monthVal ? monthVal.split('-') : [new Date().getFullYear(), new Date().getMonth()+1];
+  const ministryFilter = document.getElementById('vol-ministry-filter')?.value || '';
+  const minSel = document.getElementById('vol-ministry-filter');
+  if (minSel && minSel.options.length <= 1) {
+    MINISTRIES.forEach(m => minSel.innerHTML += `<option value="${m}">${m}</option>`);
+  }
+
+  try {
+    let url = `/api/shifts?year=${yr}&month=${mo}`;
+    if (ministryFilter) url += `&ministry=${encodeURIComponent(ministryFilter)}`;
+    const shifts = await api.get(url);
+    const open = shifts.filter(s => s.slots_open > 0);
+    const mine = shifts.filter(s => s.is_signed_up);
+
+    document.getElementById('vol-stats').innerHTML = `
+      <div class="vs-card"><div class="vsv">${mine.length}</div><div class="vsl">My Shifts This Month</div></div>
+      <div class="vs-card gold"><div class="vsv">${open.length}</div><div class="vsl">Open Slots Available</div></div>
+      <div class="vs-card green"><div class="vsv">${shifts.length}</div><div class="vsl">Total Shifts</div></div>`;
+
+    const nb = document.getElementById('vol-notify-bar');
+    if (open.length > 0) {
+      nb.style.display = '';
+      document.getElementById('vol-notify-text').textContent = `${open.length} shift${open.length>1?'s':''} still need volunteers this month — sign up below!`;
+    } else {
+      nb.style.display = 'none';
+    }
+
+    const displayed = volTab === 'open' ? open : shifts;
+    if (displayed.length === 0) {
+      document.getElementById('vol-shifts-list').innerHTML = `<div class="empty-vol">🙌 ${volTab==='open'?'No open shifts this month — all covered!':'No shifts scheduled this month.'}</div>`;
+    } else {
+      document.getElementById('vol-shifts-list').innerHTML = displayed.map(s => renderShiftCard(s)).join('');
+    }
+  } catch(e) {
+    document.getElementById('vol-shifts-list').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function renderMyShifts() {
+  try {
+    const shifts = await api.get('/api/shifts/my');
+    const upcoming = shifts.filter(s => s.date >= todayStr);
+    const past = shifts.filter(s => s.date < todayStr);
+    let html = '';
+    if (upcoming.length === 0 && past.length === 0) {
+      html = '<div class="empty-vol">You haven\'t signed up for any shifts yet.<br><br><button class="btn btn-primary" onclick="showPage(\'volunteer\')">Browse Open Shifts</button></div>';
+    } else {
+      if (upcoming.length > 0) {
+        html += `<div class="card-header" style="background:#fff;border-radius:10px 10px 0 0;padding:12px 20px;border:1px solid #F3F4F6;margin-bottom:0"><h3>Upcoming (${upcoming.length})</h3></div>`;
+        html += upcoming.map(s => renderShiftCard(s)).join('');
+      }
+      if (past.length > 0) {
+        html += `<div style="margin-top:20px"><div class="card-header" style="background:#fff;border-radius:10px 10px 0 0;padding:12px 20px;border:1px solid #F3F4F6"><h3 style="color:#9CA3AF">Past Shifts (${past.length})</h3></div>`;
+        html += past.map(s => renderShiftCard(s)).join('') + '</div>';
+      }
+    }
+    document.getElementById('myshifts-list').innerHTML = html;
+  } catch(e) {
+    document.getElementById('myshifts-list').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function renderManageShifts() {
+  initVolMonthFilter('admin-month-filter');
+  const monthVal = document.getElementById('admin-month-filter')?.value || '';
+  const [yr, mo] = monthVal ? monthVal.split('-') : [new Date().getFullYear(), new Date().getMonth()+1];
+  const ministryFilter = document.getElementById('admin-ministry-filter2')?.value || '';
+  const minSel2 = document.getElementById('admin-ministry-filter2');
+  if (minSel2 && minSel2.options.length <= 1) {
+    MINISTRIES.forEach(m => minSel2.innerHTML += `<option value="${m}">${m}</option>`);
+  }
+
+  try {
+    let url = `/api/shifts?year=${yr}&month=${mo}`;
+    if (ministryFilter) url += `&ministry=${encodeURIComponent(ministryFilter)}`;
+    const shifts = await api.get(url);
+    const rooms = await api.get('/api/rooms');
+    document.getElementById('sh-room').innerHTML = '<option value="">— No Room —</option>' + rooms.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+    if (shifts.length === 0) {
+      document.getElementById('manage-shifts-list').innerHTML = '<div class="empty-vol">No shifts this month. Click "+ Add Shift" to create one.</div>';
+      return;
+    }
+    document.getElementById('manage-shifts-list').innerHTML = shifts.map(s => renderShiftCard(s, true)).join('');
+  } catch(e) {
+    document.getElementById('manage-shifts-list').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function signUpForShift(shiftId) {
+  try {
+    await api.post(`/api/shifts/${shiftId}/signup`, {});
+    renderVolunteer();
+  } catch(e) { alert('Could not sign up: ' + e.message); }
+}
+
+async function cancelShiftSignup(shiftId) {
+  if (!confirm('Cancel your signup for this shift?')) return;
+  try {
+    await api.delete(`/api/shifts/${shiftId}/signup`);
+    renderVolunteer();
+    if (document.getElementById('page-myshifts').classList.contains('active')) renderMyShifts();
+  } catch(e) { alert('Could not cancel: ' + e.message); }
+}
+
+async function adminRemoveSignup(shiftId, signupId) {
+  if (!confirm('Remove this volunteer from the shift?')) return;
+  try {
+    await api.delete(`/api/shifts/${shiftId}/signup/${signupId}`);
+    renderManageShifts();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function deleteShift(shiftId) {
+  if (!confirm('Delete this shift and all signups? This cannot be undone.')) return;
+  await api.delete('/api/shifts/' + shiftId);
+  renderManageShifts();
+}
+
+async function editShift(shiftId) {
+  const s = await api.get('/api/shifts/' + shiftId);
+  document.getElementById('shift-modal-title').textContent = '✏️ Edit Shift';
+  document.getElementById('sh-id').value      = s.id;
+  document.getElementById('sh-title').value   = s.title;
+  document.getElementById('sh-ministry').value = s.ministry || '';
+  document.getElementById('sh-slots').value   = s.slots_needed || 1;
+  document.getElementById('sh-date').value    = s.date;
+  document.getElementById('sh-start').value   = s.start_time || '';
+  document.getElementById('sh-end').value     = s.end_time || '';
+  document.getElementById('sh-room').value    = s.room_id || '';
+  document.getElementById('sh-location').value = s.location_notes || '';
+  document.getElementById('sh-desc').value    = s.description || '';
+  document.getElementById('shift-save-btn').textContent = 'Save Changes';
+  openModal('shift-modal');
+}
+
+async function saveShift() {
+  const title = document.getElementById('sh-title').value.trim();
+  const date  = document.getElementById('sh-date').value;
+  if (!title || !date) { alert('Title and date are required.'); return; }
+  const id = document.getElementById('sh-id').value;
+  const data = {
+    title, date,
+    ministry:       document.getElementById('sh-ministry').value || null,
+    slots_needed:   parseInt(document.getElementById('sh-slots').value) || 1,
+    start_time:     document.getElementById('sh-start').value || null,
+    end_time:       document.getElementById('sh-end').value || null,
+    room_id:        document.getElementById('sh-room').value || null,
+    location_notes: document.getElementById('sh-location').value || null,
+    description:    document.getElementById('sh-desc').value || null,
+  };
+  if (id) { await api.put('/api/shifts/' + id, data); }
+  else    { await api.post('/api/shifts', data); }
+  closeModal('shift-modal');
+  document.getElementById('sh-id').value = '';
+  document.getElementById('shift-modal-title').textContent = '🙋 Add Volunteer Shift';
+  document.getElementById('shift-save-btn').textContent = 'Add Shift';
+  ['sh-title','sh-date','sh-start','sh-end','sh-location','sh-desc'].forEach(i => document.getElementById(i).value = '');
+  renderManageShifts();
+}
+
+async function sendReminders() {
+  const btn = document.getElementById('reminder-btn');
+  btn.textContent = '📧 Sending…';
+  btn.disabled = true;
+  try {
+    const res = await api.post('/api/shifts/reminders/send?days_ahead=7', {});
+    alert(res.message + `\n${res.emails_sent} email(s) sent for ${res.shifts_processed} shift(s).`);
+  } catch(e) { alert('Error: ' + e.message); }
+  btn.textContent = '📧 Send Reminders';
+  btn.disabled = false;
+}
+
 // ── GIVING ────────────────────────────────────────────────────────────────────
 let givingYear = String(today.getFullYear());
 async function renderGiving() {
@@ -1414,9 +1786,17 @@ async function deleteUser(id) {
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
 function openModal(id) {
-  if (id==='user-modal') { openUserModal(); return; }
+  if (id==='user-modal')  { openUserModal(); return; }
+  if (id==='shift-modal') { openShiftModal(); return; }
   document.getElementById(id).classList.add('open');
   document.getElementById(id).querySelectorAll('input[type=date]').forEach(i=>{if(!i.value)i.value=todayStr;});
+}
+async function openShiftModal() {
+  const rooms = await api.get('/api/rooms');
+  document.getElementById('sh-room').innerHTML = '<option value="">— No Room —</option>' + rooms.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const modal = document.getElementById('shift-modal');
+  modal.classList.add('open');
+  if (!document.getElementById('sh-date').value) document.getElementById('sh-date').value = todayStr;
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));

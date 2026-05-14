@@ -207,3 +207,44 @@ class ForgotPassword(BaseModel):
 class ResetPassword(BaseModel):
     token:        str
     new_password: str
+
+
+# ── Volunteer Shifts ──────────────────────────────────────────────────────────
+
+class ShiftSignupOut(BaseModel):
+    id:           str
+    member_id:    str
+    member_name:  str
+    member_photo: Optional[str] = None
+    signed_up_at: datetime
+    class Config:
+        from_attributes = True
+
+class VolunteerShiftBase(BaseModel):
+    title:          str
+    ministry:       Optional[str] = None
+    date:           date
+    start_time:     Optional[str] = None
+    end_time:       Optional[str] = None
+    room_id:        Optional[str] = None
+    location_notes: Optional[str] = None
+    description:    Optional[str] = None
+    slots_needed:   Optional[int] = 1
+
+class VolunteerShiftCreate(VolunteerShiftBase):
+    pass
+
+class VolunteerShiftUpdate(VolunteerShiftBase):
+    title: Optional[str] = None
+    date:  Optional[date] = None
+
+class VolunteerShiftOut(VolunteerShiftBase):
+    id:           str
+    room_name:    Optional[str] = None
+    signups:      List[ShiftSignupOut] = []
+    slots_filled: int = 0
+    slots_open:   int = 0
+    is_signed_up: bool = False
+    created_at:   datetime
+    class Config:
+        from_attributes = True

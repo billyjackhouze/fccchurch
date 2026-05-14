@@ -133,3 +133,36 @@ class Pledge(Base):
     updated_at     = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     member = relationship("Member", back_populates="pledges")
+
+
+class VolunteerShift(Base):
+    __tablename__ = "volunteer_shifts"
+
+    id             = Column(String, primary_key=True, default=gen_id)
+    title          = Column(String(200), nullable=False)
+    ministry       = Column(String(100))
+    date           = Column(Date, nullable=False)
+    start_time     = Column(String(10))
+    end_time       = Column(String(10))
+    room_id        = Column(String, ForeignKey("rooms.id"), nullable=True)
+    location_notes = Column(String(200))
+    description    = Column(Text)
+    slots_needed   = Column(Integer, default=1)
+    reminder_sent  = Column(Boolean, default=False)
+    created_at     = Column(DateTime, default=datetime.utcnow)
+    updated_at     = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    room    = relationship("Room")
+    signups = relationship("ShiftSignup", back_populates="shift", cascade="all, delete-orphan")
+
+
+class ShiftSignup(Base):
+    __tablename__ = "shift_signups"
+
+    id           = Column(String, primary_key=True, default=gen_id)
+    shift_id     = Column(String, ForeignKey("volunteer_shifts.id"), nullable=False)
+    member_id    = Column(String, ForeignKey("members.id"), nullable=False)
+    signed_up_at = Column(DateTime, default=datetime.utcnow)
+
+    shift  = relationship("VolunteerShift", back_populates="signups")
+    member = relationship("Member")
