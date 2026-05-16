@@ -1,4 +1,4 @@
-"""One-time migration: add outline_json to sermons, create settings table."""
+"""Migrations: attendance_records, member_checkins, settings, outline_json."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -14,6 +14,23 @@ SQL = [
     '  label VARCHAR(200),'
     '  "group" VARCHAR(50),'
     '  updated_at TIMESTAMP DEFAULT NOW()'
+    ')',
+    'CREATE TABLE IF NOT EXISTS attendance_records ('
+    '  id VARCHAR(36) PRIMARY KEY,'
+    '  date DATE NOT NULL,'
+    '  service_type VARCHAR(50) DEFAULT \'Sunday Service\','
+    '  headcount INTEGER DEFAULT 0,'
+    '  notes TEXT,'
+    '  created_at TIMESTAMP DEFAULT NOW(),'
+    '  updated_at TIMESTAMP DEFAULT NOW()'
+    ')',
+    'CREATE TABLE IF NOT EXISTS member_checkins ('
+    '  id VARCHAR(36) PRIMARY KEY,'
+    '  record_id VARCHAR(36) REFERENCES attendance_records(id) ON DELETE SET NULL,'
+    '  member_id VARCHAR(36) REFERENCES members(id) ON DELETE CASCADE,'
+    '  date DATE NOT NULL,'
+    '  checked_in_at TIMESTAMP DEFAULT NOW(),'
+    '  method VARCHAR(20) DEFAULT \'kiosk\''
     ')',
 ]
 

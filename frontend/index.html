@@ -56,6 +56,46 @@ tr:last-child td{border-bottom:none}
 .badge-green{background:#DCFCE7;color:#166534}.badge-blue{background:#DBEAFE;color:#1E40AF}
 .badge-gold{background:#FEF9C3;color:#854D0E}.badge-red{background:#FEE2E2;color:#991B1B}
 .badge-gray{background:#F3F4F6;color:#6B7280}.badge-purple{background:#F3E8FF;color:#7C3AED}
+/* ── Kiosk Mode ── */
+body.kiosk-mode .sidebar{display:none}
+body.kiosk-mode .topbar{display:none}
+body.kiosk-mode .main{margin-left:0}
+body.kiosk-mode .content{padding:0}
+#page-kiosk{background:#1E3A5F;min-height:100vh;display:none;flex-direction:column}
+#page-kiosk.active{display:flex}
+.kiosk-header{padding:28px 40px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12)}
+.kiosk-title{color:#fff;font-size:24px;font-weight:800;letter-spacing:.5px}
+.kiosk-subtitle{color:#B8860B;font-size:14px;font-weight:600;margin-top:2px}
+.kiosk-meta{color:rgba(255,255,255,.6);font-size:14px;text-align:right}
+.kiosk-body{flex:1;padding:28px 40px;max-width:900px;margin:0 auto;width:100%}
+.kiosk-search-wrap{position:relative;margin-bottom:24px}
+.kiosk-search{width:100%;padding:18px 22px 18px 56px;font-size:22px;border:none;border-radius:14px;background:#fff;color:#1F2937;outline:none;box-shadow:0 4px 24px rgba(0,0,0,.25)}
+.kiosk-search-icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:22px;color:#9CA3AF}
+.kiosk-member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.kiosk-member-card{background:#fff;border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:3px solid transparent}
+.kiosk-member-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.kiosk-member-card.checked-in{border-color:#1A7A4A;background:#F0FDF4}
+.kiosk-member-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#1E3A5F;overflow:hidden}
+.kiosk-member-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.kiosk-member-name{font-size:15px;font-weight:700;color:#1F2937;margin-bottom:4px}
+.kiosk-member-sub{font-size:12px;color:#6B7280}
+.kiosk-checked-badge{display:inline-block;background:#DCFCE7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-top:6px}
+.kiosk-count-bar{background:rgba(255,255,255,.1);border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.kiosk-count-num{font-size:36px;font-weight:800;color:#B8860B}
+.kiosk-count-label{color:rgba(255,255,255,.8);font-size:14px}
+.kiosk-exit{position:fixed;bottom:18px;right:22px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s}
+.kiosk-exit:hover{background:rgba(255,255,255,.2);color:#fff}
+/* Kiosk confirm overlay */
+.kiosk-confirm{display:none;position:fixed;inset:0;background:rgba(30,58,95,.92);z-index:500;align-items:center;justify-content:center;flex-direction:column}
+.kiosk-confirm.open{display:flex}
+.kiosk-confirm-card{background:#fff;border-radius:20px;padding:40px 48px;text-align:center;max-width:420px;width:90%}
+.kiosk-success{display:none;position:fixed;inset:0;background:#1A7A4A;z-index:600;align-items:center;justify-content:center;flex-direction:column;color:#fff}
+.kiosk-success.open{display:flex}
+.kiosk-success-icon{font-size:90px;margin-bottom:16px}
+.kiosk-success-name{font-size:32px;font-weight:800;margin-bottom:8px}
+.kiosk-success-sub{font-size:18px;opacity:.85}
+/* ── Attendance admin ── */
+.att-stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px}
 /* ── AI Query Tool ── */
 .ai-chip{padding:4px 10px;border:1.5px solid #D1D5DB;border-radius:99px;background:#fff;color:#374151;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .ai-chip:hover{background:#EBF0F8;border-color:#1E3A5F;color:#1E3A5F}
@@ -402,6 +442,8 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="nav-section" id="admin-nav-section">Admin</div>
     <div class="nav-item" onclick="showPage('manage-shifts')" id="nav-manage-shifts" style="display:none"><span class="icon">⚙️</span> Manage Shifts</div>
     <div class="nav-item" onclick="showPage('users')" id="nav-users" style="display:none"><span class="icon">🔐</span> User Accounts</div>
+    <div class="nav-item" onclick="showPage('attendance')" id="nav-attendance" style="display:none"><span class="icon">📋</span> Attendance</div>
+    <div class="nav-item" onclick="launchKiosk()" id="nav-kiosk" style="display:none"><span class="icon">📱</span> Check-in Kiosk</div>
     <div class="nav-item" onclick="showPage('ai-query')" id="nav-ai-query" style="display:none"><span class="icon">🤖</span> AI Query Tool</div>
     <div class="nav-item" onclick="showPage('admin-settings')" id="nav-admin-settings" style="display:none"><span class="icon">⚙️</span> App Settings</div>
   </nav>
@@ -887,6 +929,115 @@ body.is-admin .admin-only{display:inline-flex}
         <thead><tr><th>Email</th><th>Role</th><th>Linked Member</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="users-tbody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span> Loading…</td></tr></tbody>
       </table></div></div>
+    </div>
+
+    <!-- ATTENDANCE (admin only) -->
+    <div class="page" id="page-attendance">
+      <div class="page-header">
+        <h2>📋 Attendance</h2>
+        <button class="btn btn-primary" onclick="openAttendanceModal()">+ Log Service</button>
+      </div>
+      <div class="att-stat-row" id="att-stats-row"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Service Log</h3>
+          <span style="font-size:12px;color:#9CA3AF">Most recent first</span>
+        </div>
+        <div class="card-body table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Service Type</th><th>Headcount</th><th>Checked In</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="attendance-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- KIOSK (public, full-screen) -->
+    <div class="page" id="page-kiosk">
+      <div class="kiosk-header">
+        <div>
+          <div class="kiosk-title">✝ FFC Church — Check In</div>
+          <div class="kiosk-subtitle" id="kiosk-date-label"></div>
+        </div>
+        <div class="kiosk-meta" id="kiosk-service-label"></div>
+      </div>
+      <div class="kiosk-body">
+        <div class="kiosk-count-bar">
+          <div class="kiosk-count-num" id="kiosk-count">0</div>
+          <div class="kiosk-count-label">checked in today</div>
+        </div>
+        <div class="kiosk-search-wrap">
+          <span class="kiosk-search-icon">🔍</span>
+          <input class="kiosk-search" id="kiosk-search" type="text"
+                 placeholder="Type a name to search…"
+                 oninput="kioskSearch(this.value)" autocomplete="off" autocorrect="off">
+        </div>
+        <div class="kiosk-member-grid" id="kiosk-results">
+          <div style="color:rgba(255,255,255,.5);font-size:16px;grid-column:1/-1;text-align:center;padding:40px 0">
+            Start typing to find a member
+          </div>
+        </div>
+      </div>
+      <button class="kiosk-exit" onclick="exitKiosk()">✕ Exit Kiosk</button>
+
+      <!-- Confirm overlay -->
+      <div class="kiosk-confirm" id="kiosk-confirm">
+        <div class="kiosk-confirm-card">
+          <div id="kiosk-confirm-photo" style="width:96px;height:96px;border-radius:50%;margin:0 auto 16px;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#1E3A5F;overflow:hidden"></div>
+          <div id="kiosk-confirm-name" style="font-size:22px;font-weight:800;color:#1E3A5F;margin-bottom:6px"></div>
+          <div id="kiosk-confirm-status" style="font-size:13px;color:#6B7280;margin-bottom:20px"></div>
+          <div id="kiosk-family-wrap" style="display:none;margin-bottom:18px;text-align:left;background:#F9FAFB;border-radius:8px;padding:12px">
+            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px">Also check in family members?</div>
+            <div id="kiosk-family-list"></div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center">
+            <button class="btn btn-ghost" onclick="closeKioskConfirm()">Cancel</button>
+            <button class="btn btn-primary" style="background:#1A7A4A;font-size:16px;padding:10px 28px" onclick="confirmCheckin()">✓ Check In</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success overlay -->
+      <div class="kiosk-success" id="kiosk-success">
+        <div class="kiosk-success-icon">✅</div>
+        <div class="kiosk-success-name" id="kiosk-success-name"></div>
+        <div class="kiosk-success-sub" id="kiosk-success-sub"></div>
+      </div>
+    </div>
+
+    <!-- Attendance Modal -->
+    <div class="modal-backdrop" id="attendance-modal">
+      <div class="modal" style="max-width:440px">
+        <h2 id="att-modal-title">📋 Log Service Attendance</h2>
+        <div class="form-grid">
+          <div class="form-group"><label>Date</label><input type="date" id="att-date"></div>
+          <div class="form-group"><label>Service Type</label>
+            <select id="att-type">
+              <option>Sunday Service</option><option>Wednesday Service</option>
+              <option>Bible Study</option><option>Prayer Meeting</option>
+              <option>Special Event</option><option>Youth Event</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Headcount (manual count)</label><input type="number" id="att-headcount" min="0" placeholder="0"></div>
+          <div class="form-group span-2"><label>Notes</label><input type="text" id="att-notes" placeholder="Optional"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="closeModal('attendance-modal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveAttendance()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkins Detail Modal -->
+    <div class="modal-backdrop" id="checkins-modal">
+      <div class="modal" style="max-width:560px">
+        <h2 id="checkins-modal-title">Check-ins</h2>
+        <div class="table-wrap" style="max-height:400px;overflow-y:auto">
+          <table><thead><tr><th>Member</th><th>Time</th><th>Method</th><th></th></tr></thead>
+          <tbody id="checkins-tbody"></tbody></table>
+        </div>
+        <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('checkins-modal')">Close</button></div>
+      </div>
     </div>
 
     <!-- AI QUERY TOOL (admin only) -->
@@ -1684,6 +1835,8 @@ function hideLoginScreen() {
     document.getElementById('nav-manage-shifts').style.display = '';
     document.getElementById('nav-admin-settings').style.display = '';
     document.getElementById('nav-ai-query').style.display = '';
+    document.getElementById('nav-attendance').style.display = '';
+    document.getElementById('nav-kiosk').style.display = '';
     document.body.classList.add('is-admin');
   }
   document.getElementById('topbar-user').innerHTML =
@@ -1743,7 +1896,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', attendance:'Attendance', kiosk:'Check-in Kiosk', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1771,6 +1924,8 @@ function renderPage(id) {
   else if (id==='users')           renderUsers();
   else if (id==='admin-settings')  renderAdminSettings();
   else if (id==='ai-query')        renderAIQueryPage();
+  else if (id==='attendance')      renderAttendance();
+  else if (id==='kiosk')           initKiosk();
   else if (id==='sermons')         renderSermons();
   else if (id==='sermon-outline') { /* handled by showOutlineBuilder */ }
   else if (id==='bible-lookup') renderBibleHistory();
@@ -4651,6 +4806,319 @@ async function openMinistryModal() {
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
+
+// ── ATTENDANCE ────────────────────────────────────────────────────────────────
+let _attEditId = null;
+
+async function renderAttendance() {
+  try {
+    const [records, stats] = await Promise.all([
+      api.get('/api/attendance?limit=50'),
+      api.get('/api/attendance/stats'),
+    ]);
+
+    // Stats row
+    const lr = stats.latest_record;
+    document.getElementById('att-stats-row').innerHTML = `
+      <div class="stat-card">
+        <div class="label">Last Service</div>
+        <div class="value">${lr ? lr.headcount : '—'}</div>
+        <div class="sub">${lr ? lr.service_type + ' · ' + fmtDate(lr.date) : 'No records yet'}</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="label">Check-ins Last Service</div>
+        <div class="value">${lr ? lr.checkin_count : '—'}</div>
+        <div class="sub">Via kiosk or manual</div>
+      </div>
+      <div class="stat-card green">
+        <div class="label">Today's Check-ins</div>
+        <div class="value">${stats.today_checkins}</div>
+        <div class="sub">${today.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Services Logged</div>
+        <div class="value">${records.length}</div>
+        <div class="sub">Total records</div>
+      </div>`;
+
+    // Table
+    document.getElementById('attendance-tbody').innerHTML = records.length
+      ? records.map(r => `
+        <tr>
+          <td><strong>${fmtDate(r.date)}</strong></td>
+          <td>${r.service_type || '—'}</td>
+          <td>
+            <input type="number" value="${r.headcount || 0}" min="0" style="width:70px;padding:4px 6px;border:1.5px solid #D1D5DB;border-radius:5px;font-size:13px"
+              onchange="updateHeadcount('${r.id}',this.value)">
+          </td>
+          <td>
+            <span class="badge badge-blue" style="cursor:pointer" onclick="showCheckins('${r.id}','${fmtDate(r.date)}')">
+              ${r.checkin_count} checked in
+            </span>
+          </td>
+          <td style="color:#6B7280;font-size:12px">${r.notes || ''}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteAttendance('${r.id}')">Delete</button>
+          </td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" class="empty">No attendance records yet — click "+ Log Service" to start</td></tr>';
+  } catch(e) {
+    document.getElementById('attendance-tbody').innerHTML =
+      `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openAttendanceModal(record) {
+  _attEditId = record ? record.id : null;
+  document.getElementById('att-modal-title').textContent = record ? '✏️ Edit Service' : '📋 Log Service Attendance';
+  document.getElementById('att-date').value = record ? record.date : todayStr;
+  document.getElementById('att-type').value = record ? record.service_type : 'Sunday Service';
+  document.getElementById('att-headcount').value = record ? record.headcount : '';
+  document.getElementById('att-notes').value = record ? (record.notes || '') : '';
+  openModal('attendance-modal');
+}
+
+async function saveAttendance() {
+  const date = document.getElementById('att-date').value;
+  if (!date) { alert('Date is required'); return; }
+  const body = {
+    date,
+    service_type: document.getElementById('att-type').value,
+    headcount: parseInt(document.getElementById('att-headcount').value) || 0,
+    notes: document.getElementById('att-notes').value || null,
+  };
+  if (_attEditId) {
+    await api.put('/api/attendance/' + _attEditId, body);
+  } else {
+    await api.post('/api/attendance', body);
+  }
+  closeModal('attendance-modal');
+  renderAttendance();
+}
+
+async function updateHeadcount(id, val) {
+  await api.put('/api/attendance/' + id, { headcount: parseInt(val) || 0 });
+}
+
+async function deleteAttendance(id) {
+  if (!confirm('Delete this attendance record? Check-in records for this service will also be removed.')) return;
+  await api.delete('/api/attendance/' + id);
+  renderAttendance();
+}
+
+async function showCheckins(recordId, dateLabel) {
+  document.getElementById('checkins-modal-title').textContent = `Check-ins — ${dateLabel}`;
+  document.getElementById('checkins-tbody').innerHTML = '<tr><td colspan="4"><span class="spinner"></span></td></tr>';
+  openModal('checkins-modal');
+  try {
+    const checkins = await api.get(`/api/attendance/${recordId}/checkins`);
+    document.getElementById('checkins-tbody').innerHTML = checkins.length
+      ? checkins.map(c => `
+        <tr>
+          <td><strong>${c.member_name || 'Unknown'}</strong></td>
+          <td style="font-size:12px;color:#6B7280">${c.checked_in_at ? c.checked_in_at.replace('T',' ').substring(0,16) : '—'}</td>
+          <td><span class="badge ${c.method==='kiosk'?'badge-blue':'badge-gray'}">${c.method || 'kiosk'}</span></td>
+          <td><button class="btn btn-danger btn-sm" onclick="removeCheckin('${c.id}','${recordId}','${dateLabel}')">✕</button></td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:#9CA3AF;padding:20px">No check-ins recorded for this service</td></tr>';
+  } catch(e) {
+    document.getElementById('checkins-tbody').innerHTML = `<tr><td colspan="4">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function removeCheckin(checkinId, recordId, dateLabel) {
+  if (!confirm('Remove this check-in?')) return;
+  await api.delete('/api/attendance/checkins/' + checkinId);
+  showCheckins(recordId, dateLabel);
+}
+
+
+// ── KIOSK ─────────────────────────────────────────────────────────────────────
+let _kioskRecordId  = null;
+let _kioskCheckins  = {};   // member_id → true (already checked in today)
+let _kioskAllMembers = [];
+let _kioskConfirmMember = null;
+let _kioskFamilySelected = new Set();
+let _kioskSearchDebounce = null;
+
+function launchKiosk() {
+  document.body.classList.add('kiosk-mode');
+  showPage('kiosk');
+}
+
+function exitKiosk() {
+  document.body.classList.remove('kiosk-mode');
+  showPage('attendance');
+}
+
+async function initKiosk() {
+  // Date label
+  document.getElementById('kiosk-date-label').textContent =
+    today.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Focus search
+  setTimeout(() => document.getElementById('kiosk-search').focus(), 100);
+
+  // Load today's record + member list in parallel
+  try {
+    const [todayData, members] = await Promise.all([
+      fetch('/api/attendance/kiosk/today').then(r => r.json()),
+      fetch('/api/members').then(r => r.json()),
+    ]);
+
+    _kioskAllMembers = members;
+    _kioskRecordId   = todayData.record ? todayData.record.id : null;
+    document.getElementById('kiosk-count').textContent = todayData.checkin_count;
+
+    const svc = todayData.record ? todayData.record.service_type : 'Sunday Service';
+    document.getElementById('kiosk-service-label').textContent = svc;
+
+    // Build checked-in map
+    _kioskCheckins = {};
+    // We'll check status on-demand per member via API, or pre-load all checkins
+    // For performance, just fetch all today's checkins once:
+    const todayCheckinResp = await fetch('/api/members'); // placeholder — we use status endpoint per-member
+    // Actually, fetch the today count only and check per-member when rendering
+  } catch(e) {
+    console.error('Kiosk init error', e);
+  }
+}
+
+function kioskSearch(val) {
+  clearTimeout(_kioskSearchDebounce);
+  if (!val.trim()) {
+    document.getElementById('kiosk-results').innerHTML =
+      '<div style="color:rgba(255,255,255,.5);font-size:16px;grid-column:1/-1;text-align:center;padding:40px 0">Start typing to find a member</div>';
+    return;
+  }
+  _kioskSearchDebounce = setTimeout(() => _kioskDoSearch(val.trim().toLowerCase()), 180);
+}
+
+function _kioskDoSearch(term) {
+  const matches = _kioskAllMembers.filter(m =>
+    `${m.first} ${m.last}`.toLowerCase().includes(term) ||
+    (m.email || '').toLowerCase().includes(term)
+  ).slice(0, 12);
+
+  if (!matches.length) {
+    document.getElementById('kiosk-results').innerHTML =
+      '<div style="color:rgba(255,255,255,.5);font-size:16px;grid-column:1/-1;text-align:center;padding:40px 0">No members found</div>';
+    return;
+  }
+
+  document.getElementById('kiosk-results').innerHTML = matches.map(m => {
+    const initials = (m.first[0] || '') + (m.last[0] || '');
+    const alreadyIn = _kioskCheckins[m.id];
+    return `
+      <div class="kiosk-member-card ${alreadyIn ? 'checked-in' : ''}" onclick="openKioskConfirm('${m.id}')">
+        <div class="kiosk-member-avatar">
+          ${m.photo
+            ? `<img src="${API_BASE}/static/photos/${m.photo}" alt="">`
+            : initials}
+        </div>
+        <div class="kiosk-member-name">${m.first} ${m.last}</div>
+        <div class="kiosk-member-sub">${m.status || 'Member'}</div>
+        ${alreadyIn ? '<div class="kiosk-checked-badge">✓ Checked In</div>' : ''}
+      </div>`;
+  }).join('');
+}
+
+async function openKioskConfirm(memberId) {
+  const member = _kioskAllMembers.find(m => m.id === memberId);
+  if (!member) return;
+
+  // Check if already in
+  const statusResp = await fetch(`/api/attendance/kiosk/status/${memberId}`);
+  const status = await statusResp.json();
+  if (status.checked_in) {
+    _kioskCheckins[memberId] = true;
+    _kioskDoSearch(document.getElementById('kiosk-search').value);
+  }
+
+  _kioskConfirmMember = member;
+  _kioskFamilySelected = new Set();
+
+  const initials = (member.first[0] || '') + (member.last[0] || '');
+  const photoEl = document.getElementById('kiosk-confirm-photo');
+  photoEl.innerHTML = member.photo
+    ? `<img src="${API_BASE}/static/photos/${member.photo}" style="width:96px;height:96px;object-fit:cover;border-radius:50%">`
+    : initials;
+
+  document.getElementById('kiosk-confirm-name').textContent = `${member.first} ${member.last}`;
+  document.getElementById('kiosk-confirm-status').textContent =
+    status.checked_in ? '✓ Already checked in today' : `${member.status || 'Member'} · Tap to check in`;
+
+  // Family members
+  const family = (member.family || []);
+  const familyWrap = document.getElementById('kiosk-family-wrap');
+  if (family.length) {
+    familyWrap.style.display = '';
+    document.getElementById('kiosk-family-list').innerHTML = family.map(f => `
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;font-size:13px;color:#374151">
+        <input type="checkbox" id="fam-${f.related_id}" onchange="toggleFamilyCheckin('${f.related_id}',this.checked)"
+               style="width:16px;height:16px;cursor:pointer">
+        ${f.related_name} <span style="color:#9CA3AF">(${f.relation})</span>
+      </label>`).join('');
+  } else {
+    familyWrap.style.display = 'none';
+  }
+
+  document.getElementById('kiosk-confirm').classList.add('open');
+}
+
+function toggleFamilyCheckin(memberId, checked) {
+  if (checked) _kioskFamilySelected.add(memberId);
+  else _kioskFamilySelected.delete(memberId);
+}
+
+function closeKioskConfirm() {
+  document.getElementById('kiosk-confirm').classList.remove('open');
+  _kioskConfirmMember = null;
+}
+
+async function confirmCheckin() {
+  if (!_kioskConfirmMember) return;
+  closeKioskConfirm();
+
+  // Check in primary member + any selected family
+  const toCheckin = [_kioskConfirmMember.id, ..._kioskFamilySelected];
+  let lastName = _kioskConfirmMember.first;
+  let totalCount = 0;
+
+  for (const memberId of toCheckin) {
+    try {
+      const resp = await fetch('/api/attendance/kiosk/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_id: memberId, record_id: _kioskRecordId }),
+      });
+      const data = await resp.json();
+      _kioskCheckins[memberId] = true;
+      totalCount = data.checkin_count;
+    } catch(e) { console.error(e); }
+  }
+
+  // Update count display
+  document.getElementById('kiosk-count').textContent = totalCount;
+
+  // Show success screen
+  const names = toCheckin.length > 1
+    ? `${_kioskConfirmMember.first} + ${toCheckin.length - 1} family member${toCheckin.length > 2 ? 's' : ''}`
+    : _kioskConfirmMember.first;
+  document.getElementById('kiosk-success-name').textContent = `Welcome, ${names}!`;
+  document.getElementById('kiosk-success-sub').textContent =
+    `You're checked in · ${totalCount} total today`;
+  document.getElementById('kiosk-success').classList.add('open');
+
+  // Auto-dismiss after 3 seconds
+  setTimeout(() => {
+    document.getElementById('kiosk-success').classList.remove('open');
+    document.getElementById('kiosk-search').value = '';
+    kioskSearch('');
+    document.getElementById('kiosk-search').focus();
+    _kioskDoSearch('');
+  }, 3000);
+}
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});

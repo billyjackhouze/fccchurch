@@ -305,6 +305,37 @@ class Sermon(Base):
     plan     = relationship("ServicePlan", foreign_keys=[plan_id])
 
 
+class AttendanceRecord(Base):
+    """Headcount log for a service or event."""
+    __tablename__ = "attendance_records"
+
+    id           = Column(String, primary_key=True, default=gen_id)
+    date         = Column(Date, nullable=False)
+    service_type = Column(String(50), default="Sunday Service")
+    headcount    = Column(Integer, default=0)
+    notes        = Column(Text)
+    created_at   = Column(DateTime, default=datetime.utcnow)
+    updated_at   = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    checkins = relationship("MemberCheckin", back_populates="record",
+                            cascade="all, delete-orphan")
+
+
+class MemberCheckin(Base):
+    """Per-member check-in for a service day (created by kiosk or admin)."""
+    __tablename__ = "member_checkins"
+
+    id            = Column(String, primary_key=True, default=gen_id)
+    record_id     = Column(String, ForeignKey("attendance_records.id", ondelete="SET NULL"), nullable=True)
+    member_id     = Column(String, ForeignKey("members.id", ondelete="CASCADE"), nullable=False)
+    date          = Column(Date, nullable=False)
+    checked_in_at = Column(DateTime, default=datetime.utcnow)
+    method        = Column(String(20), default="kiosk")   # kiosk | admin
+
+    record = relationship("AttendanceRecord", back_populates="checkins")
+    member = relationship("Member")
+
+
 class Setting(Base):
     """Key-value store for app-wide configuration (email, API keys, value lists)."""
     __tablename__ = "settings"

@@ -458,3 +458,44 @@ class SettingOut(BaseModel):
 
 class SettingUpsert(BaseModel):
     value: str
+
+
+# ── Attendance ────────────────────────────────────────────────────────────────
+
+class AttendanceRecordCreate(BaseModel):
+    date:         date
+    service_type: Optional[str] = "Sunday Service"
+    headcount:    Optional[int] = 0
+    notes:        Optional[str] = None
+
+class AttendanceRecordUpdate(BaseModel):
+    service_type: Optional[str] = None
+    headcount:    Optional[int] = None
+    notes:        Optional[str] = None
+
+class CheckinOut(BaseModel):
+    id:            str
+    member_id:     str
+    member_name:   Optional[str] = None
+    member_photo:  Optional[str] = None
+    date:          date
+    checked_in_at: datetime
+    method:        Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class AttendanceRecordOut(BaseModel):
+    id:            str
+    date:          date
+    service_type:  Optional[str] = None
+    headcount:     Optional[int] = 0
+    notes:         Optional[str] = None
+    checkin_count: Optional[int] = 0
+    created_at:    Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class AdminCheckinCreate(BaseModel):
+    member_id: str
+    date:      date
+    record_id: Optional[str] = None
