@@ -3,12 +3,16 @@ Bulk email communications router.
 
 Endpoints
 ---------
-POST  /api/comms/send              – resolve recipients, send emails, persist log
-GET   /api/comms                   – list all communications (summary)
-GET   /api/comms/{id}              – communication detail + recipient list
-GET   /api/comms/track/{token}     – tracking-pixel endpoint (marks opened)
-DELETE /api/comms/{id}             – delete a communication record
-GET   /api/comms/preview-recipients – dry-run: return who would receive the email
+GET    /api/comms/projects           – list all projects/campaigns
+POST   /api/comms/projects           – create a project
+PUT    /api/comms/projects/{id}      – update a project
+DELETE /api/comms/projects/{id}      – delete a project
+POST   /api/comms/send               – resolve recipients, send emails, persist log
+GET    /api/comms                    – list all communications (summary)
+GET    /api/comms/{id}               – communication detail + recipient list
+GET    /api/comms/track/{token}      – tracking-pixel endpoint (marks opened)
+DELETE /api/comms/{id}               – delete a communication record
+GET    /api/comms/preview-recipients – dry-run: return who would receive the email
 """
 
 import json, uuid, smtplib, base64
@@ -27,6 +31,77 @@ from app import models
 from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/comms", tags=["Communications"])
+
+
+# ── Project / Campaign routes ─────────────────────────────────────────────────
+
+@router.get("/projects")
+def list_projects(db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    projects = db.query(models.CommunicationProject).order_by(
+        models.CommunicationProject.created_at.desc()).all()
+    result = []
+    for p in projects:
+        comms = [c for c in p.communications]
+        last_sent = max((c.sent_at for c in comms if c.sent_at), default=None)
+        result.append({
+            "id":          p.id,
+            "name":        p.name,
+            "description": p.description,
+            "color":       p.color,
+            "created_at":  p.created_at.isoformat() if p.created_at else None,
+            "email_count": len(comms),
+            "last_sent":   last_sent.isoformat() if last_sent else None,
+        })
+    return result
+
+
+@router.post("/projects")
+def create_project(payload: dict, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    name = (payload.get("name") or "").strip()
+    if not name:
+        raise HTTPException(400, "Project name is required")
+    p = models.CommunicationProject(
+        name        = name,
+        description = payload.get("description", "").strip(),
+        color       = payload.get("color", "blue"),
+    )
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+    return {"id": p.id, "name": p.name, "description": p.description,
+            "color": p.color, "email_count": 0, "last_sent": None}
+
+
+@router.put("/projects/{project_id}")
+def update_project(project_id: str, payload: dict,
+                   db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    p = db.query(models.CommunicationProject).filter(
+        models.CommunicationProject.id == project_id).first()
+    if not p:
+        raise HTTPException(404, "Project not found")
+    if "name" in payload:
+        p.name = (payload["name"] or "").strip() or p.name
+    if "description" in payload:
+        p.description = payload["description"]
+    if "color" in payload:
+        p.color = payload["color"]
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/projects/{project_id}")
+def delete_project(project_id: str, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    p = db.query(models.CommunicationProject).filter(
+        models.CommunicationProject.id == project_id).first()
+    if not p:
+        raise HTTPException(404, "Project not found")
+    # Null out project_id on associated communications instead of cascade-deleting them
+    for c in p.communications:
+        c.project_id = None
+    db.delete(p)
+    db.commit()
+    return {"ok": True}
+
 
 # ── 1x1 transparent GIF for tracking pixel ────────────────────────────────────
 PIXEL_GIF = base64.b64decode(
@@ -219,7 +294,8 @@ def send_communication(
       body_text: str (optional),
       filter_type: str,   # all | status | ministry | group | event | members | volunteer_shift
       filter_value: str,  # depends on type
-      base_url: str       # e.g. "https://fcc.bjesoftware.com" for tracking pixel
+      base_url: str,      # e.g. "https://fcc.bjesoftware.com" for tracking pixel
+      project_id: str     # optional project/campaign UUID
     }
     """
     try:
@@ -229,6 +305,7 @@ def send_communication(
         filter_type  = payload.get("filter_type", "all")
         filter_value = payload.get("filter_value", "")
         base_url     = payload.get("base_url", "").rstrip("/")
+        project_id   = payload.get("project_id") or None
 
         if not subject:
             raise HTTPException(400, "Subject is required")
@@ -245,6 +322,7 @@ def send_communication(
 
         # Create communication record
         comm = models.Communication(
+            project_id      = project_id,
             subject         = subject,
             body_html       = body_html,
             body_text       = body_text,
@@ -299,16 +377,21 @@ def send_communication(
 
 @router.get("")
 def list_communications(
+    project_id: str = Query(None),
     db: Session = Depends(get_db),
     _user = Depends(get_current_user),
 ):
-    comms = db.query(models.Communication).order_by(
-        models.Communication.sent_at.desc()).all()
+    q = db.query(models.Communication).order_by(models.Communication.sent_at.desc())
+    if project_id:
+        q = q.filter(models.Communication.project_id == project_id)
+    comms = q.all()
     result = []
     for c in comms:
         open_pct = round(c.opened_count / c.recipient_count * 100) if c.recipient_count else 0
         result.append({
             "id":              c.id,
+            "project_id":      c.project_id,
+            "project_name":    c.project.name if c.project else None,
             "subject":         c.subject,
             "filter_label":    c.filter_label,
             "sent_at":         c.sent_at.isoformat() if c.sent_at else None,
@@ -346,6 +429,8 @@ def get_communication(
 
     return {
         "id":              c.id,
+        "project_id":      c.project_id,
+        "project_name":    c.project.name if c.project else None,
         "subject":         c.subject,
         "body_html":       c.body_html,
         "body_text":       c.body_text,

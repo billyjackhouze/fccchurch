@@ -348,11 +348,26 @@ class Setting(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class CommunicationProject(Base):
+    """A named campaign / project that groups related communications."""
+    __tablename__ = "communication_projects"
+
+    id          = Column(String, primary_key=True, default=gen_id)
+    name        = Column(String(200), nullable=False)
+    description = Column(Text)
+    color       = Column(String(20), default="blue")
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    communications = relationship("Communication", back_populates="project")
+
+
 class Communication(Base):
     """A bulk email communication sent to a group of members."""
     __tablename__ = "communications"
 
     id               = Column(String, primary_key=True, default=gen_id)
+    project_id       = Column(String, ForeignKey("communication_projects.id", ondelete="SET NULL"), nullable=True)
     subject          = Column(String(300), nullable=False)
     body_html        = Column(Text, nullable=False)
     body_text        = Column(Text)
@@ -363,6 +378,7 @@ class Communication(Base):
     recipient_count  = Column(Integer, default=0)
     opened_count     = Column(Integer, default=0)  # denormalised, updated on open
 
+    project    = relationship("CommunicationProject", back_populates="communications")
     sent_by    = relationship("User", foreign_keys=[sent_by_id])
     recipients = relationship("CommunicationRecipient", back_populates="communication",
                               cascade="all, delete-orphan")

@@ -545,6 +545,31 @@ body.is-admin .admin-only{display:inline-flex}
 [data-theme="dark"] #ai-result-table td{color:#CBD5E1}
 [data-theme="dark"] .sidebar-footer{border-color:#334155}
 [data-theme="dark"] select option{background:#1E293B;color:#E2E8F0}
+/* ── Communications dark mode ── */
+.comms-member-list-box{border:1.5px solid #D1D5DB;border-radius:6px;padding:4px;background:#fff;max-height:220px;overflow-y:auto;font-size:12px}
+.comms-member-row{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:background .15s}
+.comms-member-row:hover{background:#F3F4F6}
+.comms-member-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comms-member-email{color:#6B7280;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comms-preview-bar{background:#EBF0F8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px}
+.comms-editor-box{min-height:200px;border:1.5px solid #D1D5DB;border-radius:6px;padding:12px 14px;font-size:13px;font-family:inherit;line-height:1.7;background:#fff;outline:none}
+.proj-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:18px 20px;cursor:pointer;transition:box-shadow .15s;border-top:4px solid #1E3A5F;position:relative}
+.proj-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.proj-card h4{margin:0 0 4px;font-size:14px;font-weight:700;color:#1E3A5F}
+.proj-card .proj-desc{font-size:12px;color:#6B7280;margin-bottom:10px;min-height:16px}
+.proj-card .proj-stats{display:flex;gap:16px;font-size:12px;color:#374151}
+.proj-card .proj-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.proj-card:hover .proj-actions{opacity:1}
+[data-theme="dark"] .comms-member-list-box{background:#0F172A;border-color:#334155}
+[data-theme="dark"] .comms-member-row:hover{background:#263349}
+[data-theme="dark"] .comms-member-name{color:#E2E8F0}
+[data-theme="dark"] .comms-member-email{color:#64748B}
+[data-theme="dark"] .comms-preview-bar{background:#1E3A5F}
+[data-theme="dark"] .comms-editor-box{background:#0F172A;border-color:#334155;color:#E2E8F0}
+[data-theme="dark"] .proj-card{background:#1E293B;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+[data-theme="dark"] .proj-card h4{color:#93C5FD}
+[data-theme="dark"] .proj-card .proj-desc{color:#64748B}
+[data-theme="dark"] .proj-card .proj-stats{color:#CBD5E1}
 </style>
 </head>
 <body>
@@ -1223,24 +1248,60 @@ body.is-admin .admin-only{display:inline-flex}
     <!-- COMMUNICATIONS (admin only) -->
     <div class="page" id="page-comms">
       <div class="page-header">
-        <div><h2>📧 Communications</h2><p class="page-header-sub">Compose and send bulk emails to member groups. Track opens and delivery.</p></div>
-        <button class="btn btn-primary" onclick="openCompose()">✉ New Email</button>
+        <div><h2>📧 Communications</h2><p class="page-header-sub">Organize campaigns, compose bulk emails, and track open rates.</p></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="openProjectModal()">📁 New Project</button>
+          <button class="btn btn-primary" onclick="openCompose()">✉ New Email</button>
+        </div>
       </div>
 
       <!-- Tabs -->
       <div class="tabs" style="margin-bottom:20px">
-        <div class="tab active" onclick="switchCommsTab('history')" id="ctab-history">📋 Sent History</div>
+        <div class="tab active" onclick="switchCommsTab('projects')" id="ctab-projects">📁 Projects</div>
+        <div class="tab" onclick="switchCommsTab('history')" id="ctab-history">📋 History</div>
         <div class="tab" onclick="switchCommsTab('compose')" id="ctab-compose">✏️ Compose</div>
       </div>
 
-      <!-- Sent History Tab -->
-      <div id="comms-panel-history">
+      <!-- Projects Tab -->
+      <div id="comms-panel-projects">
+        <div id="comms-projects-empty" style="display:none" class="empty" style="padding:40px;text-align:center">
+          No projects yet — create one to organize your email campaigns.
+        </div>
+        <div class="card-grid" id="comms-projects-grid" style="margin-bottom:24px"></div>
+
+        <!-- Project email list (shown when a project is selected) -->
+        <div id="comms-project-emails-wrap" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h3 id="comms-project-emails-title">Emails in Project</h3>
+              <button class="btn btn-ghost btn-sm" onclick="closeProjectEmails()">✕ Close</button>
+            </div>
+            <div class="card-body table-wrap">
+              <table>
+                <thead><tr><th>Subject</th><th>Sent To</th><th>Date</th><th>Recipients</th><th>Opened</th><th>Rate</th><th>Actions</th></tr></thead>
+                <tbody id="comms-project-tbody"><tr><td colspan="7" class="empty">No emails</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div id="comms-panel-history" style="display:none">
         <div class="card">
-          <div class="card-header"><h3>Sent Emails</h3><button class="btn btn-outline btn-sm" onclick="loadCommsHistory()">↻ Refresh</button></div>
+          <div class="card-header">
+            <h3>All Sent Emails</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="comms-history-project-filter" onchange="loadCommsHistory()" style="font-size:12px;padding:4px 8px;border:1px solid #D1D5DB;border-radius:6px">
+                <option value="">All Projects</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="loadCommsHistory()">↻ Refresh</button>
+            </div>
+          </div>
           <div class="card-body table-wrap">
             <table>
-              <thead><tr><th>Subject</th><th>Sent To</th><th>Date</th><th>Recipients</th><th>Opened</th><th>Open Rate</th><th>Actions</th></tr></thead>
-              <tbody id="comms-tbody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr></tbody>
+              <thead><tr><th>Subject</th><th>Project</th><th>Sent To</th><th>Date</th><th>Recipients</th><th>Opened</th><th>Rate</th><th>Actions</th></tr></thead>
+              <tbody id="comms-tbody"><tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1251,6 +1312,19 @@ body.is-admin .admin-only{display:inline-flex}
         <div class="card" style="margin-bottom:18px">
           <div class="card-header"><h3>✉ Compose Email</h3></div>
           <div class="card-body">
+
+            <!-- Step 1: Project -->
+            <div class="form-group" style="margin-bottom:16px">
+              <label>Project / Campaign <span style="color:#9CA3AF;font-weight:400">(optional — groups emails for reporting)</span></label>
+              <div style="display:flex;gap:8px">
+                <select id="comms-project-select" style="flex:1">
+                  <option value="">— No project —</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="openProjectModal()" title="Create new project">+ New</button>
+              </div>
+            </div>
+
+            <!-- Step 2: Recipients -->
             <div class="form-grid cols-2" style="margin-bottom:16px">
               <div class="form-group">
                 <label>Filter Recipients By</label>
@@ -1268,23 +1342,25 @@ body.is-admin .admin-only{display:inline-flex}
                 <label id="comms-filter-value-label">Value</label>
                 <select id="comms-filter-value-select" style="display:none"></select>
                 <div id="comms-filter-members-wrap" style="display:none">
-                  <input id="comms-member-search" type="text" placeholder="Search members…" oninput="filterCommsMemberList(this.value)" style="width:100%;box-sizing:border-box;margin-bottom:6px;padding:5px 8px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:12px">
-                  <div id="comms-member-list" style="max-height:220px;overflow-y:auto;border:1.5px solid #D1D5DB;border-radius:6px;padding:4px;font-size:12px;background:#fff"></div>
+                  <input id="comms-member-search" type="text" placeholder="Search members…" oninput="filterCommsMemberList(this.value)" class="form-group" style="margin-bottom:6px;padding:5px 8px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:12px;width:100%;box-sizing:border-box">
+                  <div id="comms-member-list" class="comms-member-list-box"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Preview recipients -->
-            <div id="comms-preview-bar" style="display:none;background:#EBF0F8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px">
-              <span id="comms-preview-count" style="font-weight:700;color:#1E3A5F"></span>
+            <!-- Preview bar -->
+            <div id="comms-preview-bar" class="comms-preview-bar" style="display:none">
+              <span id="comms-preview-count" style="font-weight:700"></span>
               <button class="btn btn-outline btn-sm" onclick="showPreviewList()">View List</button>
             </div>
 
+            <!-- Subject -->
             <div class="form-group" style="margin-bottom:12px">
               <label>Subject Line</label>
               <input type="text" id="comms-subject" placeholder="e.g. Sunday Service Update — May 18">
             </div>
 
+            <!-- Body -->
             <div class="form-group" style="margin-bottom:12px">
               <label>Message Body</label>
               <div id="comms-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
@@ -1297,10 +1373,7 @@ body.is-admin .admin-only{display:inline-flex}
                 <span style="flex:1"></span>
                 <button class="btn btn-secondary btn-sm" onclick="toggleCommsPreview()">👁 Preview</button>
               </div>
-              <div id="comms-editor"
-                contenteditable="true"
-                style="min-height:200px;border:1.5px solid #D1D5DB;border-radius:6px;padding:12px 14px;font-size:13px;font-family:inherit;line-height:1.7;background:#fff;outline:none"
-                placeholder="Type your message here…"></div>
+              <div id="comms-editor" class="comms-editor-box" contenteditable="true" placeholder="Type your message here…"></div>
               <div id="comms-preview-email" style="display:none;border:1.5px solid #D1D5DB;border-radius:6px;overflow:hidden"></div>
             </div>
 
@@ -1313,7 +1386,43 @@ body.is-admin .admin-only{display:inline-flex}
         </div>
       </div>
 
-      <!-- Detail Modal -->
+      <!-- Project Create/Edit Modal -->
+      <div class="modal-backdrop" id="comms-project-modal">
+        <div class="modal" style="max-width:440px">
+          <div class="modal-header">
+            <h2 id="proj-modal-title">New Project</h2>
+            <button class="modal-close" onclick="closeModal('comms-project-modal')">✕</button>
+          </div>
+          <div class="form-grid" style="gap:14px">
+            <input type="hidden" id="proj-modal-id">
+            <div class="form-group">
+              <label>Project Name *</label>
+              <input type="text" id="proj-modal-name" placeholder="e.g. Easter 2026 Campaign">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="proj-modal-desc" rows="2" placeholder="What is this campaign about?"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Color</label>
+              <select id="proj-modal-color">
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="gold">Gold</option>
+                <option value="red">Red</option>
+                <option value="purple">Purple</option>
+                <option value="teal">Teal</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="closeModal('comms-project-modal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Detail Modal -->
       <div class="modal-backdrop" id="comms-detail-modal">
         <div class="modal" style="max-width:720px">
           <div class="modal-header">
@@ -5600,14 +5709,15 @@ function closeAllExportDds() {
 }
 
 // ── COMMUNICATIONS ────────────────────────────────────────────────────────────
+const PROJ_COLORS = { blue:'#1E3A5F', green:'#16A34A', gold:'#D97706', red:'#DC2626', purple:'#7C3AED', teal:'#0D9488' };
 let _commsFilterData = { ministries: [], groups: [], shifts: [], events: [], members: [] };
+let _commsProjects   = [];
 let _commsPreviewRecipients = [];
-let _commsEditorPreviewing = false;
+let _commsEditorPreviewing  = false;
 
 async function renderComms() {
-  await _loadCommsFilterData();
-  loadCommsHistory();
-  switchCommsTab('history');
+  await Promise.all([_loadCommsFilterData(), loadCommsProjects()]);
+  switchCommsTab('projects');
 }
 
 async function _loadCommsFilterData() {
@@ -5622,50 +5732,174 @@ async function _loadCommsFilterData() {
     _commsFilterData.groups  = groups;
     _commsFilterData.shifts  = shifts;
     _commsFilterData.events  = events;
-    // Unique ministries
-    const mins = [...new Set(members.map(m => m.ministry).filter(Boolean))].sort();
-    _commsFilterData.ministries = mins;
+    _commsFilterData.ministries = [...new Set(members.map(m => m.ministry).filter(Boolean))].sort();
   } catch(e) { console.error('comms filter data', e); }
 }
 
+// ── Projects ──────────────────────────────────────────────────────────────────
+
+async function loadCommsProjects() {
+  try {
+    _commsProjects = await api.get('/api/comms/projects');
+    _renderProjectCards();
+    _populateProjectDropdowns();
+  } catch(e) { console.error('load projects', e); }
+}
+
+function _renderProjectCards() {
+  const grid  = document.getElementById('comms-projects-grid');
+  const empty = document.getElementById('comms-projects-empty');
+  if (!_commsProjects.length) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = _commsProjects.map(p => {
+    const color = PROJ_COLORS[p.color] || PROJ_COLORS.blue;
+    const last  = p.last_sent ? `Last sent ${fmtDate(p.last_sent.slice(0,10))}` : 'No emails yet';
+    return `<div class="proj-card" style="border-top-color:${color}" onclick="viewProjectEmails('${p.id}','${p.name.replace(/'/g,"\\'")}')">
+      <div class="proj-actions">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openProjectModal('${p.id}')">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProject('${p.id}')">✕</button>
+      </div>
+      <h4>${p.name}</h4>
+      <div class="proj-desc">${p.description || ''}</div>
+      <div class="proj-stats">
+        <span>📧 ${p.email_count} email${p.email_count !== 1 ? 's' : ''}</span>
+        <span>🕐 ${last}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _populateProjectDropdowns() {
+  // Compose dropdown
+  const sel = document.getElementById('comms-project-select');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— No project —</option>' +
+      _commsProjects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    if (cur) sel.value = cur;
+  }
+  // History filter dropdown
+  const hf = document.getElementById('comms-history-project-filter');
+  if (hf) {
+    const cur2 = hf.value;
+    hf.innerHTML = '<option value="">All Projects</option>' +
+      _commsProjects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    if (cur2) hf.value = cur2;
+  }
+}
+
+function openProjectModal(id) {
+  const p = id ? _commsProjects.find(x => x.id === id) : null;
+  document.getElementById('proj-modal-title').textContent = p ? 'Edit Project' : 'New Project';
+  document.getElementById('proj-modal-id').value    = p ? p.id : '';
+  document.getElementById('proj-modal-name').value  = p ? p.name : '';
+  document.getElementById('proj-modal-desc').value  = p ? (p.description || '') : '';
+  document.getElementById('proj-modal-color').value = p ? (p.color || 'blue') : 'blue';
+  openModal('comms-project-modal');
+}
+
+async function saveProject() {
+  const id   = document.getElementById('proj-modal-id').value;
+  const name = document.getElementById('proj-modal-name').value.trim();
+  if (!name) { alert('Project name is required.'); return; }
+  const body = {
+    name,
+    description: document.getElementById('proj-modal-desc').value.trim(),
+    color:       document.getElementById('proj-modal-color').value,
+  };
+  try {
+    if (id) {
+      await api.put(`/api/comms/projects/${id}`, body);
+    } else {
+      await api.post('/api/comms/projects', body);
+    }
+    closeModal('comms-project-modal');
+    await loadCommsProjects();
+    showToast(id ? 'Project updated' : 'Project created');
+  } catch(e) { alert('Save failed: ' + e.message); }
+}
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project? Emails in it will not be deleted — they will just be unlinked.')) return;
+  try {
+    await api.delete(`/api/comms/projects/${id}`);
+    await loadCommsProjects();
+    closeProjectEmails();
+    showToast('Project deleted');
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+async function viewProjectEmails(id, name) {
+  const wrap  = document.getElementById('comms-project-emails-wrap');
+  const tbody = document.getElementById('comms-project-tbody');
+  document.getElementById('comms-project-emails-title').textContent = `📁 ${name}`;
+  wrap.style.display = '';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><span class="spinner"></span></td></tr>';
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    const comms = await api.get(`/api/comms?project_id=${id}`);
+    tbody.innerHTML = _renderCommsRows(comms, 7) || `<tr><td colspan="7" class="empty">No emails in this project yet</td></tr>`;
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function closeProjectEmails() {
+  document.getElementById('comms-project-emails-wrap').style.display = 'none';
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+
 function switchCommsTab(tab) {
-  ['history','compose'].forEach(t => {
+  ['projects','history','compose'].forEach(t => {
     document.getElementById('ctab-' + t).classList.toggle('active', t === tab);
     document.getElementById('comms-panel-' + t).style.display = t === tab ? '' : 'none';
   });
+  if (tab === 'history') loadCommsHistory();
 }
 
 function openCompose() {
   switchCommsTab('compose');
 }
 
+function _renderCommsRows(comms, colspan) {
+  if (!comms.length) return '';
+  return comms.map(c => {
+    const pct = c.open_pct;
+    const pctColor = pct >= 50 ? 'text-green' : pct >= 20 ? 'text-gold' : '';
+    const projCell = colspan > 7
+      ? `<td style="font-size:11px">${c.project_name ? `<span style="background:#EBF0F8;border-radius:4px;padding:2px 6px">${c.project_name}</span>` : '—'}</td>`
+      : '';
+    return `<tr>
+      <td><strong>${c.subject}</strong></td>
+      ${projCell}
+      <td style="font-size:12px" class="cell-muted">${c.filter_label || '—'}</td>
+      <td style="font-size:12px">${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</td>
+      <td>${c.recipient_count}</td>
+      <td>${c.opened_count}</td>
+      <td><span class="${pctColor}">${pct}%</span></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-sm" onclick="showCommsDetail('${c.id}')">View</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteComm('${c.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
 async function loadCommsHistory() {
   const tbody = document.getElementById('comms-tbody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr>';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr>';
   try {
-    const comms = await api.get('/api/comms');
-    if (!comms.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty">No emails sent yet</td></tr>';
-      return;
-    }
-    tbody.innerHTML = comms.map(c => {
-      const pct = c.open_pct;
-      const pctColor = pct >= 50 ? 'text-green' : pct >= 20 ? 'text-gold' : '';
-      return `<tr>
-        <td><strong>${c.subject}</strong></td>
-        <td style="font-size:12px;color:#6B7280">${c.filter_label || '—'}</td>
-        <td style="font-size:12px">${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</td>
-        <td>${c.recipient_count}</td>
-        <td>${c.opened_count}</td>
-        <td><span class="${pctColor}">${pct}%</span></td>
-        <td style="display:flex;gap:4px">
-          <button class="btn btn-outline btn-sm" onclick="showCommsDetail('${c.id}')">View</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteComm('${c.id}')">✕</button>
-        </td>
-      </tr>`;
-    }).join('');
+    const pid    = document.getElementById('comms-history-project-filter')?.value || '';
+    const url    = pid ? `/api/comms?project_id=${pid}` : '/api/comms';
+    const comms  = await api.get(url);
+    tbody.innerHTML = _renderCommsRows(comms, 8) || '<tr><td colspan="8" class="empty">No emails sent yet</td></tr>';
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -5674,13 +5908,13 @@ async function showCommsDetail(id) {
     const c = await api.get(`/api/comms/${id}`);
     document.getElementById('comms-detail-subject').textContent = c.subject;
     document.getElementById('comms-detail-meta').innerHTML =
-      `<span>📅 Sent: ${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</span>
+      `${c.project_name ? `<span>📁 ${c.project_name}</span>` : ''}
+       <span>📅 Sent: ${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</span>
        <span>👤 By: ${c.sent_by_email || '—'}</span>
        <span>🎯 ${c.filter_label || 'All members'}</span>`;
     document.getElementById('comms-detail-recipients').textContent = c.recipient_count;
     document.getElementById('comms-detail-opened').textContent = c.opened_count;
     document.getElementById('comms-detail-rate').textContent = c.open_pct + '%';
-
     document.getElementById('comms-detail-tbody').innerHTML = c.recipients.map(r => `
       <tr>
         <td><strong>${r.name || '—'}</strong></td>
@@ -5690,11 +5924,7 @@ async function showCommsDetail(id) {
           : '<span class="badge badge-gray">Not opened</span>'}</td>
         <td>${r.open_count || 0}x</td>
       </tr>`).join('') || '<tr><td colspan="4" class="empty">No recipients</td></tr>';
-
-    // Populate preview iframe
-    const frame = document.getElementById('comms-detail-iframe');
-    frame.srcdoc = c.body_html || '<p>No HTML body</p>';
-
+    document.getElementById('comms-detail-iframe').srcdoc = c.body_html || '<p>No HTML body</p>';
     switchDetailTab('recipients');
     openModal('comms-detail-modal');
   } catch(e) { alert('Could not load detail: ' + e.message); }
@@ -5716,46 +5946,37 @@ async function deleteComm(id) {
   } catch(e) { alert('Delete failed: ' + e.message); }
 }
 
-function onCommsFilterChange() {
-  const type = document.getElementById('comms-filter-type').value;
-  const wrap = document.getElementById('comms-filter-value-wrap');
-  const sel  = document.getElementById('comms-filter-value-select');
-  const mWrap= document.getElementById('comms-filter-members-wrap');
-  const lbl  = document.getElementById('comms-filter-value-label');
+// ── Compose ───────────────────────────────────────────────────────────────────
 
-  // Hide preview bar when filter changes
+function onCommsFilterChange() {
+  const type  = document.getElementById('comms-filter-type').value;
+  const wrap  = document.getElementById('comms-filter-value-wrap');
+  const sel   = document.getElementById('comms-filter-value-select');
+  const mWrap = document.getElementById('comms-filter-members-wrap');
+  const lbl   = document.getElementById('comms-filter-value-label');
   document.getElementById('comms-preview-bar').style.display = 'none';
   _commsPreviewRecipients = [];
 
   if (type === 'all') { wrap.style.display = 'none'; return; }
   wrap.style.display = '';
-  sel.style.display = '';
+  sel.style.display  = '';
   mWrap.style.display = 'none';
 
   if (type === 'status') {
     lbl.textContent = 'Status';
-    sel.innerHTML = ['Active','Inactive','Visitor','Archived']
-      .map(s => `<option value="${s}">${s}</option>`).join('');
+    sel.innerHTML = ['Active','Inactive','Visitor','Archived'].map(s => `<option value="${s}">${s}</option>`).join('');
   } else if (type === 'ministry') {
     lbl.textContent = 'Ministry';
-    sel.innerHTML = _commsFilterData.ministries
-      .map(m => `<option value="${encodeURIComponent(m)}">${m}</option>`).join('')
-      || '<option>No ministries found</option>';
+    sel.innerHTML = _commsFilterData.ministries.map(m => `<option value="${encodeURIComponent(m)}">${m}</option>`).join('') || '<option>No ministries found</option>';
   } else if (type === 'group') {
     lbl.textContent = 'Small Group';
-    sel.innerHTML = _commsFilterData.groups
-      .map(g => `<option value="${g.id}">${g.name}</option>`).join('')
-      || '<option>No groups found</option>';
+    sel.innerHTML = _commsFilterData.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('') || '<option>No groups found</option>';
   } else if (type === 'volunteer_shift') {
     lbl.textContent = 'Volunteer Shift';
-    sel.innerHTML = _commsFilterData.shifts
-      .map(s => `<option value="${s.id}">${s.title} (${fmtDate(s.date)})</option>`).join('')
-      || '<option>No shifts found</option>';
+    sel.innerHTML = _commsFilterData.shifts.map(s => `<option value="${s.id}">${s.title} (${fmtDate(s.date)})</option>`).join('') || '<option>No shifts found</option>';
   } else if (type === 'event') {
     lbl.textContent = 'Event';
-    sel.innerHTML = _commsFilterData.events.slice(0,50)
-      .map(e => `<option value="${e.id}">${e.title} (${fmtDate(e.date)})</option>`).join('')
-      || '<option>No events found</option>';
+    sel.innerHTML = _commsFilterData.events.slice(0,50).map(e => `<option value="${e.id}">${e.title} (${fmtDate(e.date)})</option>`).join('') || '<option>No events found</option>';
   } else if (type === 'members') {
     lbl.textContent = 'Select Members';
     sel.style.display = 'none';
@@ -5767,39 +5988,33 @@ function onCommsFilterChange() {
 
 function _renderCommsMemberList(filter) {
   const list = document.getElementById('comms-member-list');
-  const q = filter.trim().toLowerCase();
-  const checked = new Set(
-    [...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value)
-  );
+  const q    = filter.trim().toLowerCase();
+  const checked = new Set([...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value));
   const members = (_commsFilterData.members || [])
     .filter(m => m.email)
     .sort((a,b) => a.last.localeCompare(b.last))
     .filter(m => !q || `${m.last} ${m.first} ${m.email}`.toLowerCase().includes(q));
-
   if (!members.length) {
-    list.innerHTML = '<div style="padding:8px;color:#9CA3AF;text-align:center">No members found</div>';
+    list.innerHTML = '<div style="padding:8px;text-align:center" class="cell-muted">No members found</div>';
     return;
   }
   list.innerHTML = members.map(m => `
-    <label style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background=''">
+    <label class="comms-member-row">
       <input type="checkbox" value="${m.id}" class="comms-member-chk" style="margin-top:3px;flex-shrink:0" ${checked.has(m.id)?'checked':''}>
       <div style="min-width:0">
-        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.last}, ${m.first}</div>
-        <div style="color:#6B7280;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.email}</div>
+        <div class="comms-member-name">${m.last}, ${m.first}</div>
+        <div class="comms-member-email">${m.email}</div>
       </div>
     </label>`).join('');
 }
 
-function filterCommsMemberList(q) {
-  _renderCommsMemberList(q);
-}
+function filterCommsMemberList(q) { _renderCommsMemberList(q); }
 
 function _getFilterParams() {
   const type = document.getElementById('comms-filter-type').value;
   let value = '';
   if (type === 'members') {
-    const checked = [...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value);
-    value = checked.join(',');
+    value = [...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value).join(',');
   } else if (type !== 'all') {
     value = document.getElementById('comms-filter-value-select').value;
     if (type === 'ministry') value = decodeURIComponent(value);
@@ -5812,30 +6027,24 @@ async function previewRecipients() {
   try {
     const data = await api.get(`/api/comms/preview-recipients?filter_type=${encodeURIComponent(type)}&filter_value=${encodeURIComponent(value)}`);
     _commsPreviewRecipients = data;
-    const bar = document.getElementById('comms-preview-bar');
-    bar.style.display = 'flex';
+    document.getElementById('comms-preview-bar').style.display = 'flex';
     document.getElementById('comms-preview-count').textContent =
       `${data.length} recipient${data.length !== 1 ? 's' : ''} will receive this email`;
   } catch(e) { alert('Preview failed: ' + e.message); }
 }
 
 function showPreviewList() {
-  const tbody = document.getElementById('preview-recipients-tbody');
-  tbody.innerHTML = _commsPreviewRecipients.map(r => `
+  document.getElementById('preview-recipients-tbody').innerHTML = _commsPreviewRecipients.map(r => `
     <tr>
       <td><strong>${r.name}</strong></td>
       <td>${r.email}</td>
       <td><span class="badge ${r.status==='Active'?'badge-green':r.status==='Visitor'?'badge-gold':'badge-gray'}">${r.status}</span></td>
-      <td style="font-size:11px;color:#6B7280">${r.ministry || '—'}</td>
+      <td style="font-size:11px" class="cell-muted">${r.ministry || '—'}</td>
     </tr>`).join('') || '<tr><td colspan="4" class="empty">No recipients</td></tr>';
   openModal('comms-preview-modal');
 }
 
-function commsFormat(cmd) {
-  const ed = document.getElementById('comms-editor');
-  ed.focus();
-  document.execCommand(cmd, false, null);
-}
+function commsFormat(cmd) { document.getElementById('comms-editor').focus(); document.execCommand(cmd, false, null); }
 
 function commsInsertLink() {
   const url = prompt('Enter URL:', 'https://');
@@ -5854,16 +6063,12 @@ function toggleCommsPreview() {
   const prev = document.getElementById('comms-preview-email');
   _commsEditorPreviewing = !_commsEditorPreviewing;
   if (_commsEditorPreviewing) {
-    const html = `<div style="font-family:'Segoe UI',Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto">
+    prev.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto">
       <div style="background:#1E3A5F;color:#fff;padding:20px 28px;border-radius:8px 8px 0 0">
-        <h2 style="margin:0;font-size:18px">FFC Church</h2>
-        <p style="margin:4px 0 0;font-size:11px;color:#93C5FD">Family Fellowship Church</p>
+        <h2 style="margin:0;font-size:18px">FFC Church</h2><p style="margin:4px 0 0;font-size:11px;color:#93C5FD">Family Fellowship Church</p>
       </div>
-      <div style="padding:24px 28px;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px">
-        ${ed.innerHTML}
-      </div>
+      <div style="padding:24px 28px;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px">${ed.innerHTML}</div>
     </div>`;
-    prev.innerHTML = html;
     prev.style.display = '';
     ed.style.display = 'none';
   } else {
@@ -5881,14 +6086,8 @@ async function sendCommsEmail() {
   const { type, value } = _getFilterParams();
   if (type === 'members' && !value) { alert('Please select at least one member.'); return; }
 
-  // First preview if not done
-  if (!_commsPreviewRecipients.length) {
-    await previewRecipients();
-  }
-  if (!_commsPreviewRecipients.length) {
-    alert('No recipients found for the selected filter. Please check your selection.');
-    return;
-  }
+  if (!_commsPreviewRecipients.length) await previewRecipients();
+  if (!_commsPreviewRecipients.length) { alert('No recipients found. Please check your selection.'); return; }
 
   const count = _commsPreviewRecipients.length;
   if (!confirm(`Send "${subject}" to ${count} recipient${count !== 1 ? 's' : ''}?`)) return;
@@ -5896,25 +6095,21 @@ async function sendCommsEmail() {
   const btn = document.getElementById('comms-send-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Sending…';
-
   try {
-    const baseUrl = window.location.origin;
     const result = await api.post('/api/comms/send', {
       subject,
       body_html:    bodyHtml,
       body_text:    document.getElementById('comms-editor').innerText,
       filter_type:  type,
       filter_value: value,
-      base_url:     baseUrl,
+      base_url:     window.location.origin,
+      project_id:   document.getElementById('comms-project-select').value || null,
     });
-
-    const errMsg = result.errors?.length
-      ? `\n\n${result.errors.length} failed to send.`
-      : '';
+    const errMsg = result.errors?.length ? `\n\n${result.errors.length} failed to send.` : '';
     showToast(`✅ Sent to ${result.sent} recipient${result.sent !== 1 ? 's' : ''}${errMsg}`);
     clearCompose();
+    await loadCommsProjects();
     switchCommsTab('history');
-    loadCommsHistory();
   } catch(e) {
     alert('Send failed: ' + e.message);
   } finally {

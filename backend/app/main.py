@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, text
 import os
 
 from app.database import engine, get_db, Base
@@ -18,6 +18,17 @@ from app.routers import auth, users, volunteer, ministries, hierarchy, groups, s
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
+
+# ── Column migrations (safe to run repeatedly) ────────────────────────────────
+try:
+    with engine.connect() as _conn:
+        _conn.execute(text(
+            "ALTER TABLE communications ADD COLUMN IF NOT EXISTS "
+            "project_id VARCHAR REFERENCES communication_projects(id) ON DELETE SET NULL"
+        ))
+        _conn.commit()
+except Exception as _e:
+    pass  # Column already exists or table not yet created — create_all handles it
 
 app = FastAPI(
     title="FFC Church Management API",
