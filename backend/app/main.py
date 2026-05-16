@@ -14,7 +14,7 @@ import os
 from app.database import engine, get_db, Base
 from app import models, schemas
 from app.routers import members, events, rooms, giving, pledges
-from app.routers import auth, users, volunteer, ministries, hierarchy, groups, service_plans, sermons, settings, ai_export, attendance, pdf_reports
+from app.routers import auth, users, volunteer, ministries, hierarchy, groups, service_plans, sermons, settings, ai_export, attendance, pdf_reports, communications
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -51,6 +51,7 @@ app.include_router(settings.router)
 app.include_router(ai_export.router)
 app.include_router(attendance.router)
 app.include_router(pdf_reports.router)
+app.include_router(communications.router)
 
 # ── Static files (member photos) ──────────────────────────────────────────────
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")

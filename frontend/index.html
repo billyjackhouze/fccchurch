@@ -394,6 +394,9 @@ body.is-admin .admin-only{display:inline-flex}
 /* ── Page header h1 ── */
 .page-header h1{font-size:20px;font-weight:800;color:#1E3A5F}
 .page-header .subtitle{font-size:13px;color:#6B7280;margin-top:2px}
+.page-header-sub{font-size:13px;color:#6B7280;margin-top:2px}
+[data-theme="dark"] .page-header-sub{color:#64748B}
+[contenteditable]:empty:before{content:attr(placeholder);color:#9CA3AF;pointer-events:none}
 /* ── Form row (two columns) ── */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0}
 .modal-box{background:#fff;border-radius:12px;padding:26px;width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
@@ -602,6 +605,7 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="nav-item" onclick="showPage('attendance')" id="nav-attendance" style="display:none"><span class="icon">📋</span> Attendance</div>
     <div class="nav-item" onclick="launchKiosk()" id="nav-kiosk" style="display:none"><span class="icon">📱</span> Check-in Kiosk</div>
     <div class="nav-item" onclick="showPage('ai-query')" id="nav-ai-query" style="display:none"><span class="icon">🤖</span> AI Query Tool</div>
+    <div class="nav-item" onclick="showPage('comms')" id="nav-comms" style="display:none"><span class="icon">📧</span> Communications</div>
     <div class="nav-item" onclick="showPage('admin-settings')" id="nav-admin-settings" style="display:none"><span class="icon">⚙️</span> App Settings</div>
   </nav>
   <div class="sidebar-footer">
@@ -1213,6 +1217,161 @@ body.is-admin .admin-only{display:inline-flex}
           <tbody id="checkins-tbody"></tbody></table>
         </div>
         <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('checkins-modal')">Close</button></div>
+      </div>
+    </div>
+
+    <!-- COMMUNICATIONS (admin only) -->
+    <div class="page" id="page-comms">
+      <div class="page-header">
+        <div><h2>📧 Communications</h2><p class="page-header-sub">Compose and send bulk emails to member groups. Track opens and delivery.</p></div>
+        <button class="btn btn-primary" onclick="openCompose()">✉ New Email</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:20px">
+        <div class="tab active" onclick="switchCommsTab('history')" id="ctab-history">📋 Sent History</div>
+        <div class="tab" onclick="switchCommsTab('compose')" id="ctab-compose">✏️ Compose</div>
+      </div>
+
+      <!-- Sent History Tab -->
+      <div id="comms-panel-history">
+        <div class="card">
+          <div class="card-header"><h3>Sent Emails</h3><button class="btn btn-outline btn-sm" onclick="loadCommsHistory()">↻ Refresh</button></div>
+          <div class="card-body table-wrap">
+            <table>
+              <thead><tr><th>Subject</th><th>Sent To</th><th>Date</th><th>Recipients</th><th>Opened</th><th>Open Rate</th><th>Actions</th></tr></thead>
+              <tbody id="comms-tbody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose Tab -->
+      <div id="comms-panel-compose" style="display:none">
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header"><h3>✉ Compose Email</h3></div>
+          <div class="card-body">
+            <div class="form-grid cols-2" style="margin-bottom:16px">
+              <div class="form-group">
+                <label>Filter Recipients By</label>
+                <select id="comms-filter-type" onchange="onCommsFilterChange()">
+                  <option value="all">All Members (with email)</option>
+                  <option value="status">Member Status</option>
+                  <option value="ministry">Ministry</option>
+                  <option value="group">Small Group</option>
+                  <option value="volunteer_shift">Volunteer Shift</option>
+                  <option value="event">Event Attendees</option>
+                  <option value="members">Specific Members</option>
+                </select>
+              </div>
+              <div class="form-group" id="comms-filter-value-wrap" style="display:none">
+                <label id="comms-filter-value-label">Value</label>
+                <select id="comms-filter-value-select" style="display:none"></select>
+                <div id="comms-filter-members-wrap" style="display:none">
+                  <div id="comms-member-list" style="max-height:140px;overflow-y:auto;border:1.5px solid #D1D5DB;border-radius:6px;padding:6px 8px;font-size:12px;background:#fff"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview recipients -->
+            <div id="comms-preview-bar" style="display:none;background:#EBF0F8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px">
+              <span id="comms-preview-count" style="font-weight:700;color:#1E3A5F"></span>
+              <button class="btn btn-outline btn-sm" onclick="showPreviewList()">View List</button>
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Subject Line</label>
+              <input type="text" id="comms-subject" placeholder="e.g. Sunday Service Update — May 18">
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Message Body</label>
+              <div id="comms-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+                <button class="btn btn-secondary btn-sm" onclick="commsFormat('bold')" title="Bold"><b>B</b></button>
+                <button class="btn btn-secondary btn-sm" onclick="commsFormat('italic')" title="Italic"><i>I</i></button>
+                <button class="btn btn-secondary btn-sm" onclick="commsFormat('underline')" title="Underline"><u>U</u></button>
+                <button class="btn btn-secondary btn-sm" onclick="commsInsertLink()" title="Link">🔗</button>
+                <button class="btn btn-secondary btn-sm" onclick="commsFormat('insertUnorderedList')" title="Bullet list">• List</button>
+                <button class="btn btn-secondary btn-sm" onclick="commsInsertHeading()" title="Heading">H</button>
+                <span style="flex:1"></span>
+                <button class="btn btn-secondary btn-sm" onclick="toggleCommsPreview()">👁 Preview</button>
+              </div>
+              <div id="comms-editor"
+                contenteditable="true"
+                style="min-height:200px;border:1.5px solid #D1D5DB;border-radius:6px;padding:12px 14px;font-size:13px;font-family:inherit;line-height:1.7;background:#fff;outline:none"
+                placeholder="Type your message here…"></div>
+              <div id="comms-preview-email" style="display:none;border:1.5px solid #D1D5DB;border-radius:6px;overflow:hidden"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-ghost" onclick="clearCompose()">Clear</button>
+              <button class="btn btn-outline btn-sm" onclick="previewRecipients()">↻ Preview Recipients</button>
+              <button class="btn btn-primary" onclick="sendCommsEmail()" id="comms-send-btn">📤 Send Email</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Modal -->
+      <div class="modal-backdrop" id="comms-detail-modal">
+        <div class="modal" style="max-width:720px">
+          <div class="modal-header">
+            <h2 id="comms-detail-subject">Email Detail</h2>
+            <button class="modal-close" onclick="closeModal('comms-detail-modal')">✕</button>
+          </div>
+          <div id="comms-detail-meta" style="font-size:12px;color:#6B7280;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap"></div>
+          <div style="display:flex;gap:12px;margin-bottom:16px">
+            <div class="stat-card" style="flex:1;padding:12px 16px">
+              <div class="label">Recipients</div>
+              <div class="value" id="comms-detail-recipients" style="font-size:22px">—</div>
+            </div>
+            <div class="stat-card green" style="flex:1;padding:12px 16px">
+              <div class="label">Opened</div>
+              <div class="value" id="comms-detail-opened" style="font-size:22px">—</div>
+            </div>
+            <div class="stat-card gold" style="flex:1;padding:12px 16px">
+              <div class="label">Open Rate</div>
+              <div class="value" id="comms-detail-rate" style="font-size:22px">—</div>
+            </div>
+          </div>
+          <div class="tabs" style="margin-bottom:14px">
+            <div class="tab active" onclick="switchDetailTab('recipients')" id="dtab-recipients">Recipients</div>
+            <div class="tab" onclick="switchDetailTab('preview')" id="dtab-preview">Email Preview</div>
+          </div>
+          <div id="detail-panel-recipients">
+            <div style="max-height:360px;overflow-y:auto">
+              <table style="font-size:12px">
+                <thead><tr><th>Name</th><th>Email</th><th>Opened</th><th>Times Opened</th></tr></thead>
+                <tbody id="comms-detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="detail-panel-preview" style="display:none">
+            <iframe id="comms-detail-iframe" style="width:100%;height:360px;border:1px solid #E5E7EB;border-radius:6px"></iframe>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="closeModal('comms-detail-modal')">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Recipients Modal -->
+      <div class="modal-backdrop" id="comms-preview-modal">
+        <div class="modal" style="max-width:480px">
+          <div class="modal-header">
+            <h2>Preview Recipients</h2>
+            <button class="modal-close" onclick="closeModal('comms-preview-modal')">✕</button>
+          </div>
+          <div style="max-height:400px;overflow-y:auto">
+            <table style="font-size:12px">
+              <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Ministry</th></tr></thead>
+              <tbody id="preview-recipients-tbody"></tbody>
+            </table>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="closeModal('comms-preview-modal')">Close</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2055,6 +2214,7 @@ function hideLoginScreen() {
     document.getElementById('nav-manage-shifts').style.display = '';
     document.getElementById('nav-admin-settings').style.display = '';
     document.getElementById('nav-ai-query').style.display = '';
+    document.getElementById('nav-comms').style.display = '';
     document.getElementById('nav-attendance').style.display = '';
     document.getElementById('nav-kiosk').style.display = '';
     document.body.classList.add('is-admin');
@@ -2116,7 +2276,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', attendance:'Attendance', kiosk:'Check-in Kiosk', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', attendance:'Attendance', kiosk:'Check-in Kiosk', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup', comms:'Communications' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2144,6 +2304,7 @@ function renderPage(id) {
   else if (id==='users')           renderUsers();
   else if (id==='admin-settings')  renderAdminSettings();
   else if (id==='ai-query')        renderAIQueryPage();
+  else if (id==='comms')           renderComms();
   else if (id==='attendance')      renderAttendance();
   else if (id==='kiosk')           initKiosk();
   else if (id==='sermons')         renderSermons();
@@ -5435,6 +5596,317 @@ function downloadStatements() {
 
 function closeAllExportDds() {
   document.querySelectorAll('.export-dd-menu.open').forEach(m => m.classList.remove('open'));
+}
+
+// ── COMMUNICATIONS ────────────────────────────────────────────────────────────
+let _commsFilterData = { ministries: [], groups: [], shifts: [], events: [], members: [] };
+let _commsPreviewRecipients = [];
+let _commsEditorPreviewing = false;
+
+async function renderComms() {
+  await _loadCommsFilterData();
+  loadCommsHistory();
+  switchCommsTab('history');
+}
+
+async function _loadCommsFilterData() {
+  try {
+    const [members, groups, shifts, events] = await Promise.all([
+      api.get('/api/members'),
+      api.get('/api/groups').catch(() => []),
+      api.get('/api/volunteer-shifts').catch(() => []),
+      api.get('/api/events').catch(() => []),
+    ]);
+    _commsFilterData.members = members;
+    _commsFilterData.groups  = groups;
+    _commsFilterData.shifts  = shifts;
+    _commsFilterData.events  = events;
+    // Unique ministries
+    const mins = [...new Set(members.map(m => m.ministry).filter(Boolean))].sort();
+    _commsFilterData.ministries = mins;
+  } catch(e) { console.error('comms filter data', e); }
+}
+
+function switchCommsTab(tab) {
+  ['history','compose'].forEach(t => {
+    document.getElementById('ctab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('comms-panel-' + t).style.display = t === tab ? '' : 'none';
+  });
+}
+
+function openCompose() {
+  switchCommsTab('compose');
+}
+
+async function loadCommsHistory() {
+  const tbody = document.getElementById('comms-tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr>';
+  try {
+    const comms = await api.get('/api/comms');
+    if (!comms.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">No emails sent yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = comms.map(c => {
+      const pct = c.open_pct;
+      const pctColor = pct >= 50 ? 'text-green' : pct >= 20 ? 'text-gold' : '';
+      return `<tr>
+        <td><strong>${c.subject}</strong></td>
+        <td style="font-size:12px;color:#6B7280">${c.filter_label || '—'}</td>
+        <td style="font-size:12px">${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</td>
+        <td>${c.recipient_count}</td>
+        <td>${c.opened_count}</td>
+        <td><span class="${pctColor}">${pct}%</span></td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-sm" onclick="showCommsDetail('${c.id}')">View</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteComm('${c.id}')">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function showCommsDetail(id) {
+  try {
+    const c = await api.get(`/api/comms/${id}`);
+    document.getElementById('comms-detail-subject').textContent = c.subject;
+    document.getElementById('comms-detail-meta').innerHTML =
+      `<span>📅 Sent: ${c.sent_at ? fmtDate(c.sent_at.slice(0,10)) : '—'}</span>
+       <span>👤 By: ${c.sent_by_email || '—'}</span>
+       <span>🎯 ${c.filter_label || 'All members'}</span>`;
+    document.getElementById('comms-detail-recipients').textContent = c.recipient_count;
+    document.getElementById('comms-detail-opened').textContent = c.opened_count;
+    document.getElementById('comms-detail-rate').textContent = c.open_pct + '%';
+
+    document.getElementById('comms-detail-tbody').innerHTML = c.recipients.map(r => `
+      <tr>
+        <td><strong>${r.name || '—'}</strong></td>
+        <td>${r.email}</td>
+        <td>${r.opened_at
+          ? `<span class="badge badge-green">Opened ${fmtDate(r.opened_at.slice(0,10))}</span>`
+          : '<span class="badge badge-gray">Not opened</span>'}</td>
+        <td>${r.open_count || 0}x</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="empty">No recipients</td></tr>';
+
+    // Populate preview iframe
+    const frame = document.getElementById('comms-detail-iframe');
+    frame.srcdoc = c.body_html || '<p>No HTML body</p>';
+
+    switchDetailTab('recipients');
+    openModal('comms-detail-modal');
+  } catch(e) { alert('Could not load detail: ' + e.message); }
+}
+
+function switchDetailTab(tab) {
+  ['recipients','preview'].forEach(t => {
+    document.getElementById('dtab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('detail-panel-' + t).style.display = t === tab ? '' : 'none';
+  });
+}
+
+async function deleteComm(id) {
+  if (!confirm('Delete this communication record? This cannot be undone.')) return;
+  try {
+    await api.delete(`/api/comms/${id}`);
+    loadCommsHistory();
+    showToast('Communication deleted');
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+function onCommsFilterChange() {
+  const type = document.getElementById('comms-filter-type').value;
+  const wrap = document.getElementById('comms-filter-value-wrap');
+  const sel  = document.getElementById('comms-filter-value-select');
+  const mWrap= document.getElementById('comms-filter-members-wrap');
+  const lbl  = document.getElementById('comms-filter-value-label');
+
+  // Hide preview bar when filter changes
+  document.getElementById('comms-preview-bar').style.display = 'none';
+  _commsPreviewRecipients = [];
+
+  if (type === 'all') { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  sel.style.display = '';
+  mWrap.style.display = 'none';
+
+  if (type === 'status') {
+    lbl.textContent = 'Status';
+    sel.innerHTML = ['Active','Inactive','Visitor','Archived']
+      .map(s => `<option value="${s}">${s}</option>`).join('');
+  } else if (type === 'ministry') {
+    lbl.textContent = 'Ministry';
+    sel.innerHTML = _commsFilterData.ministries
+      .map(m => `<option value="${encodeURIComponent(m)}">${m}</option>`).join('')
+      || '<option>No ministries found</option>';
+  } else if (type === 'group') {
+    lbl.textContent = 'Small Group';
+    sel.innerHTML = _commsFilterData.groups
+      .map(g => `<option value="${g.id}">${g.name}</option>`).join('')
+      || '<option>No groups found</option>';
+  } else if (type === 'volunteer_shift') {
+    lbl.textContent = 'Volunteer Shift';
+    sel.innerHTML = _commsFilterData.shifts
+      .map(s => `<option value="${s.id}">${s.title} (${fmtDate(s.date)})</option>`).join('')
+      || '<option>No shifts found</option>';
+  } else if (type === 'event') {
+    lbl.textContent = 'Event';
+    sel.innerHTML = _commsFilterData.events.slice(0,50)
+      .map(e => `<option value="${e.id}">${e.title} (${fmtDate(e.date)})</option>`).join('')
+      || '<option>No events found</option>';
+  } else if (type === 'members') {
+    lbl.textContent = 'Select Members';
+    sel.style.display = 'none';
+    mWrap.style.display = '';
+    const list = document.getElementById('comms-member-list');
+    list.innerHTML = _commsFilterData.members
+      .filter(m => m.email)
+      .sort((a,b) => a.last.localeCompare(b.last))
+      .map(m => `<label style="display:flex;gap:6px;align-items:center;padding:3px 0;cursor:pointer">
+        <input type="checkbox" value="${m.id}" class="comms-member-chk">
+        ${m.last}, ${m.first} <span style="color:#9CA3AF;font-size:10px">${m.email}</span>
+      </label>`).join('') || '<span style="color:#9CA3AF">No members with email</span>';
+  }
+}
+
+function _getFilterParams() {
+  const type = document.getElementById('comms-filter-type').value;
+  let value = '';
+  if (type === 'members') {
+    const checked = [...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value);
+    value = checked.join(',');
+  } else if (type !== 'all') {
+    value = document.getElementById('comms-filter-value-select').value;
+    if (type === 'ministry') value = decodeURIComponent(value);
+  }
+  return { type, value };
+}
+
+async function previewRecipients() {
+  const { type, value } = _getFilterParams();
+  try {
+    const data = await api.get(`/api/comms/preview-recipients?filter_type=${encodeURIComponent(type)}&filter_value=${encodeURIComponent(value)}`);
+    _commsPreviewRecipients = data;
+    const bar = document.getElementById('comms-preview-bar');
+    bar.style.display = 'flex';
+    document.getElementById('comms-preview-count').textContent =
+      `${data.length} recipient${data.length !== 1 ? 's' : ''} will receive this email`;
+  } catch(e) { alert('Preview failed: ' + e.message); }
+}
+
+function showPreviewList() {
+  const tbody = document.getElementById('preview-recipients-tbody');
+  tbody.innerHTML = _commsPreviewRecipients.map(r => `
+    <tr>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.email}</td>
+      <td><span class="badge ${r.status==='Active'?'badge-green':r.status==='Visitor'?'badge-gold':'badge-gray'}">${r.status}</span></td>
+      <td style="font-size:11px;color:#6B7280">${r.ministry || '—'}</td>
+    </tr>`).join('') || '<tr><td colspan="4" class="empty">No recipients</td></tr>';
+  openModal('comms-preview-modal');
+}
+
+function commsFormat(cmd) {
+  const ed = document.getElementById('comms-editor');
+  ed.focus();
+  document.execCommand(cmd, false, null);
+}
+
+function commsInsertLink() {
+  const url = prompt('Enter URL:', 'https://');
+  if (!url) return;
+  document.getElementById('comms-editor').focus();
+  document.execCommand('createLink', false, url);
+}
+
+function commsInsertHeading() {
+  document.getElementById('comms-editor').focus();
+  document.execCommand('formatBlock', false, 'h2');
+}
+
+function toggleCommsPreview() {
+  const ed   = document.getElementById('comms-editor');
+  const prev = document.getElementById('comms-preview-email');
+  _commsEditorPreviewing = !_commsEditorPreviewing;
+  if (_commsEditorPreviewing) {
+    const html = `<div style="font-family:'Segoe UI',Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto">
+      <div style="background:#1E3A5F;color:#fff;padding:20px 28px;border-radius:8px 8px 0 0">
+        <h2 style="margin:0;font-size:18px">FFC Church</h2>
+        <p style="margin:4px 0 0;font-size:11px;color:#93C5FD">Family Fellowship Church</p>
+      </div>
+      <div style="padding:24px 28px;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px">
+        ${ed.innerHTML}
+      </div>
+    </div>`;
+    prev.innerHTML = html;
+    prev.style.display = '';
+    ed.style.display = 'none';
+  } else {
+    prev.style.display = 'none';
+    ed.style.display = '';
+  }
+}
+
+async function sendCommsEmail() {
+  const subject  = document.getElementById('comms-subject').value.trim();
+  const bodyHtml = document.getElementById('comms-editor').innerHTML.trim();
+  if (!subject)  { alert('Please enter a subject line.'); return; }
+  if (!bodyHtml || bodyHtml === '<br>') { alert('Please write a message body.'); return; }
+
+  const { type, value } = _getFilterParams();
+  if (type === 'members' && !value) { alert('Please select at least one member.'); return; }
+
+  // First preview if not done
+  if (!_commsPreviewRecipients.length) {
+    await previewRecipients();
+  }
+  if (!_commsPreviewRecipients.length) {
+    alert('No recipients found for the selected filter. Please check your selection.');
+    return;
+  }
+
+  const count = _commsPreviewRecipients.length;
+  if (!confirm(`Send "${subject}" to ${count} recipient${count !== 1 ? 's' : ''}?`)) return;
+
+  const btn = document.getElementById('comms-send-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending…';
+
+  try {
+    const baseUrl = window.location.origin;
+    const result = await api.post('/api/comms/send', {
+      subject,
+      body_html:    bodyHtml,
+      body_text:    document.getElementById('comms-editor').innerText,
+      filter_type:  type,
+      filter_value: value,
+      base_url:     baseUrl,
+    });
+
+    const errMsg = result.errors?.length
+      ? `\n\n${result.errors.length} failed to send.`
+      : '';
+    showToast(`✅ Sent to ${result.sent} recipient${result.sent !== 1 ? 's' : ''}${errMsg}`);
+    clearCompose();
+    switchCommsTab('history');
+    loadCommsHistory();
+  } catch(e) {
+    alert('Send failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Send Email';
+  }
+}
+
+function clearCompose() {
+  document.getElementById('comms-subject').value = '';
+  document.getElementById('comms-editor').innerHTML = '';
+  document.getElementById('comms-filter-type').value = 'all';
+  document.getElementById('comms-filter-value-wrap').style.display = 'none';
+  document.getElementById('comms-preview-bar').style.display = 'none';
+  _commsPreviewRecipients = [];
+  if (_commsEditorPreviewing) toggleCommsPreview();
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────────

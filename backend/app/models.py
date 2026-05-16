@@ -3,7 +3,7 @@ SQLAlchemy ORM models for FFC Church Management System.
 """
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Numeric, Date, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, String, Integer, Numeric, Date, DateTime, ForeignKey, Text, Boolean, Float
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -346,3 +346,41 @@ class Setting(Base):
     label      = Column(String(200))              # human-readable label
     group      = Column(String(50))               # email | api | lists | general
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Communication(Base):
+    """A bulk email communication sent to a group of members."""
+    __tablename__ = "communications"
+
+    id               = Column(String, primary_key=True, default=gen_id)
+    subject          = Column(String(300), nullable=False)
+    body_html        = Column(Text, nullable=False)
+    body_text        = Column(Text)
+    filter_label     = Column(String(200))   # human-readable description of who was targeted
+    filter_json      = Column(Text)          # JSON snapshot of the filter params used
+    sent_at          = Column(DateTime, default=datetime.utcnow)
+    sent_by_id       = Column(String, ForeignKey("users.id"), nullable=True)
+    recipient_count  = Column(Integer, default=0)
+    opened_count     = Column(Integer, default=0)  # denormalised, updated on open
+
+    sent_by    = relationship("User", foreign_keys=[sent_by_id])
+    recipients = relationship("CommunicationRecipient", back_populates="communication",
+                              cascade="all, delete-orphan")
+
+
+class CommunicationRecipient(Base):
+    """One row per recipient of a Communication. Holds the tracking token."""
+    __tablename__ = "communication_recipients"
+
+    id               = Column(String, primary_key=True, default=gen_id)
+    communication_id = Column(String, ForeignKey("communications.id", ondelete="CASCADE"), nullable=False)
+    member_id        = Column(String, ForeignKey("members.id", ondelete="SET NULL"), nullable=True)
+    email            = Column(String(200), nullable=False)
+    name             = Column(String(200))
+    track_token      = Column(String(64), unique=True, nullable=False)  # UUID hex, used in pixel URL
+    opened_at        = Column(DateTime, nullable=True)    # first open timestamp
+    open_count       = Column(Integer, default=0)
+    created_at       = Column(DateTime, default=datetime.utcnow)
+
+    communication = relationship("Communication", back_populates="recipients")
+    member        = relationship("Member", foreign_keys=[member_id])
