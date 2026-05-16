@@ -377,8 +377,20 @@ body.is-admin .admin-only{display:inline-flex}
 #toast{position:fixed;bottom:28px;right:28px;background:#1E3A5F;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none}
 #toast.show{opacity:1}
 /* ── Settings ── */
-.settings-tab{transition:color .15s,border-color .15s}
-.settings-tab:hover{color:#1E3A5F!important}
+.settings-tab{transition:color .15s,border-color .15s;color:#6B7280;border-bottom:2px solid transparent;padding:9px 20px;border-top:none;border-left:none;border-right:none;background:none;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-2px}
+.settings-tab:hover{color:#1E3A5F}
+.settings-tab.active{color:#1E3A5F;border-bottom-color:#1E3A5F}
+[data-theme="dark"] .settings-tab{color:#64748B}
+[data-theme="dark"] .settings-tab:hover{color:#93C5FD}
+[data-theme="dark"] .settings-tab.active{color:#93C5FD;border-bottom-color:#93C5FD}
+[data-theme="dark"] #settings-tabs{border-bottom-color:#334155}
+/* ── Dashboard list items ── */
+.dash-item-title{font-weight:700;font-size:13px;color:#1E3A5F}
+.dash-item-sub{font-size:12px;color:#6B7280}
+.dash-item-sep{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6}
+[data-theme="dark"] .dash-item-title{color:#E2E8F0}
+[data-theme="dark"] .dash-item-sub{color:#64748B}
+[data-theme="dark"] .dash-item-sep{border-bottom-color:#1E293B}
 /* ── Page header h1 ── */
 .page-header h1{font-size:20px;font-weight:800;color:#1E3A5F}
 .page-header .subtitle{font-size:13px;color:#6B7280;margin-top:2px}
@@ -1304,22 +1316,10 @@ body.is-admin .admin-only{display:inline-flex}
 
       <!-- Tabs -->
       <div id="settings-tabs" style="display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:20px">
-        <button class="settings-tab active" onclick="switchSettingsTab('general')" id="stab-general"
-          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid #1E3A5F;margin-bottom:-2px;color:#1E3A5F">
-          🏛 General
-        </button>
-        <button class="settings-tab" onclick="switchSettingsTab('email')" id="stab-email"
-          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
-          📧 Email
-        </button>
-        <button class="settings-tab" onclick="switchSettingsTab('api')" id="stab-api"
-          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
-          🔑 API Keys
-        </button>
-        <button class="settings-tab" onclick="switchSettingsTab('lists')" id="stab-lists"
-          style="padding:9px 20px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280">
-          📋 Value Lists
-        </button>
+        <button class="settings-tab active" onclick="switchSettingsTab('general')" id="stab-general">🏛 General</button>
+        <button class="settings-tab" onclick="switchSettingsTab('email')" id="stab-email">📧 Email</button>
+        <button class="settings-tab" onclick="switchSettingsTab('api')" id="stab-api">🔑 API Keys</button>
+        <button class="settings-tab" onclick="switchSettingsTab('lists')" id="stab-lists">📋 Value Lists</button>
       </div>
 
       <!-- General tab -->
@@ -2168,32 +2168,32 @@ async function renderDashboard() {
       <div class="stat-card"><div class="label">Upcoming Events</div><div class="value">${stats.upcoming_events}</div><div class="sub">From today forward</div></div>`;
     const sorted = [...events].sort((a,b)=>a.date.localeCompare(b.date));
     document.getElementById('dash-events').innerHTML = sorted.slice(0,5).map(e=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
-        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${e.title}</div>
-        <div style="font-size:12px;color:#6B7280">${fmtDate(e.date)}${e.start_time?' · '+fmtTime(e.start_time):''}</div></div>
+      <div class="dash-item-sep">
+        <div><div class="dash-item-title">${e.title}</div>
+        <div class="dash-item-sub">${fmtDate(e.date)}${e.start_time?' · '+fmtTime(e.start_time):''}</div></div>
         <span class="badge badge-blue">${e.type}</span>
       </div>`).join('')||'<div class="empty">No upcoming events</div>';
     const recent = [...giving].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
     document.getElementById('dash-giving').innerHTML = recent.map(g=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
-        <div><div style="font-weight:700;font-size:13px;color:#1E3A5F">${g.member_name||'Anonymous'}</div>
-        <div style="font-size:12px;color:#6B7280">${fmtDate(g.date)} · ${g.type}</div></div>
+      <div class="dash-item-sep">
+        <div><div class="dash-item-title">${g.member_name||'Anonymous'}</div>
+        <div class="dash-item-sub">${fmtDate(g.date)} · ${g.type}</div></div>
         <span class="text-green">${fmt$(g.amount)}</span>
       </div>`).join('')||'<div class="empty">No giving records</div>';
     const todayEvs = events.filter(e=>e.date===todayStr);
     document.getElementById('dash-rooms').innerHTML = rooms.slice(0,5).map(r=>{
       const booked = todayEvs.find(e=>e.room_id===r.id);
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
-        <div style="font-weight:600;font-size:13px">${r.name}</div>
+      return `<div class="dash-item-sep">
+        <div class="dash-item-title" style="font-weight:600">${r.name}</div>
         ${booked?`<span class="badge badge-gold">In Use</span>`:`<span class="badge badge-green">Available</span>`}
       </div>`;
     }).join('');
     const newest = [...members].sort((a,b)=>(b.since||'').localeCompare(a.since||'')).slice(0,5);
     document.getElementById('dash-members').innerHTML = newest.map(m=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6">
+      <div class="dash-item-sep">
         <div style="display:flex;align-items:center;gap:8px">${avatarHtml(m,30)}<div>
-          <div style="font-weight:700;font-size:13px;color:#1E3A5F">${m.first} ${m.last}</div>
-          <div style="font-size:12px;color:#6B7280">${m.ministry||'No ministry yet'}</div></div></div>
+          <div class="dash-item-title">${m.first} ${m.last}</div>
+          <div class="dash-item-sub">${m.ministry||'No ministry yet'}</div></div></div>
         <span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span>
       </div>`).join('');
   } catch(e) {
@@ -4752,8 +4752,8 @@ async function renderAdminSettings() {
 function switchSettingsTab(tab) {
   document.querySelectorAll('.settings-tab').forEach(t => {
     const active = t.id === 'stab-' + tab;
-    t.style.borderBottom = active ? '2px solid #1E3A5F' : '2px solid transparent';
-    t.style.color = active ? '#1E3A5F' : '#6B7280';
+    t.style.borderBottom = '';
+    t.style.color = '';
     if (active) t.classList.add('active'); else t.classList.remove('active');
   });
   document.querySelectorAll('.settings-panel').forEach(p => p.style.display = 'none');
