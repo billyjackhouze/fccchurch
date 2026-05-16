@@ -719,6 +719,8 @@ body.is-admin .admin-only{display:inline-flex}
               <div class="export-dd-sep"></div>
               <div class="export-dd-item" onclick="downloadTemplate('members','csv')">📥 CSV Template</div>
               <div class="export-dd-item" onclick="downloadTemplate('members','xlsx')">📥 Excel Template</div>
+              <div class="export-dd-sep"></div>
+              <div class="export-dd-item" onclick="openDirectoryModal()">📒 Member Directory PDF</div>
             </div>
           </div>
           <button class="btn btn-outline btn-sm" onclick="openImportModal('members')">⬆ Import</button>
@@ -775,6 +777,8 @@ body.is-admin .admin-only{display:inline-flex}
               <div class="export-dd-sep"></div>
               <div class="export-dd-item" onclick="downloadTemplate('giving','csv')">📥 CSV Template</div>
               <div class="export-dd-item" onclick="downloadTemplate('giving','xlsx')">📥 Excel Template</div>
+              <div class="export-dd-sep"></div>
+              <div class="export-dd-item" onclick="openStatementsModal()">📄 Year-End Statements</div>
             </div>
           </div>
           <button class="btn btn-outline btn-sm" onclick="openImportModal('giving')">⬆ Import</button>
@@ -1755,6 +1759,62 @@ body.is-admin .admin-only{display:inline-flex}
         <button type="submit" class="btn btn-primary" id="sermon-save-btn">Save Sermon</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── Member Directory PDF Modal ────────────────────────────────────── -->
+<div class="modal-backdrop" id="directory-modal">
+  <div class="modal" style="max-width:420px">
+    <h2>📒 Member Directory PDF</h2>
+    <div class="form-grid cols-1" style="gap:12px">
+      <div class="form-group">
+        <label>Filter by Status</label>
+        <select id="dir-status">
+          <option value="">All Members</option>
+          <option value="Active" selected>Active Only</option>
+          <option value="Inactive">Inactive Only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Layout</label>
+        <select id="dir-fmt">
+          <option value="grid" selected>Photo Grid (3 columns)</option>
+          <option value="list">List with Details</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('directory-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="downloadDirectory()">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Giving Statements Modal ───────────────────────────────────────── -->
+<div class="modal-backdrop" id="statements-modal">
+  <div class="modal" style="max-width:440px">
+    <h2>📄 Year-End Giving Statements</h2>
+    <div class="form-grid cols-1" style="gap:12px">
+      <div class="form-group">
+        <label>Tax Year</label>
+        <select id="stmt-year"></select>
+      </div>
+      <div class="form-group">
+        <label>Generate For</label>
+        <select id="stmt-who" onchange="toggleStmtMember(this.value)">
+          <option value="all">All Members (download as ZIP)</option>
+          <option value="one">Specific Member</option>
+        </select>
+      </div>
+      <div class="form-group" id="stmt-member-wrap" style="display:none">
+        <label>Member</label>
+        <select id="stmt-member-id"><option value="">— select member —</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('statements-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="downloadStatements()">⬇ Download</button>
+    </div>
   </div>
 </div>
 
@@ -5242,6 +5302,92 @@ async function confirmCheckin() {
     document.getElementById('kiosk-search').focus();
     _kioskDoSearch('');
   }, 3000);
+}
+
+// ── PDF REPORTS ───────────────────────────────────────────────────────────────
+function openDirectoryModal() {
+  closeAllExportDds();
+  openModal('directory-modal');
+}
+
+function downloadDirectory() {
+  const status = document.getElementById('dir-status').value;
+  const fmt    = document.getElementById('dir-fmt').value;
+  const params = new URLSearchParams({ fmt });
+  if (status) params.set('status', status);
+  const token = localStorage.getItem('fcc_token');
+  // Use fetch + blob so auth header is sent
+  fetch(`/api/reports/directory-pdf?${params}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => {
+    if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'Error'); });
+    return r.blob();
+  }).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `member_directory_${new Date().toISOString().slice(0,10)}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    closeModal('directory-modal');
+  }).catch(e => alert('Could not generate directory: ' + e.message));
+}
+
+async function openStatementsModal() {
+  closeAllExportDds();
+  // Populate year dropdown (current year back 5 years)
+  const sel = document.getElementById('stmt-year');
+  const cur = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (let y = cur; y >= cur - 5; y--) {
+    sel.innerHTML += `<option value="${y}"${y===cur-1?' selected':''}>${y}</option>`;
+  }
+  // Populate member dropdown
+  const mSel = document.getElementById('stmt-member-id');
+  try {
+    const members = await api.get('/api/members');
+    mSel.innerHTML = '<option value="">— select member —</option>' +
+      members.filter(m => m.status === 'Active')
+             .sort((a,b) => a.last.localeCompare(b.last))
+             .map(m => `<option value="${m.id}">${m.last}, ${m.first}</option>`)
+             .join('');
+  } catch(e) { mSel.innerHTML = '<option value="">Error loading members</option>'; }
+  openModal('statements-modal');
+}
+
+function toggleStmtMember(val) {
+  document.getElementById('stmt-member-wrap').style.display = val === 'one' ? '' : 'none';
+}
+
+function downloadStatements() {
+  const year = document.getElementById('stmt-year').value;
+  const who  = document.getElementById('stmt-who').value;
+  const token = localStorage.getItem('fcc_token');
+  let url, fname;
+  if (who === 'all') {
+    url   = `/api/reports/giving-statements-all?year=${year}`;
+    fname = `giving_statements_${year}.zip`;
+  } else {
+    const mid = document.getElementById('stmt-member-id').value;
+    if (!mid) { alert('Please select a member.'); return; }
+    url   = `/api/reports/giving-statement/${mid}?year=${year}`;
+    fname = `giving_statement_${year}.pdf`;
+  }
+  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    .then(r => {
+      if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'Error'); });
+      return r.blob();
+    }).then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fname;
+      a.click();
+      closeModal('statements-modal');
+    }).catch(e => alert('Could not generate statement: ' + e.message));
+}
+
+function closeAllExportDds() {
+  document.querySelectorAll('.export-dd-menu.open').forEach(m => m.classList.remove('open'));
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
