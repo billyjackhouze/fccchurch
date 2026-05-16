@@ -2116,7 +2116,7 @@ async function renderCalendar() {
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const daysInPrev=new Date(calYear,calMonth,0).getDate();
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const typeColor=t=>{const m={Service:' blue',Meeting:' gold','Volunteer Slot':' green',Event:' green',Class:' purple',Other:' gray'};return m[t]||m[(t||'').trim()]||'';};
+  const typeColor=t=>{const m={Service:' blue',Meeting:' gold','Volunteer Slot':' teal',Event:' green',Class:' purple',Other:' gray'};return m[t]||m[(t||'').trim()]||'';};
   let html=days.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell other-month"><div class="cal-num">${daysInPrev-firstDay+i+1}</div></div>`;
   for(let day=1;day<=daysInMonth;day++){
@@ -2140,12 +2140,12 @@ async function renderSchedule() {
   try {
     const [events, rooms] = await Promise.all([api.get('/api/events'), api.get('/api/rooms')]);
     const sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||(a.start_time||'').localeCompare(b.start_time||''));
-    const typeColor=t=>{const m={Service:'badge-blue',Meeting:'badge-gold','Volunteer Slot':'badge-green',Event:'badge-green',Class:'badge-purple',Other:'badge-gray'};return m[t]||m[(t||'').trim()]||'badge-gray';};
+    const typeStyle=t=>{const m={Service:'#1D4ED8',Meeting:'#B8860B','Volunteer Slot':'#0D9488',Event:'#1A7A4A',Class:'#7C3AED',Other:'#6B7280'};const bg=m[(t||'').trim()]||m[t]||'#6B7280';return `style="background:${bg};color:#fff;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-block"`};
     document.getElementById('events-tbody').innerHTML=sorted.map(e=>`
       <tr><td><strong>${e.title}</strong></td><td>${fmtDate(e.date)}</td>
       <td>${fmtTime(e.start_time)}${e.end_time?' – '+fmtTime(e.end_time):''}</td>
       <td>${e.room_name||'—'}</td>
-      <td><span class="badge ${typeColor(e.type)}">${e.type}</span></td>
+      <td><span ${typeStyle(e.type)}>${e.type}</span></td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Delete</button></td></tr>`)
       .join('')||'<tr><td colspan="6" class="empty">No events yet</td></tr>';
     const sel=document.getElementById('ev-room');
