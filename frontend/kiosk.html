@@ -291,6 +291,7 @@ async function doCheckin() {
   document.getElementById('conf-btn').textContent = 'Checking in…';
 
   const toCheckin = [confirmMember.id, ...familySelected];
+  // Keep current displayed count as fallback so a failed fetch never resets to 0
   let lastCount = parseInt(document.getElementById('count-num').textContent) || 0;
   let checkedName = confirmMember.first;
 
@@ -305,9 +306,13 @@ async function doCheckin() {
         }),
       });
       const data = await resp.json();
-      checkedInMap[memberId] = true;
-      lastCount = data.checkin_count || lastCount;
-    } catch(e) { console.error(e); }
+      if (resp.ok) {
+        checkedInMap[memberId] = true;
+        if (data.checkin_count != null) lastCount = data.checkin_count;
+      } else {
+        console.error('Checkin error:', data);
+      }
+    } catch(e) { console.error('Checkin fetch error:', e); }
   }
 
   document.getElementById('count-num').textContent = lastCount;

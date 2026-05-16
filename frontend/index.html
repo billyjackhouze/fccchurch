@@ -5090,12 +5090,8 @@ async function initKiosk() {
     const svc = todayData.record ? todayData.record.service_type : 'Sunday Service';
     document.getElementById('kiosk-service-label').textContent = svc;
 
-    // Build checked-in map
+    // Build checked-in map (populated client-side as members check in)
     _kioskCheckins = {};
-    // We'll check status on-demand per member via API, or pre-load all checkins
-    // For performance, just fetch all today's checkins once:
-    const todayCheckinResp = await fetch('/api/members'); // placeholder — we use status endpoint per-member
-    // Actually, fetch the today count only and check per-member when rendering
   } catch(e) {
     console.error('Kiosk init error', e);
   }
@@ -5200,7 +5196,8 @@ async function confirmCheckin() {
   // Check in primary member + any selected family
   const toCheckin = [_kioskConfirmMember.id, ..._kioskFamilySelected];
   let lastName = _kioskConfirmMember.first;
-  let totalCount = 0;
+  // Start from the currently displayed count so a failed fetch never resets to 0
+  let totalCount = parseInt(document.getElementById('kiosk-count').textContent) || 0;
 
   for (const memberId of toCheckin) {
     try {
@@ -5210,9 +5207,13 @@ async function confirmCheckin() {
         body: JSON.stringify({ member_id: memberId, record_id: _kioskRecordId }),
       });
       const data = await resp.json();
-      _kioskCheckins[memberId] = true;
-      totalCount = data.checkin_count;
-    } catch(e) { console.error(e); }
+      if (resp.ok) {
+        _kioskCheckins[memberId] = true;
+        if (data.checkin_count != null) totalCount = data.checkin_count;
+      } else {
+        console.error('Checkin error:', data);
+      }
+    } catch(e) { console.error('Checkin fetch error:', e); }
   }
 
   // Update count display
