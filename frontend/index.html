@@ -385,6 +385,108 @@ body.is-admin .admin-only{display:inline-flex}
         .outline-badge { width:32px; height:32px; border-radius:50%; background:#6366f1; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; }
         .outline-sub-label { font-size:0.78rem; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
         .outline-sub-group { margin-bottom:10px; }
+
+/* ── Theme Toggle Button ── */
+.theme-toggle{display:flex;align-items:center;background:#F3F4F6;border-radius:20px;padding:3px;gap:1px;border:1px solid #E5E7EB}
+.theme-btn{padding:4px 10px;border-radius:16px;border:none;background:transparent;cursor:pointer;font-size:12px;color:#6B7280;transition:all .18s;display:flex;align-items:center;gap:4px;font-weight:600;white-space:nowrap}
+.theme-btn.active{background:#fff;color:#1E3A5F;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.theme-btn svg{width:13px;height:13px;flex-shrink:0}
+
+/* ── Dark Mode Overrides ── */
+[data-theme="dark"] body{background:#0F172A;color:#E2E8F0}
+[data-theme="dark"] .topbar{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .topbar-title{color:#93C5FD}
+[data-theme="dark"] #topbar-date{color:#94A3B8!important}
+[data-theme="dark"] .topbar-user{color:#94A3B8}
+[data-theme="dark"] .content{background:#0F172A}
+[data-theme="dark"] .card{background:#1E293B;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+[data-theme="dark"] .card-header{border-color:#334155}
+[data-theme="dark"] .card-header h3{color:#93C5FD}
+[data-theme="dark"] .stat-card{background:#1E293B;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+[data-theme="dark"] .stat-card .label{color:#94A3B8}
+[data-theme="dark"] .stat-card .value{color:#E2E8F0}
+[data-theme="dark"] .stat-card .sub{color:#64748B}
+[data-theme="dark"] th{background:#0F172A;color:#CBD5E1;border-color:#334155}
+[data-theme="dark"] td{color:#CBD5E1;border-color:#1E293B}
+[data-theme="dark"] tr:hover td{background:#263349}
+[data-theme="dark"] .form-group label{color:#CBD5E1}
+[data-theme="dark"] .form-group input,[data-theme="dark"] .form-group select,[data-theme="dark"] .form-group textarea{background:#0F172A;border-color:#334155;color:#E2E8F0}
+[data-theme="dark"] .form-group input:focus,[data-theme="dark"] .form-group select:focus,[data-theme="dark"] .form-group textarea:focus{border-color:#93C5FD}
+[data-theme="dark"] .modal{background:#1E293B;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+[data-theme="dark"] .modal h2{color:#93C5FD;border-color:#334155}
+[data-theme="dark"] .form-actions{border-color:#334155}
+[data-theme="dark"] .modal-backdrop{background:rgba(0,0,0,.65)}
+[data-theme="dark"] .page-header h2{color:#93C5FD}
+[data-theme="dark"] .cal-cell{background:#1E293B}
+[data-theme="dark"] .cal-cell.today{background:#1E3A5F;border-color:#93C5FD}
+[data-theme="dark"] .cal-num{color:#CBD5E1}
+[data-theme="dark"] .cal-day-name{color:#94A3B8}
+[data-theme="dark"] .search-bar input{background:#1E293B;border-color:#334155;color:#E2E8F0}
+[data-theme="dark"] .btn-outline{background:#1E293B;color:#93C5FD;border-color:#334155}
+[data-theme="dark"] .btn-outline:hover{background:#263349}
+[data-theme="dark"] .btn-ghost{background:transparent;border-color:#334155;color:#94A3B8}
+[data-theme="dark"] .btn-ghost:hover{background:#1E293B}
+[data-theme="dark"] .tabs{background:#0F172A}
+[data-theme="dark"] .tab{color:#94A3B8}
+[data-theme="dark"] .tab.active{background:#1E293B;color:#93C5FD}
+[data-theme="dark"] .badge-gray{background:#334155;color:#94A3B8}
+[data-theme="dark"] .badge-blue{background:#1E3A5F;color:#93C5FD}
+[data-theme="dark"] .profile-modal{background:#1E293B}
+[data-theme="dark"] .profile-header{border-color:#334155}
+[data-theme="dark"] .profile-name{color:#93C5FD}
+[data-theme="dark"] .profile-section-title{color:#93C5FD;border-color:#334155}
+[data-theme="dark"] .profile-detail-item .lbl{color:#64748B}
+[data-theme="dark"] .profile-detail-item .val{color:#E2E8F0}
+[data-theme="dark"] .family-chip{background:#0F172A}
+[data-theme="dark"] .family-chip:hover{background:#1E3A5F}
+[data-theme="dark"] .family-chip .rel-name{color:#93C5FD}
+[data-theme="dark"] .rooms-grid .room-card{background:#1E293B}
+[data-theme="dark"] .room-card h4{color:#93C5FD}
+[data-theme="dark"] .room-card .cap{color:#94A3B8}
+[data-theme="dark"] .ministry-card{background:#1E293B}
+[data-theme="dark"] .ministry-card h4{color:#93C5FD}
+[data-theme="dark"] .ministry-card .mc-sub{color:#94A3B8}
+[data-theme="dark"] .ministry-card .mc-count{color:#E2E8F0}
+[data-theme="dark"] .ministry-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.4)}
+[data-theme="dark"] .shift-card{background:#1E293B}
+[data-theme="dark"] .shift-title{color:#93C5FD}
+[data-theme="dark"] .shift-meta{color:#94A3B8}
+[data-theme="dark"] .slot-chip{background:#0F172A;border-color:#334155;color:#CBD5E1}
+[data-theme="dark"] .slot-chip.mine{background:#1E3A5F;border-color:#334155;color:#93C5FD}
+[data-theme="dark"] .kanban-col{background:#0F172A;border-color:#334155}
+[data-theme="dark"] .kanban-card{background:#1E293B;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+[data-theme="dark"] .kc-title{color:#E2E8F0}
+[data-theme="dark"] .kc-chip{background:#263349;color:#CBD5E1}
+[data-theme="dark"] .vs-card{background:#1E293B}
+[data-theme="dark"] .vs-card .vsv{color:#E2E8F0}
+[data-theme="dark"] .mstat{background:#1E293B}
+[data-theme="dark"] .mstat .ms-val{color:#E2E8F0}
+[data-theme="dark"] .ai-chip{background:#1E293B;border-color:#334155;color:#CBD5E1}
+[data-theme="dark"] .ai-chip:hover{background:#263349;border-color:#93C5FD;color:#93C5FD}
+[data-theme="dark"] .export-dd-menu{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .export-dd-item{color:#CBD5E1}
+[data-theme="dark"] .export-dd-item:hover{background:#263349;color:#93C5FD}
+[data-theme="dark"] .login-screen{background:linear-gradient(135deg,#0D1F35 0%,#1E293B 100%)}
+[data-theme="dark"] .login-box{background:#1E293B}
+[data-theme="dark"] .login-logo h1{color:#93C5FD}
+[data-theme="dark"] .login-box .form-group label{color:#CBD5E1}
+[data-theme="dark"] .login-box .form-group input{background:#0F172A;border-color:#334155;color:#E2E8F0}
+[data-theme="dark"] .login-footer{color:#64748B}
+[data-theme="dark"] .login-link{color:#93C5FD}
+[data-theme="dark"] .member-hero-card{background:#1E293B}
+[data-theme="dark"] .member-hero-name{color:#93C5FD}
+[data-theme="dark"] .member-hero-sub{color:#94A3B8}
+[data-theme="dark"] .vol-filters select,.vol-filters input,[data-theme="dark"] .vol-filters select,[data-theme="dark"] .vol-filters input{background:#1E293B;border-color:#334155;color:#E2E8F0}
+[data-theme="dark"] .theme-toggle{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .theme-btn.active{background:#334155;color:#93C5FD}
+[data-theme="dark"] .theme-btn{color:#94A3B8}
+[data-theme="dark"] .notify-bar{background:#1E3A5F;border-color:#334155;color:#CBD5E1}
+[data-theme="dark"] .empty{color:#64748B}
+[data-theme="dark"] .att-stat-row .stat-card{background:#1E293B}
+[data-theme="dark"] .giving-hero{background:linear-gradient(135deg,#0D1F35,#1E3A5F)}
+[data-theme="dark"] #ai-result-table td{color:#CBD5E1}
+[data-theme="dark"] .sidebar-footer{border-color:#334155}
+[data-theme="dark"] select option{background:#1E293B;color:#E2E8F0}
 </style>
 </head>
 <body>
@@ -462,6 +564,21 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <span style="font-size:12px;color:#6B7280" id="topbar-date"></span>
+      <!-- Theme toggle: Light / System / Dark -->
+      <div class="theme-toggle" role="group" aria-label="Color theme">
+        <button class="theme-btn" id="theme-btn-light" onclick="setTheme('light')" title="Light mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          Light
+        </button>
+        <button class="theme-btn" id="theme-btn-system" onclick="setTheme('system')" title="Use system setting">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          System
+        </button>
+        <button class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')" title="Dark mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          Dark
+        </button>
+      </div>
       <div class="topbar-user" id="topbar-user"></div>
     </div>
   </div>
@@ -5120,8 +5237,47 @@ async function confirmCheckin() {
   }, 3000);
 }
 
+// ── THEME ─────────────────────────────────────────────────────────────────────
+(function() {
+  // Apply theme immediately (before page renders) to prevent flash
+  const saved = localStorage.getItem('fcc-theme') || 'system';
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const effective = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+  if (effective === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+
+function applyTheme(mode) {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const effective = mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;
+  if (effective === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+function setTheme(mode) {
+  localStorage.setItem('fcc-theme', mode);
+  applyTheme(mode);
+  // Update button active states
+  ['light','system','dark'].forEach(m => {
+    const btn = document.getElementById('theme-btn-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('fcc-theme') || 'system';
+  setTheme(saved);
+  // Follow OS changes when in system mode
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if ((localStorage.getItem('fcc-theme') || 'system') === 'system') applyTheme('system');
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+initTheme();
 initAuth();
 </script>
 </body>
