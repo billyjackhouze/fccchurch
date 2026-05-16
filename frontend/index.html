@@ -56,6 +56,16 @@ tr:last-child td{border-bottom:none}
 .badge-green{background:#DCFCE7;color:#166534}.badge-blue{background:#DBEAFE;color:#1E40AF}
 .badge-gold{background:#FEF9C3;color:#854D0E}.badge-red{background:#FEE2E2;color:#991B1B}
 .badge-gray{background:#F3F4F6;color:#6B7280}.badge-purple{background:#F3E8FF;color:#7C3AED}
+/* ── Export dropdown ── */
+.export-dd-wrap{position:relative;display:inline-block}
+.export-dd-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #D1D5DB;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;min-width:160px;overflow:hidden}
+.export-dd-menu.open{display:block}
+.export-dd-item{padding:9px 14px;font-size:13px;cursor:pointer;color:#374151;display:flex;align-items:center;gap:8px;transition:background .12s}
+.export-dd-item:hover{background:#EBF0F8;color:#1E3A5F}
+.export-dd-sep{height:1px;background:#F3F4F6;margin:2px 0}
+/* ── Import results ── */
+.import-result-ok{background:#DCFCE7;border:1px solid #86EFAC;border-radius:8px;padding:14px;margin-top:12px;font-size:13px}
+.import-result-err{background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;max-height:130px;overflow-y:auto}
 /* ── Calendar ── */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-header h2{font-size:16px;font-weight:700;color:#1E3A5F}
@@ -527,7 +537,23 @@ body.is-admin .admin-only{display:inline-flex}
 
     <!-- MEMBERS -->
     <div class="page" id="page-members">
-      <div class="page-header"><h2>👥 Members</h2><button class="btn btn-primary" onclick="openModal('member-modal')">+ Add Member</button></div>
+      <div class="page-header"><h2>👥 Members</h2>
+        <div class="flex" style="gap:8px;align-items:center">
+          <div class="export-dd-wrap">
+            <button class="btn btn-ghost btn-sm" onclick="toggleExportDd('mem-export-dd')">⬇ Export ▾</button>
+            <div class="export-dd-menu" id="mem-export-dd">
+              <div class="export-dd-item" onclick="exportData('members','csv')">📄 CSV</div>
+              <div class="export-dd-item" onclick="exportData('members','tsv')">📋 Tab-Delimited</div>
+              <div class="export-dd-item" onclick="exportData('members','xlsx')">📊 Excel (.xlsx)</div>
+              <div class="export-dd-sep"></div>
+              <div class="export-dd-item" onclick="downloadTemplate('members','csv')">📥 CSV Template</div>
+              <div class="export-dd-item" onclick="downloadTemplate('members','xlsx')">📥 Excel Template</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openImportModal('members')">⬆ Import</button>
+          <button class="btn btn-primary" onclick="openModal('member-modal')">+ Add Member</button>
+        </div>
+      </div>
       <div class="card">
         <div class="card-header"><h3>Member Directory</h3>
           <div class="flex">
@@ -568,7 +594,19 @@ body.is-admin .admin-only{display:inline-flex}
     <!-- GIVING -->
     <div class="page" id="page-giving">
       <div class="page-header"><h2>💰 Giving &amp; Pledges</h2>
-        <div class="flex">
+        <div class="flex" style="gap:8px;align-items:center">
+          <div class="export-dd-wrap">
+            <button class="btn btn-ghost btn-sm" onclick="toggleExportDd('giv-export-dd')">⬇ Export ▾</button>
+            <div class="export-dd-menu" id="giv-export-dd">
+              <div class="export-dd-item" onclick="exportData('giving','csv')">📄 CSV</div>
+              <div class="export-dd-item" onclick="exportData('giving','tsv')">📋 Tab-Delimited</div>
+              <div class="export-dd-item" onclick="exportData('giving','xlsx')">📊 Excel (.xlsx)</div>
+              <div class="export-dd-sep"></div>
+              <div class="export-dd-item" onclick="downloadTemplate('giving','csv')">📥 CSV Template</div>
+              <div class="export-dd-item" onclick="downloadTemplate('giving','xlsx')">📥 Excel Template</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openImportModal('giving')">⬆ Import</button>
           <button class="btn btn-outline" onclick="openModal('pledge-modal')">+ Add Pledge</button>
           <button class="btn btn-primary" onclick="openModal('giving-modal')">+ Record Giving</button>
         </div>
@@ -1345,6 +1383,35 @@ body.is-admin .admin-only{display:inline-flex}
         <button type="submit" class="btn btn-primary" id="sermon-save-btn">Save Sermon</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── Import Modal ─────────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="import-modal">
+  <div class="modal" style="max-width:500px">
+    <h2 id="import-modal-title">⬆ Import Records</h2>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:14px">
+      Upload a <strong>CSV</strong>, <strong>TSV</strong>, or <strong>Excel (.xlsx)</strong> file.
+      The first row must be a header row with the column names shown below.
+    </p>
+    <div id="import-col-hint" style="background:#EBF0F8;border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:12px;color:#374151;line-height:1.7">
+      <!-- filled by JS -->
+    </div>
+    <div style="margin-bottom:14px;display:flex;gap:8px;align-items:center">
+      <span style="font-size:13px;color:#6B7280">Don't have a file yet?</span>
+      <button class="btn btn-ghost btn-sm" onclick="downloadTemplate(importType,'csv')">📥 CSV Template</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadTemplate(importType,'xlsx')">📥 Excel Template</button>
+    </div>
+    <div class="form-group">
+      <label>Select File (.csv, .tsv, .txt, .xlsx)</label>
+      <input type="file" id="import-file" accept=".csv,.tsv,.txt,.xlsx"
+             style="padding:8px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px;width:100%">
+    </div>
+    <div id="import-results"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('import-modal')">Close</button>
+      <button class="btn btn-primary" onclick="doImport()">⬆ Import Now</button>
+    </div>
   </div>
 </div>
 
@@ -3371,6 +3438,126 @@ async function savePledge(){
   closeModal('pledge-modal');
   ['pl-campaign','pl-amount','pl-date','pl-end'].forEach(i=>document.getElementById(i).value='');
   renderGiving();
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
+
+// Dropdown toggle — closes all others first
+function toggleExportDd(id) {
+  document.querySelectorAll('.export-dd-menu').forEach(m => {
+    if (m.id !== id) m.classList.remove('open');
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.export-dd-wrap')) {
+    document.querySelectorAll('.export-dd-menu').forEach(m => m.classList.remove('open'));
+  }
+});
+
+async function exportData(type, format) {
+  // Close any open dropdown
+  document.querySelectorAll('.export-dd-menu').forEach(m => m.classList.remove('open'));
+
+  let url = `/api/${type}/export?format=${format}`;
+  if (type === 'giving' && givingYear) url += `&year=${givingYear}`;
+  if (type === 'members' && memberStatus) url += `&status=${encodeURIComponent(memberStatus)}`;
+  if (type === 'members' && memberSearch) url += `&search=${encodeURIComponent(memberSearch)}`;
+
+  try {
+    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!resp.ok) { const e = await resp.json(); throw new Error(e.detail || 'Export failed'); }
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    const ext = format === 'xlsx' ? 'xlsx' : (format === 'tsv' ? 'tsv' : 'csv');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${type}_export.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch(e) { alert('Export failed: ' + e.message); }
+}
+
+async function downloadTemplate(type, format) {
+  document.querySelectorAll('.export-dd-menu').forEach(m => m.classList.remove('open'));
+  try {
+    const resp = await fetch(`/api/${type}/template?format=${format}`,
+      { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!resp.ok) throw new Error('Template download failed');
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    const ext = format === 'xlsx' ? 'xlsx' : 'csv';
+    a.href = URL.createObjectURL(blob);
+    a.download = `${type}_template.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch(e) { alert('Template download failed: ' + e.message); }
+}
+
+let importType = '';
+const IMPORT_HINTS = {
+  members: `<strong>Required:</strong> first, last<br>
+    <strong>Optional:</strong> email, phone, address, status, since (YYYY-MM-DD),
+    ministry, family_size, pronouns, notes<br>
+    <em>Duplicates are detected by email address and skipped.</em>`,
+  giving: `<strong>Required:</strong> date (YYYY-MM-DD), amount<br>
+    <strong>Optional:</strong> type, fund, notes, member_email (links record to a member)<br>
+    <em>Duplicates detected by date + amount + fund + member_email.</em>`,
+};
+
+function openImportModal(type) {
+  importType = type;
+  const label = type === 'members' ? '👥 Import Members' : '💰 Import Giving Records';
+  document.getElementById('import-modal-title').textContent = label;
+  document.getElementById('import-col-hint').innerHTML = IMPORT_HINTS[type] || '';
+  document.getElementById('import-file').value = '';
+  document.getElementById('import-results').innerHTML = '';
+  openModal('import-modal');
+}
+
+async function doImport() {
+  const fileInput = document.getElementById('import-file');
+  if (!fileInput.files.length) { alert('Please select a file to import.'); return; }
+  const file = fileInput.files[0];
+  const fd = new FormData();
+  fd.append('file', file);
+
+  document.getElementById('import-results').innerHTML =
+    '<div style="padding:12px;text-align:center"><span class="spinner"></span> Importing…</div>';
+
+  try {
+    const resp = await fetch(`/api/${importType}/import`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: fd,
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'Import failed');
+
+    let html = `<div class="import-result-ok">
+      <strong>✅ Import Complete</strong><br>
+      Records created: <strong>${data.created}</strong><br>
+      Duplicates skipped: <strong>${data.skipped}</strong>
+      ${data.errors.length ? `<br>Rows with errors: <strong>${data.errors.length}</strong>` : ''}
+    </div>`;
+    if (data.errors.length) {
+      html += `<div class="import-result-err">${data.errors.map(e => `<div>⚠ ${e}</div>`).join('')}</div>`;
+    }
+    document.getElementById('import-results').innerHTML = html;
+
+    // Refresh the relevant page
+    if (importType === 'members') renderMembers();
+    else renderGiving();
+
+  } catch(e) {
+    document.getElementById('import-results').innerHTML =
+      `<div style="color:#DC2626;margin-top:10px;font-size:13px">❌ ${e.message}</div>`;
+  }
 }
 
 // ── USER ACCOUNTS ─────────────────────────────────────────────────────────────
