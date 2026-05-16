@@ -199,6 +199,10 @@ body.kiosk-mode .content{padding:0}
 .member-avatar{width:34px;height:34px;border-radius:50%;background:#1E3A5F;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;object-fit:cover;flex-shrink:0;vertical-align:middle;margin-right:8px}
 .member-name-link{color:#1E3A5F;font-weight:700;cursor:pointer;text-decoration:none}
 .member-name-link:hover{text-decoration:underline}
+.member-ministry-sub{font-size:11px;color:#9CA3AF}
+.member-email-link{color:#1E3A5F;text-decoration:none}
+.member-email-link:hover{text-decoration:underline}
+.cell-muted{color:#6B7280;font-size:12px}
 /* ── Login Screen ── */
 .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1E3A5F 0%,#2d5080 100%);z-index:9999;display:flex;align-items:center;justify-content:center}
 .login-box{background:#fff;border-radius:16px;padding:40px 44px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
@@ -472,6 +476,39 @@ body.is-admin .admin-only{display:inline-flex}
 [data-theme="dark"] .export-dd-menu{background:#1E293B;border-color:#334155}
 [data-theme="dark"] .export-dd-item{color:#CBD5E1}
 [data-theme="dark"] .export-dd-item:hover{background:#263349;color:#93C5FD}
+[data-theme="dark"] .member-name-link{color:#E2E8F0}
+[data-theme="dark"] .member-name-link:hover{color:#93C5FD}
+[data-theme="dark"] .member-ministry-sub{color:#64748B}
+[data-theme="dark"] .member-email-link{color:#7DD3FC}
+[data-theme="dark"] .member-email-link:hover{color:#BAE6FD}
+[data-theme="dark"] .cell-muted{color:#64748B}
+[data-theme="dark"] td a{color:#7DD3FC}
+[data-theme="dark"] td a:hover{color:#BAE6FD}
+[data-theme="dark"] td{color:#E2E8F0}
+[data-theme="dark"] td strong{color:#F1F5F9}
+[data-theme="dark"] .org-node-title{color:#E2E8F0}
+[data-theme="dark"] .org-node-member{color:#94A3B8}
+[data-theme="dark"] .org-node-card{background:#263349;border-color:#334155}
+[data-theme="dark"] .org-add-child{background:#263349;color:#93C5FD}
+[data-theme="dark"] .group-card{background:#1E293B}
+[data-theme="dark"] .group-card h4{color:#93C5FD}
+[data-theme="dark"] .group-card .gc-sub{color:#94A3B8}
+[data-theme="dark"] .group-card .gc-count{color:#E2E8F0}
+[data-theme="dark"] .sermon-card{background:#1E293B}
+[data-theme="dark"] .sermon-card h3{color:#93C5FD}
+[data-theme="dark"] .sermon-field .sf-lbl{color:#64748B}
+[data-theme="dark"] .sermon-field .sf-val{color:#E2E8F0}
+[data-theme="dark"] .sermon-field{border-color:#334155}
+[data-theme="dark"] .oos-title{color:#E2E8F0}
+[data-theme="dark"] .oos-duration{background:#263349;color:#94A3B8}
+[data-theme="dark"] .oos-notes{color:#64748B}
+[data-theme="dark"] .oos-item{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .status-pill.status-draft{background:#263349;color:#94A3B8}
+[data-theme="dark"] .kc-date{color:#64748B}
+[data-theme="dark"] .page-header .subtitle{color:#94A3B8}
+[data-theme="dark"] .modal-close{color:#64748B}
+[data-theme="dark"] .modal-close:hover{color:#E2E8F0}
+[data-theme="dark"] .btn-secondary{background:#263349;color:#E2E8F0;border-color:#334155}
 [data-theme="dark"] .login-screen{background:linear-gradient(135deg,#0D1F35 0%,#1E293B 100%)}
 [data-theme="dark"] .login-box{background:#1E293B}
 [data-theme="dark"] .login-logo h1{color:#93C5FD}
@@ -2433,9 +2470,9 @@ async function renderMembers() {
       const moreFamily=(m.family||[]).length>3?`<span style="font-size:10px;color:#9CA3AF">+${m.family.length-3}</span>`:'';
       return `<tr>
         <td>${avatarHtml(m,34)}</td>
-        <td><span class="member-name-link" onclick="showMemberDetail('${m.id}')">${m.first} ${m.last}</span>${m.ministry?`<br><span style="font-size:11px;color:#9CA3AF">${m.ministry}</span>`:''}</td>
-        <td style="color:#6B7280;font-size:12px">${m.pronouns||'—'}</td>
-        <td><a href="mailto:${m.email}" style="color:#1E3A5F">${m.email||'—'}</a></td>
+        <td><span class="member-name-link" onclick="showMemberDetail('${m.id}')">${m.first} ${m.last}</span>${m.ministry?`<br><span class="member-ministry-sub">${m.ministry}</span>`:''}</td>
+        <td class="cell-muted">${m.pronouns||'—'}</td>
+        <td><a href="mailto:${m.email}" class="member-email-link">${m.email||'—'}</a></td>
         <td>${m.phone||'—'}</td>
         <td><span class="badge ${m.status==='Active'?'badge-green':m.status==='Visitor'?'badge-gold':'badge-gray'}">${m.status}</span></td>
         <td>${familyLinks}${moreFamily||'<span style="color:#9CA3AF;font-size:12px">—</span>'}</td>
