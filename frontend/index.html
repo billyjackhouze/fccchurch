@@ -549,7 +549,7 @@ body.is-admin .admin-only{display:inline-flex}
 .comms-member-list-box{border:1.5px solid #D1D5DB;border-radius:6px;padding:4px;background:#fff;max-height:220px;overflow-y:auto;font-size:12px}
 .comms-member-row{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:background .15s}
 .comms-member-row:hover{background:#F3F4F6}
-.comms-member-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comms-member-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1F2937}
 .comms-member-email{color:#6B7280;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .comms-preview-bar{background:#EBF0F8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px}
 .comms-editor-box{min-height:200px;border:1.5px solid #D1D5DB;border-radius:6px;padding:12px 14px;font-size:13px;font-family:inherit;line-height:1.7;background:#fff;outline:none}
@@ -6001,7 +6001,7 @@ function _renderCommsMemberList(filter) {
   list.innerHTML = members.map(m => `
     <label class="comms-member-row">
       <input type="checkbox" value="${m.id}" class="comms-member-chk" style="margin-top:3px;flex-shrink:0" ${checked.has(m.id)?'checked':''}>
-      <div style="min-width:0">
+      <div style="min-width:0;flex:1">
         <div class="comms-member-name">${m.last}, ${m.first}</div>
         <div class="comms-member-email">${m.email}</div>
       </div>
