@@ -5999,11 +5999,13 @@ function _renderCommsMemberList(filter) {
     return;
   }
   list.innerHTML = members.map(m => `
-    <label class="comms-member-row">
-      <input type="checkbox" value="${m.id}" class="comms-member-chk" style="margin-top:3px;flex-shrink:0" ${checked.has(m.id)?'checked':''}>
-      <div style="min-width:0;flex:1">
-        <div class="comms-member-name">${m.last}, ${m.first}</div>
-        <div class="comms-member-email">${m.email}</div>
+    <label style="display:block;padding:5px 8px;border-radius:4px;cursor:pointer" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background=''">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" value="${m.id}" class="comms-member-chk" style="flex-shrink:0;width:14px;height:14px" ${checked.has(m.id)?'checked':''}>
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.last}, ${m.first}</div>
+          <div style="font-size:11px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.email}</div>
+        </div>
       </div>
     </label>`).join('');
 }
