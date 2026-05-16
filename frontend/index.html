@@ -122,7 +122,13 @@ body.kiosk-mode .content{padding:0}
 .cal-num{font-weight:700;color:#374151;font-size:13px;margin-bottom:3px}
 .cal-cell.today .cal-num{color:#1E3A5F}
 .cal-event{background:#1E3A5F;color:#fff;font-size:10px;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cal-event.gold{background:#B8860B}.cal-event.green{background:#1A7A4A}.cal-event.red{background:#DC2626}
+.cal-event.blue{background:#1D4ED8}
+.cal-event.gold{background:#B8860B}
+.cal-event.green{background:#1A7A4A}
+.cal-event.red{background:#DC2626}
+.cal-event.purple{background:#7C3AED}
+.cal-event.teal{background:#0D9488}
+.cal-event.gray{background:#6B7280}
 /* ── Forms ── */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-grid.cols-1{grid-template-columns:1fr}
@@ -2110,7 +2116,7 @@ async function renderCalendar() {
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const daysInPrev=new Date(calYear,calMonth,0).getDate();
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const typeColor=t=>({Service:'',Meeting:' gold','Volunteer Slot':' green',Event:' green',Class:' gold'}[t]||'');
+  const typeColor=t=>{const m={Service:' blue',Meeting:' gold','Volunteer Slot':' green',Event:' green',Class:' purple',Other:' gray'};return m[t]||m[(t||'').trim()]||'';};
   let html=days.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell other-month"><div class="cal-num">${daysInPrev-firstDay+i+1}</div></div>`;
   for(let day=1;day<=daysInMonth;day++){
@@ -2134,7 +2140,7 @@ async function renderSchedule() {
   try {
     const [events, rooms] = await Promise.all([api.get('/api/events'), api.get('/api/rooms')]);
     const sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||(a.start_time||'').localeCompare(b.start_time||''));
-    const typeColor=t=>({Service:'badge-blue',Meeting:'badge-gold','Volunteer Slot':'badge-green',Event:'badge-green',Class:'badge-gold',Other:'badge-gray'}[t]||'badge-gray');
+    const typeColor=t=>{const m={Service:'badge-blue',Meeting:'badge-gold','Volunteer Slot':'badge-green',Event:'badge-green',Class:'badge-purple',Other:'badge-gray'};return m[t]||m[(t||'').trim()]||'badge-gray';};
     document.getElementById('events-tbody').innerHTML=sorted.map(e=>`
       <tr><td><strong>${e.title}</strong></td><td>${fmtDate(e.date)}</td>
       <td>${fmtTime(e.start_time)}${e.end_time?' – '+fmtTime(e.end_time):''}</td>
