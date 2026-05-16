@@ -1268,7 +1268,8 @@ body.is-admin .admin-only{display:inline-flex}
                 <label id="comms-filter-value-label">Value</label>
                 <select id="comms-filter-value-select" style="display:none"></select>
                 <div id="comms-filter-members-wrap" style="display:none">
-                  <div id="comms-member-list" style="max-height:140px;overflow-y:auto;border:1.5px solid #D1D5DB;border-radius:6px;padding:6px 8px;font-size:12px;background:#fff"></div>
+                  <input id="comms-member-search" type="text" placeholder="Search members…" oninput="filterCommsMemberList(this.value)" style="width:100%;box-sizing:border-box;margin-bottom:6px;padding:5px 8px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:12px">
+                  <div id="comms-member-list" style="max-height:220px;overflow-y:auto;border:1.5px solid #D1D5DB;border-radius:6px;padding:4px;font-size:12px;background:#fff"></div>
                 </div>
               </div>
             </div>
@@ -5759,15 +5760,38 @@ function onCommsFilterChange() {
     lbl.textContent = 'Select Members';
     sel.style.display = 'none';
     mWrap.style.display = '';
-    const list = document.getElementById('comms-member-list');
-    list.innerHTML = _commsFilterData.members
-      .filter(m => m.email)
-      .sort((a,b) => a.last.localeCompare(b.last))
-      .map(m => `<label style="display:flex;gap:6px;align-items:center;padding:3px 0;cursor:pointer">
-        <input type="checkbox" value="${m.id}" class="comms-member-chk">
-        ${m.last}, ${m.first} <span style="color:#9CA3AF;font-size:10px">${m.email}</span>
-      </label>`).join('') || '<span style="color:#9CA3AF">No members with email</span>';
+    document.getElementById('comms-member-search').value = '';
+    _renderCommsMemberList('');
   }
+}
+
+function _renderCommsMemberList(filter) {
+  const list = document.getElementById('comms-member-list');
+  const q = filter.trim().toLowerCase();
+  const checked = new Set(
+    [...document.querySelectorAll('.comms-member-chk:checked')].map(c => c.value)
+  );
+  const members = (_commsFilterData.members || [])
+    .filter(m => m.email)
+    .sort((a,b) => a.last.localeCompare(b.last))
+    .filter(m => !q || `${m.last} ${m.first} ${m.email}`.toLowerCase().includes(q));
+
+  if (!members.length) {
+    list.innerHTML = '<div style="padding:8px;color:#9CA3AF;text-align:center">No members found</div>';
+    return;
+  }
+  list.innerHTML = members.map(m => `
+    <label style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${m.id}" class="comms-member-chk" style="margin-top:3px;flex-shrink:0" ${checked.has(m.id)?'checked':''}>
+      <div style="min-width:0">
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.last}, ${m.first}</div>
+        <div style="color:#6B7280;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.email}</div>
+      </div>
+    </label>`).join('');
+}
+
+function filterCommsMemberList(q) {
+  _renderCommsMemberList(q);
 }
 
 function _getFilterParams() {
