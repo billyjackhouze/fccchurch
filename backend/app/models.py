@@ -99,7 +99,29 @@ class Event(Base):
     created_at      = Column(DateTime, default=datetime.utcnow)
     updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    room = relationship("Room", back_populates="events")
+    registration_enabled = Column(Boolean, default=False)
+    registration_limit   = Column(Integer, default=0)   # 0 = unlimited
+    registration_note    = Column(Text)
+
+    room          = relationship("Room", back_populates="events")
+    registrations = relationship("EventRegistration", back_populates="event",
+                                 cascade="all, delete-orphan")
+
+
+class EventRegistration(Base):
+    """A public registration for an Event."""
+    __tablename__ = "event_registrations"
+
+    id            = Column(String, primary_key=True, default=gen_id)
+    event_id      = Column(String, ForeignKey("events.id", ondelete="CASCADE"), nullable=False)
+    first         = Column(String(100), nullable=False)
+    last          = Column(String(100), nullable=False)
+    email         = Column(String(200), nullable=False)
+    phone         = Column(String(30))
+    notes         = Column(Text)
+    registered_at = Column(DateTime, default=datetime.utcnow)
+
+    event = relationship("Event", back_populates="registrations")
 
 
 class GivingRecord(Base):

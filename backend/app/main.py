@@ -14,21 +14,25 @@ import os
 from app.database import engine, get_db, Base
 from app import models, schemas
 from app.routers import members, events, rooms, giving, pledges
-from app.routers import auth, users, volunteer, ministries, hierarchy, groups, service_plans, sermons, settings, ai_export, attendance, pdf_reports, communications
+from app.routers import auth, users, volunteer, ministries, hierarchy, groups, service_plans, sermons, settings, ai_export, attendance, pdf_reports, communications, event_registration
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
 
 # ── Column migrations (safe to run repeatedly) ────────────────────────────────
-try:
-    with engine.connect() as _conn:
-        _conn.execute(text(
-            "ALTER TABLE communications ADD COLUMN IF NOT EXISTS "
-            "project_id VARCHAR REFERENCES communication_projects(id) ON DELETE SET NULL"
-        ))
-        _conn.commit()
-except Exception as _e:
-    pass  # Column already exists or table not yet created — create_all handles it
+_migrations = [
+    "ALTER TABLE communications ADD COLUMN IF NOT EXISTS project_id VARCHAR REFERENCES communication_projects(id) ON DELETE SET NULL",
+    "ALTER TABLE events ADD COLUMN IF NOT EXISTS registration_enabled BOOLEAN DEFAULT FALSE",
+    "ALTER TABLE events ADD COLUMN IF NOT EXISTS registration_limit INTEGER DEFAULT 0",
+    "ALTER TABLE events ADD COLUMN IF NOT EXISTS registration_note TEXT",
+]
+for _sql in _migrations:
+    try:
+        with engine.connect() as _conn:
+            _conn.execute(text(_sql))
+            _conn.commit()
+    except Exception:
+        pass
 
 app = FastAPI(
     title="FFC Church Management API",
@@ -63,6 +67,7 @@ app.include_router(ai_export.router)
 app.include_router(attendance.router)
 app.include_router(pdf_reports.router)
 app.include_router(communications.router)
+app.include_router(event_registration.router)
 
 # ── Static files (member photos) ──────────────────────────────────────────────
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")

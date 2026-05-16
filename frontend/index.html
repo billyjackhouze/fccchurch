@@ -631,6 +631,7 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="nav-item" onclick="launchKiosk()" id="nav-kiosk" style="display:none"><span class="icon">📱</span> Check-in Kiosk</div>
     <div class="nav-item" onclick="showPage('ai-query')" id="nav-ai-query" style="display:none"><span class="icon">🤖</span> AI Query Tool</div>
     <div class="nav-item" onclick="showPage('comms')" id="nav-comms" style="display:none"><span class="icon">📧</span> Communications</div>
+    <div class="nav-item" onclick="showPage('events-admin')" id="nav-events-admin" style="display:none"><span class="icon">🗓</span> Event Registration</div>
     <div class="nav-item" onclick="showPage('admin-settings')" id="nav-admin-settings" style="display:none"><span class="icon">⚙️</span> App Settings</div>
   </nav>
   <div class="sidebar-footer">
@@ -1669,6 +1670,91 @@ body.is-admin .admin-only{display:inline-flex}
   </div>
 </div>
 
+<!-- ── EVENT REGISTRATION ADMIN PAGE ── -->
+<div class="page" id="page-events-admin">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+    <div><h2>🗓 Event Registration</h2><p style="color:#6B7280;font-size:13px;margin-top:2px">Manage registration for events and view attendee lists</p></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="evadm-filter" onchange="loadEventsAdmin()" style="border:1px solid #D1D5DB;border-radius:6px;padding:6px 10px;font-size:13px;background:#fff;color:#374151">
+        <option value="upcoming">Upcoming Events</option>
+        <option value="all">All Events</option>
+        <option value="past">Past Events</option>
+        <option value="reg-only">Registration Enabled Only</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Events table -->
+  <div class="card" style="margin-bottom:22px">
+    <div class="card-header"><h3>Events</h3><span id="evadm-count" style="font-size:12px;color:#6B7280"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Event</th><th>Date</th><th>Type</th>
+          <th>Registration</th><th>Registrations</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="evadm-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Registrations panel (shown when event selected) -->
+  <div id="evadm-reg-panel" style="display:none">
+    <div class="card">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h3 id="evadm-reg-title">Registrations</h3>
+          <div id="evadm-reg-sub" style="font-size:12px;color:#6B7280;margin-top:2px"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="exportEventRegistrations()">⬇ Export CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeEventRegPanel()">✕ Close</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Notes</th><th>Registered</th><th></th></tr></thead>
+          <tbody id="evadm-reg-tbody"></tbody>
+        </table>
+      </div>
+      <div id="evadm-reg-empty" style="display:none;padding:24px;text-align:center;color:#9CA3AF;font-size:13px">No registrations yet</div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Reg Settings Modal -->
+<div class="modal-backdrop" id="evadm-settings-modal"><div class="modal" style="max-width:460px">
+  <h2>⚙️ Registration Settings</h2>
+  <input type="hidden" id="evadm-settings-event-id">
+  <div class="form-grid">
+    <div class="form-group span-2">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="evadm-reg-enabled" style="width:16px;height:16px">
+        <span>Enable public registration for this event</span>
+      </label>
+    </div>
+    <div class="form-group span-2">
+      <label>Registration Limit <span style="color:#6B7280;font-weight:400">(0 = unlimited)</span></label>
+      <input type="number" id="evadm-reg-limit" min="0" placeholder="0">
+    </div>
+    <div class="form-group span-2">
+      <label>Registration Note <span style="color:#6B7280;font-weight:400">(shown on registration page)</span></label>
+      <textarea id="evadm-reg-note" style="min-height:60px" placeholder="e.g. Childcare available, please arrive 15 minutes early…"></textarea>
+    </div>
+    <div class="form-group span-2" id="evadm-reg-link-box" style="display:none">
+      <label>Public Registration Link</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="evadm-reg-link" readonly style="flex:1;background:#F9FAFB;font-size:12px">
+        <button class="btn btn-outline btn-sm" onclick="copyEventRegLink()">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="closeModal('evadm-settings-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveEventRegSettings()">Save Settings</button>
+  </div>
+</div></div>
+
 <!-- ── MODALS ── -->
 
 <!-- Event Modal -->
@@ -2356,6 +2442,7 @@ function hideLoginScreen() {
     document.getElementById('nav-ai-query').style.display = '';
     document.getElementById('nav-comms').style.display = '';
     document.getElementById('nav-attendance').style.display = '';
+    document.getElementById('nav-events-admin').style.display = '';
     document.getElementById('nav-kiosk').style.display = '';
     document.body.classList.add('is-admin');
   }
@@ -2396,6 +2483,7 @@ const fmtTime = t => { if (!t) return ''; const [h,m] = t.split(':'); const ap =
 const todayStr = today.toISOString().slice(0,10);
 const initials = m => ((m.first||'')[0]||'').toUpperCase() + ((m.last||'')[0]||'').toUpperCase();
 const photoUrl = filename => filename ? `${API_BASE}/static/photos/${filename}` : null;
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function avatarHtml(member, size=34) {
   const url = photoUrl(member.photo);
@@ -2416,7 +2504,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', attendance:'Attendance', kiosk:'Check-in Kiosk', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup', comms:'Communications' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', attendance:'Attendance', kiosk:'Check-in Kiosk', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup', comms:'Communications', 'events-admin':'Event Registration' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2445,6 +2533,7 @@ function renderPage(id) {
   else if (id==='admin-settings')  renderAdminSettings();
   else if (id==='ai-query')        renderAIQueryPage();
   else if (id==='comms')           renderComms();
+  else if (id==='events-admin')    loadEventsAdmin();
   else if (id==='attendance')      renderAttendance();
   else if (id==='kiosk')           initKiosk();
   else if (id==='sermons')         renderSermons();
@@ -6200,6 +6289,196 @@ function clearCompose() {
   document.getElementById('comms-preview-bar').style.display = 'none';
   _commsPreviewRecipients = [];
   if (_commsEditorPreviewing) toggleCommsPreview();
+}
+
+// ── EVENT REGISTRATION ADMIN ──────────────────────────────────────────────────
+let _evadmEvents = [];
+let _evadmSelectedId = null;
+let _evadmRegistrations = [];
+
+async function loadEventsAdmin() {
+  try {
+    const filter = document.getElementById('evadm-filter')?.value || 'upcoming';
+    const all = await api.get('/api/event-reg/all');
+    const today = todayStr;
+    let list = all;
+    if (filter === 'upcoming') list = all.filter(e => e.date >= today);
+    else if (filter === 'past')   list = all.filter(e => e.date < today);
+    else if (filter === 'reg-only') list = all.filter(e => e.registration_enabled);
+    // Sort
+    list.sort((a,b) => filter === 'past' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+    _evadmEvents = list;
+    renderEventsAdminTable();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderEventsAdminTable() {
+  const tbody = document.getElementById('evadm-tbody');
+  const count = document.getElementById('evadm-count');
+  count.textContent = `${_evadmEvents.length} event${_evadmEvents.length===1?'':'s'}`;
+  if (!_evadmEvents.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:24px">No events found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = _evadmEvents.map(e => {
+    const regBadge = e.registration_enabled
+      ? `<span class="badge badge-green">Open</span>`
+      : `<span class="badge badge-gray">Closed</span>`;
+    const limit = e.registration_limit || 0;
+    const pct = limit > 0 ? Math.min(100, Math.round(e.registration_count / limit * 100)) : null;
+    const capStr = limit > 0
+      ? `${e.registration_count}/${limit} (${pct}%)`
+      : `${e.registration_count}`;
+    const isSelected = _evadmSelectedId === e.id;
+    return `<tr style="${isSelected ? 'background:#EBF0F8' : ''}">
+      <td><strong style="font-size:13px">${esc(e.title)}</strong></td>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+      <td><span class="badge badge-blue">${esc(e.type||'')}</span></td>
+      <td>${regBadge}</td>
+      <td>
+        ${e.registration_count > 0
+          ? `<a href="#" onclick="viewEventRegistrations('${e.id}');return false" style="color:#1E3A5F;font-weight:600">${capStr}</a>`
+          : `<span style="color:#9CA3AF">${capStr}</span>`}
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="openEventRegSettings('${e.id}')" style="margin-right:4px">⚙ Settings</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewEventRegistrations('${e.id}')">👥 Attendees</button>
+        ${e.registration_enabled
+          ? `<button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="copyEventRegLinkById('${e.id}')">🔗 Link</button>`
+          : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function viewEventRegistrations(eventId) {
+  _evadmSelectedId = eventId;
+  renderEventsAdminTable();
+  const panel = document.getElementById('evadm-reg-panel');
+  panel.style.display = '';
+  const evt = _evadmEvents.find(e => e.id === eventId);
+  document.getElementById('evadm-reg-title').textContent = evt ? evt.title + ' — Registrations' : 'Registrations';
+
+  try {
+    const regs = await api.get(`/api/event-reg/${eventId}/registrations`);
+    _evadmRegistrations = regs;
+    renderRegTable(eventId, regs, evt);
+  } catch(e) {
+    showToast('Failed to load registrations', 'error');
+  }
+}
+
+function renderRegTable(eventId, regs, evt) {
+  const tbody = document.getElementById('evadm-reg-tbody');
+  const empty = document.getElementById('evadm-reg-empty');
+  const sub = document.getElementById('evadm-reg-sub');
+  const limit = evt?.registration_limit || 0;
+  sub.textContent = limit > 0
+    ? `${regs.length} of ${limit} spots filled`
+    : `${regs.length} registered`;
+
+  if (!regs.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = regs.map(r => `<tr>
+    <td><strong>${esc(r.first)} ${esc(r.last)}</strong></td>
+    <td><a href="mailto:${esc(r.email)}" style="color:#1E3A5F">${esc(r.email)}</a></td>
+    <td style="white-space:nowrap">${esc(r.phone||'—')}</td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes||'')}">${esc(r.notes||'—')}</td>
+    <td style="white-space:nowrap;color:#6B7280;font-size:12px">${r.registered_at ? new Date(r.registered_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteRegistration('${eventId}','${r.id}')">✕</button></td>
+  </tr>`).join('');
+}
+
+async function deleteRegistration(eventId, regId) {
+  if (!confirm('Remove this registration?')) return;
+  try {
+    await api.delete(`/api/event-reg/${eventId}/registrations/${regId}`);
+    showToast('Registration removed');
+    viewEventRegistrations(eventId);
+    // Refresh event list counts
+    loadEventsAdmin();
+  } catch(e) {
+    showToast('Failed to remove registration', 'error');
+  }
+}
+
+function closeEventRegPanel() {
+  _evadmSelectedId = null;
+  document.getElementById('evadm-reg-panel').style.display = 'none';
+  renderEventsAdminTable();
+}
+
+async function exportEventRegistrations() {
+  if (!_evadmSelectedId) return;
+  try {
+    const token = localStorage.getItem('fcc_token');
+    const res = await fetch(`/api/event-reg/${_evadmSelectedId}/registrations/export`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) { showToast('Export failed', 'error'); return; }
+    const blob = await res.blob();
+    const cd = res.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="?([^"]+)"?/);
+    const fname = match ? match[1] : 'registrations.csv';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    showToast('Export failed', 'error');
+  }
+}
+
+function openEventRegSettings(eventId) {
+  const evt = _evadmEvents.find(e => e.id === eventId);
+  if (!evt) return;
+  document.getElementById('evadm-settings-event-id').value = eventId;
+  document.getElementById('evadm-reg-enabled').checked = !!evt.registration_enabled;
+  document.getElementById('evadm-reg-limit').value = evt.registration_limit || 0;
+  document.getElementById('evadm-reg-note').value = evt.registration_note || '';
+
+  const linkBox = document.getElementById('evadm-reg-link-box');
+  const linkInput = document.getElementById('evadm-reg-link');
+  const link = `${window.location.origin}/register.html?event=${eventId}`;
+  linkInput.value = link;
+  linkBox.style.display = '';
+  openModal('evadm-settings-modal');
+}
+
+async function saveEventRegSettings() {
+  const eventId = document.getElementById('evadm-settings-event-id').value;
+  const payload = {
+    registration_enabled: document.getElementById('evadm-reg-enabled').checked,
+    registration_limit:   parseInt(document.getElementById('evadm-reg-limit').value) || 0,
+    registration_note:    document.getElementById('evadm-reg-note').value.trim(),
+  };
+  try {
+    await api.patch(`/api/event-reg/${eventId}/settings`, payload);
+    closeModal('evadm-settings-modal');
+    showToast('Registration settings saved');
+    loadEventsAdmin();
+    // If we have the panel open, refresh
+    if (_evadmSelectedId === eventId) viewEventRegistrations(eventId);
+  } catch(e) {
+    showToast('Failed to save settings', 'error');
+  }
+}
+
+function copyEventRegLinkById(eventId) {
+  const link = `${window.location.origin}/register.html?event=${eventId}`;
+  navigator.clipboard.writeText(link).then(() => showToast('Registration link copied!'));
+}
+
+function copyEventRegLink() {
+  const link = document.getElementById('evadm-reg-link')?.value;
+  if (!link) return;
+  navigator.clipboard.writeText(link).then(() => showToast('Registration link copied!'));
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────────

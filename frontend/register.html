@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Registration — FFC Church</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #F0F4F8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      width: 100%;
+      max-width: 520px;
+      overflow: hidden;
+    }
+
+    /* Header bar */
+    .card-header {
+      background: #1E3A5F;
+      color: #fff;
+      padding: 28px 32px 24px;
+    }
+    .church-name {
+      font-size: 13px;
+      color: #93C5FD;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .event-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .event-meta {
+      font-size: 13px;
+      color: #BFDBFE;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .event-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* Body */
+    .card-body { padding: 28px 32px; }
+
+    .event-description {
+      font-size: 13px;
+      color: #4B5563;
+      line-height: 1.6;
+      background: #F9FAFB;
+      border-left: 3px solid #1E3A5F;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+    }
+
+    .reg-note {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #92400E;
+      margin-bottom: 20px;
+    }
+
+    .full-banner {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 6px;
+      padding: 14px;
+      text-align: center;
+      color: #991B1B;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .spots-left {
+      font-size: 12px;
+      color: #6B7280;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .spots-left.low { color: #D97706; font-weight: 600; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+    .req { color: #EF4444; margin-left: 2px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field { margin-bottom: 16px; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+      transition: border-color .15s;
+      font-family: inherit;
+      background: #fff;
+    }
+    input:focus, textarea:focus { border-color: #1E3A5F; box-shadow: 0 0 0 3px rgba(30,58,95,.1); }
+    textarea { resize: vertical; min-height: 70px; }
+
+    .btn-register {
+      width: 100%;
+      background: #1E3A5F;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: 8px;
+    }
+    .btn-register:hover { background: #163354; }
+    .btn-register:active { transform: scale(.98); }
+    .btn-register:disabled { background: #9CA3AF; cursor: not-allowed; transform: none; }
+
+    .error-msg {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* Thank-you screen */
+    .thankyou {
+      text-align: center;
+      padding: 40px 32px;
+      display: none;
+    }
+    .thankyou .check-circle {
+      width: 64px; height: 64px;
+      background: #D1FAE5;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 30px;
+    }
+    .thankyou h2 { font-size: 20px; color: #1E3A5F; margin-bottom: 8px; }
+    .thankyou p  { font-size: 14px; color: #6B7280; line-height: 1.6; }
+
+    /* Loading skeleton */
+    .skeleton { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:.4 } }
+    .skel-line {
+      background: #E5E7EB;
+      border-radius: 4px;
+      height: 16px;
+      margin-bottom: 10px;
+    }
+
+    /* Footer */
+    .page-footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #9CA3AF;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="main-card">
+  <!-- Loading state -->
+  <div id="loading-state" class="card-body" style="padding-top:32px">
+    <div class="skeleton"><div class="skel-line" style="width:60%;height:12px"></div></div>
+    <div class="skeleton"><div class="skel-line" style="width:85%;height:22px"></div></div>
+    <div class="skeleton"><div class="skel-line" style="width:45%;height:12px;margin-bottom:32px"></div></div>
+    <div class="skeleton"><div class="skel-line"></div></div>
+    <div class="skeleton"><div class="skel-line"></div></div>
+    <div class="skeleton"><div class="skel-line" style="width:70%"></div></div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" class="card-body" style="display:none;text-align:center;padding:48px 32px">
+    <div style="font-size:40px;margin-bottom:16px">😕</div>
+    <h2 style="font-size:18px;color:#111827;margin-bottom:8px">Event not found</h2>
+    <p style="font-size:13px;color:#6B7280">This registration link may be expired or invalid.</p>
+  </div>
+
+  <!-- Closed state -->
+  <div id="closed-state" style="display:none">
+    <div class="card-header" id="closed-header"></div>
+    <div class="card-body" style="text-align:center;padding:40px 32px">
+      <div style="font-size:40px;margin-bottom:16px">🔒</div>
+      <h2 style="font-size:18px;color:#111827;margin-bottom:8px">Registration Closed</h2>
+      <p style="font-size:13px;color:#6B7280">Registration is not currently open for this event.</p>
+    </div>
+  </div>
+
+  <!-- Main registration form -->
+  <div id="form-state" style="display:none">
+    <div class="card-header" id="event-header"></div>
+    <div class="card-body">
+      <div id="event-description-box" class="event-description" style="display:none"></div>
+      <div id="reg-note-box" class="reg-note" style="display:none"></div>
+      <div id="full-banner" class="full-banner" style="display:none">⛔ This event is full — no spots remaining.</div>
+      <div id="spots-left-box" class="spots-left" style="display:none"></div>
+
+      <div id="error-msg" class="error-msg"></div>
+
+      <form id="reg-form" onsubmit="submitReg(event)">
+        <div class="row-2">
+          <div class="field">
+            <label>First Name<span class="req">*</span></label>
+            <input type="text" id="f-first" placeholder="Jane" autocomplete="given-name" required>
+          </div>
+          <div class="field">
+            <label>Last Name<span class="req">*</span></label>
+            <input type="text" id="f-last" placeholder="Smith" autocomplete="family-name" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email Address<span class="req">*</span></label>
+          <input type="email" id="f-email" placeholder="jane@example.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" id="f-phone" placeholder="(555) 555-5555" autocomplete="tel">
+        </div>
+        <div class="field">
+          <label>Notes / Special Requests</label>
+          <textarea id="f-notes" placeholder="Any dietary needs, accessibility requirements, etc."></textarea>
+        </div>
+        <button type="submit" class="btn-register" id="reg-btn">Register Now</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thank-you screen -->
+  <div id="thankyou-state" class="thankyou">
+    <div class="check-circle">✅</div>
+    <h2>You're Registered!</h2>
+    <p id="ty-message">Your registration has been confirmed. A confirmation email has been sent to you.</p>
+    <p style="margin-top:16px;font-size:13px;color:#9CA3AF">We look forward to seeing you there!</p>
+  </div>
+</div>
+
+<div class="page-footer">FFC Church &bull; Family Fellowship Church</div>
+
+<script>
+  let _eventId = null;
+  let _eventData = null;
+
+  function qs(param) {
+    return new URLSearchParams(window.location.search).get(param);
+  }
+
+  async function init() {
+    _eventId = qs('event');
+    if (!_eventId) { showError(); return; }
+
+    try {
+      const r = await fetch(`/api/event-reg/${encodeURIComponent(_eventId)}/public`);
+      if (!r.ok) { showError(); return; }
+      _eventData = await r.json();
+      renderEvent(_eventData);
+    } catch (e) {
+      showError();
+    }
+  }
+
+  function showError() {
+    hide('loading-state');
+    show('error-state');
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+  }
+
+  function formatTime(t) {
+    if (!t) return '';
+    const [h, min] = t.split(':');
+    const hh = parseInt(h);
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    const h12 = hh === 0 ? 12 : hh > 12 ? hh - 12 : hh;
+    return `${h12}:${min} ${ampm}`;
+  }
+
+  function renderEvent(e) {
+    hide('loading-state');
+    document.title = `${e.title} — FFC Church`;
+
+    const dateStr = formatDate(e.date);
+    let timeStr = '';
+    if (e.start_time) {
+      timeStr = formatTime(e.start_time);
+      if (e.end_time) timeStr += ` – ${formatTime(e.end_time)}`;
+    }
+
+    const headerHtml = `
+      <div class="church-name">FFC Church &bull; Event Registration</div>
+      <div class="event-title">${esc(e.title)}</div>
+      <div class="event-meta">
+        ${dateStr ? `<span>📅 ${dateStr}</span>` : ''}
+        ${timeStr ? `<span>🕐 ${timeStr}</span>` : ''}
+        ${e.type ? `<span>🏷 ${esc(e.type)}</span>` : ''}
+        ${e.organizer ? `<span>👤 ${esc(e.organizer)}</span>` : ''}
+      </div>
+    `;
+
+    // Registration not enabled → show closed state
+    if (!e.registration_enabled) {
+      document.getElementById('closed-header').innerHTML = headerHtml;
+      show('closed-state');
+      return;
+    }
+
+    // Build form state
+    document.getElementById('event-header').innerHTML = headerHtml;
+
+    if (e.description) {
+      document.getElementById('event-description-box').textContent = e.description;
+      show('event-description-box');
+    }
+    if (e.registration_note) {
+      document.getElementById('reg-note-box').textContent = e.registration_note;
+      show('reg-note-box');
+    }
+
+    // Capacity / full
+    const limit = e.registration_limit || 0;
+    const count = e.registration_count || 0;
+    if (e.is_full) {
+      show('full-banner');
+      document.getElementById('reg-btn').disabled = true;
+      document.getElementById('reg-btn').textContent = 'Event Full';
+    } else if (limit > 0) {
+      const remaining = limit - count;
+      const box = document.getElementById('spots-left-box');
+      box.textContent = `${remaining} spot${remaining === 1 ? '' : 's'} remaining`;
+      if (remaining <= 5) box.classList.add('low');
+      show('spots-left-box');
+    }
+
+    show('form-state');
+  }
+
+  async function submitReg(ev) {
+    ev.preventDefault();
+    const errBox = document.getElementById('error-msg');
+    errBox.style.display = 'none';
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true;
+    btn.textContent = 'Registering…';
+
+    const payload = {
+      first: document.getElementById('f-first').value.trim(),
+      last:  document.getElementById('f-last').value.trim(),
+      email: document.getElementById('f-email').value.trim(),
+      phone: document.getElementById('f-phone').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+    };
+
+    try {
+      const r = await fetch(`/api/event-reg/${encodeURIComponent(_eventId)}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        throw new Error(data.detail || 'Registration failed. Please try again.');
+      }
+      // Success
+      document.getElementById('ty-message').textContent =
+        `${data.message} A confirmation email has been sent to ${payload.email}.`;
+      hide('form-state');
+      show('thankyou-state');
+    } catch (e) {
+      errBox.textContent = e.message;
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Register Now';
+      if (_eventData?.is_full) {
+        btn.disabled = true;
+        btn.textContent = 'Event Full';
+      }
+    }
+  }
+
+  function show(id) { const el = document.getElementById(id); if (el) el.style.display = ''; }
+  function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  init();
+</script>
+</body>
+</html>
