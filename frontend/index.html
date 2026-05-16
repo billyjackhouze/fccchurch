@@ -56,6 +56,11 @@ tr:last-child td{border-bottom:none}
 .badge-green{background:#DCFCE7;color:#166534}.badge-blue{background:#DBEAFE;color:#1E40AF}
 .badge-gold{background:#FEF9C3;color:#854D0E}.badge-red{background:#FEE2E2;color:#991B1B}
 .badge-gray{background:#F3F4F6;color:#6B7280}.badge-purple{background:#F3E8FF;color:#7C3AED}
+/* ── AI Query Tool ── */
+.ai-chip{padding:4px 10px;border:1.5px solid #D1D5DB;border-radius:99px;background:#fff;color:#374151;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ai-chip:hover{background:#EBF0F8;border-color:#1E3A5F;color:#1E3A5F}
+#ai-result-table th{background:#1E3A5F;color:#fff;font-size:11px;letter-spacing:.4px;white-space:nowrap}
+#ai-result-table td{font-size:12px;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
 /* ── Export dropdown ── */
 .export-dd-wrap{position:relative;display:inline-block}
 .export-dd-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #D1D5DB;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;min-width:160px;overflow:hidden}
@@ -397,6 +402,7 @@ body.is-admin .admin-only{display:inline-flex}
     <div class="nav-section" id="admin-nav-section">Admin</div>
     <div class="nav-item" onclick="showPage('manage-shifts')" id="nav-manage-shifts" style="display:none"><span class="icon">⚙️</span> Manage Shifts</div>
     <div class="nav-item" onclick="showPage('users')" id="nav-users" style="display:none"><span class="icon">🔐</span> User Accounts</div>
+    <div class="nav-item" onclick="showPage('ai-query')" id="nav-ai-query" style="display:none"><span class="icon">🤖</span> AI Query Tool</div>
     <div class="nav-item" onclick="showPage('admin-settings')" id="nav-admin-settings" style="display:none"><span class="icon">⚙️</span> App Settings</div>
   </nav>
   <div class="sidebar-footer">
@@ -881,6 +887,98 @@ body.is-admin .admin-only{display:inline-flex}
         <thead><tr><th>Email</th><th>Role</th><th>Linked Member</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="users-tbody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span> Loading…</td></tr></tbody>
       </table></div></div>
+    </div>
+
+    <!-- AI QUERY TOOL (admin only) -->
+    <div class="page" id="page-ai-query">
+      <div class="page-header">
+        <div>
+          <h2>🤖 AI Query Tool</h2>
+          <p style="color:#6B7280;font-size:13px;margin-top:2px">Ask any question about your data in plain English — find records, run reports, or export results</p>
+        </div>
+      </div>
+
+      <!-- Query input card -->
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:flex-end">
+            <div class="form-group" style="margin:0">
+              <label style="font-size:13px;font-weight:700;color:#1E3A5F;margin-bottom:6px;display:block">What would you like to find or export?</label>
+              <textarea id="ai-query-input" rows="3"
+                placeholder="Examples:&#10;• All active members who gave more than $500 this year, sorted by last name&#10;• Members who haven't given anything in the last 6 months&#10;• All upcoming events with their room assignments&#10;• Top 10 givers this year with contact info&#10;• Volunteers who signed up in March with phone numbers"
+                style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit;color:#1F2937"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="runAIQuery()"
+              style="height:42px;white-space:nowrap;padding:0 22px;display:flex;align-items:center;gap:7px">
+              <span id="ai-query-spinner" style="display:none" class="spinner" style="width:14px;height:14px"></span>
+              ✨ Run Query
+            </button>
+          </div>
+
+          <!-- Example quick-pick chips -->
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+            <span style="font-size:11px;color:#9CA3AF;align-self:center;margin-right:2px">Quick picks:</span>
+            <button class="ai-chip" onclick="setAIQuery('All active members with their email and phone number')">Active members + contact</button>
+            <button class="ai-chip" onclick="setAIQuery('Total giving by fund this year')">Giving by fund this year</button>
+            <button class="ai-chip" onclick="setAIQuery('Members who have given more than $1000 total, with their total giving amount')">Top givers</button>
+            <button class="ai-chip" onclick="setAIQuery('Members who have not given anything in the last 12 months')">Lapsed givers</button>
+            <button class="ai-chip" onclick="setAIQuery('All upcoming events in the next 30 days with organizer and room name')">Upcoming events</button>
+            <button class="ai-chip" onclick="setAIQuery('All sermon series from this year with preacher name and scripture')">Sermons this year</button>
+            <button class="ai-chip" onclick="setAIQuery('Members who are in a small group, with the group name and their role')">Small group roster</button>
+            <button class="ai-chip" onclick="setAIQuery('Ministry membership list with member name, ministry name and role')">Ministry roster</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status / error message -->
+      <div id="ai-query-status" style="display:none;margin-bottom:14px"></div>
+
+      <!-- Results card -->
+      <div id="ai-query-results" style="display:none">
+        <div class="card">
+          <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <h3 id="ai-result-title">Results</h3>
+              <span id="ai-result-count" class="badge badge-blue"></span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="ai-dl-format" style="padding:6px 10px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:13px">
+                <option value="csv">CSV</option>
+                <option value="tsv">Tab-Delimited</option>
+                <option value="xlsx">Excel (.xlsx)</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="downloadAIExport()">⬇ Download</button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleAISQL()">{ } SQL</button>
+            </div>
+          </div>
+
+          <!-- SQL viewer (collapsed by default) -->
+          <div id="ai-sql-panel" style="display:none;background:#1E3A5F;border-radius:0;padding:12px 16px;overflow-x:auto">
+            <pre id="ai-sql-text" style="color:#93C5FD;font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;margin:0"></pre>
+          </div>
+
+          <!-- Preview note -->
+          <div id="ai-preview-note" style="display:none;background:#FEF9C3;padding:8px 16px;font-size:12px;color:#854D0E;border-bottom:1px solid #FDE68A">
+            ⚠ Showing first 20 rows — use Download to get all results
+          </div>
+
+          <!-- Results table -->
+          <div class="card-body table-wrap" style="padding:0">
+            <table id="ai-result-table">
+              <thead id="ai-result-thead"></thead>
+              <tbody id="ai-result-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent queries history -->
+      <div id="ai-history-card" style="display:none;margin-top:18px">
+        <div class="card">
+          <div class="card-header"><h3>🕐 Recent Queries</h3></div>
+          <div class="card-body" id="ai-history-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ADMIN SETTINGS (admin only) -->
@@ -1585,6 +1683,7 @@ function hideLoginScreen() {
     document.getElementById('nav-users').style.display = '';
     document.getElementById('nav-manage-shifts').style.display = '';
     document.getElementById('nav-admin-settings').style.display = '';
+    document.getElementById('nav-ai-query').style.display = '';
     document.body.classList.add('is-admin');
   }
   document.getElementById('topbar-user').innerHTML =
@@ -1644,7 +1743,7 @@ async function checkApiStatus() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
+const pageNames = { dashboard:'Dashboard', services:'Service Planning', 'service-detail':'Service Plan', schedule:'Schedule', rooms:'Rooms & Facilities', members:'Members', 'member-detail':'Member Profile', ministries:'Ministries', 'ministry-detail':'Ministry', groups:'Groups', 'group-detail':'Group', hierarchy:'Org Chart', giving:'Giving & Pledges', volunteer:'Sign Up for Shifts', myshifts:'My Schedule', 'manage-shifts':'Manage Shifts', users:'User Accounts', 'admin-settings':'App Settings', 'ai-query':'AI Query Tool', sermons:'Sermons & Bible', 'sermon-detail':'Sermon', 'sermon-outline':'Outline Builder', 'bible-lookup':'Bible Verse Lookup' };
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1671,6 +1770,7 @@ function renderPage(id) {
   else if (id==='manage-shifts') renderManageShifts();
   else if (id==='users')           renderUsers();
   else if (id==='admin-settings')  renderAdminSettings();
+  else if (id==='ai-query')        renderAIQueryPage();
   else if (id==='sermons')         renderSermons();
   else if (id==='sermon-outline') { /* handled by showOutlineBuilder */ }
   else if (id==='bible-lookup') renderBibleHistory();
@@ -3439,6 +3539,139 @@ async function savePledge(){
   ['pl-campaign','pl-amount','pl-date','pl-end'].forEach(i=>document.getElementById(i).value='');
   renderGiving();
 }
+
+// ── AI QUERY TOOL ─────────────────────────────────────────────────────────────
+
+let _aiSQL       = '';          // last generated SQL (for download)
+let _aiQueryHistory = [];       // [{query, total, sql}]
+
+function renderAIQueryPage() {
+  // Nothing to load on first open — user types and hits Run
+}
+
+function setAIQuery(text) {
+  document.getElementById('ai-query-input').value = text;
+  document.getElementById('ai-query-input').focus();
+}
+
+async function runAIQuery() {
+  const query = document.getElementById('ai-query-input').value.trim();
+  if (!query) { alert('Please enter a query.'); return; }
+
+  // Show spinner
+  const btn = document.querySelector('[onclick="runAIQuery()"]');
+  btn.disabled = true;
+  document.getElementById('ai-query-spinner').style.display = 'inline-block';
+  document.getElementById('ai-query-results').style.display = 'none';
+  document.getElementById('ai-query-status').style.display  = 'none';
+
+  try {
+    const data = await api.post('/api/ai-export/preview', { query, row_limit: 1000 });
+
+    _aiSQL = data.sql;
+
+    // Render SQL panel
+    document.getElementById('ai-sql-text').textContent = data.sql;
+    document.getElementById('ai-sql-panel').style.display = 'none'; // collapsed by default
+
+    // Preview note
+    const isPartial = data.total > data.preview.length;
+    document.getElementById('ai-preview-note').style.display = isPartial ? '' : 'none';
+
+    // Result count badge
+    const total = data.total;
+    document.getElementById('ai-result-count').textContent =
+      isPartial ? `Showing 20 of ${total} rows` : `${total} row${total !== 1 ? 's' : ''}`;
+
+    // Build table header
+    document.getElementById('ai-result-thead').innerHTML =
+      '<tr>' + data.columns.map(c =>
+        `<th>${c.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`
+      ).join('') + '</tr>';
+
+    // Build table body
+    document.getElementById('ai-result-tbody').innerHTML = data.preview.length
+      ? data.preview.map(row =>
+          '<tr>' + row.map(v => `<td title="${(v||'').replace(/"/g,"&quot;")}">${v || '<span style="color:#9CA3AF">—</span>'}</td>`).join('') + '</tr>'
+        ).join('')
+      : '<tr><td colspan="99" style="text-align:center;padding:24px;color:#9CA3AF">No results found</td></tr>';
+
+    document.getElementById('ai-result-title').textContent =
+      total === 0 ? 'No Results' : 'Query Results';
+    document.getElementById('ai-query-results').style.display = '';
+
+    // Save to history
+    _aiQueryHistory.unshift({ query, total, sql: data.sql });
+    if (_aiQueryHistory.length > 8) _aiQueryHistory.pop();
+    renderAIHistory();
+
+  } catch(e) {
+    document.getElementById('ai-query-status').innerHTML =
+      `<div style="background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;padding:14px;color:#991B1B;font-size:13px">
+        ❌ <strong>Error:</strong> ${e.message}
+      </div>`;
+    document.getElementById('ai-query-status').style.display = '';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('ai-query-spinner').style.display = 'none';
+  }
+}
+
+function toggleAISQL() {
+  const panel = document.getElementById('ai-sql-panel');
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+async function downloadAIExport() {
+  if (!_aiSQL) { alert('Run a query first.'); return; }
+  const format = document.getElementById('ai-dl-format').value;
+  try {
+    const resp = await fetch('/api/ai-export/download', {
+      method:  'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sql: _aiSQL, format }),
+    });
+    if (!resp.ok) { const e = await resp.json(); throw new Error(e.detail || 'Download failed'); }
+    const blob = await resp.blob();
+    const ext  = format === 'xlsx' ? 'xlsx' : (format === 'tsv' ? 'tsv' : 'csv');
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = `query_export.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch(e) { alert('Download failed: ' + e.message); }
+}
+
+function renderAIHistory() {
+  const card = document.getElementById('ai-history-card');
+  const list = document.getElementById('ai-history-list');
+  if (!_aiQueryHistory.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  list.innerHTML = _aiQueryHistory.map((h, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F9FAFB;border-radius:6px;cursor:pointer"
+         onclick="rerunHistory(${i})">
+      <span style="font-size:13px;flex:1;color:#374151">${h.query}</span>
+      <span class="badge badge-gray" style="white-space:nowrap">${h.total} rows</span>
+      <button class="btn btn-ghost btn-sm" style="padding:3px 10px">↩ Rerun</button>
+    </div>`).join('');
+}
+
+function rerunHistory(idx) {
+  const h = _aiQueryHistory[idx];
+  if (!h) return;
+  document.getElementById('ai-query-input').value = h.query;
+  runAIQuery();
+}
+
+// Also allow Enter+Ctrl/Cmd to submit
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const active = document.querySelector('.page.active');
+    if (active && active.id === 'page-ai-query') runAIQuery();
+  }
+});
 
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 
