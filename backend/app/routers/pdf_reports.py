@@ -505,3 +505,263 @@ def giving_statements_all(
     except Exception as exc:
         raise HTTPException(status_code=500,
                             detail=f"Bulk statements failed: {type(exc).__name__}: {exc}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 4.  NAME TAG / BADGE PRINTING  (Avery 5395 or 5160)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# --- Label sheet specs (all in points, 1 inch = 72 pts) ----------------------
+_LABEL_SPECS = {
+    "5395": dict(
+        cols=2, rows=4,
+        badge_w=3.25 * 72, badge_h=2.25 * 72,
+        margin_left=0.625 * 72, margin_top=0.5 * 72,
+        h_gap=0.5 * 72, v_gap=0.125 * 72,
+        desc="Avery 5395 — 8 per sheet (2⅓ × 3⅜\")",
+    ),
+    "5160": dict(
+        cols=3, rows=10,
+        badge_w=2.625 * 72, badge_h=1.0 * 72,
+        margin_left=0.1875 * 72, margin_top=0.5 * 72,
+        h_gap=0.125 * 72, v_gap=0.0,
+        desc="Avery 5160 — 30 per sheet (1 × 2⅝\")",
+    ),
+}
+
+
+def _draw_badge_5395(c, x, y, w, h, member, badge_date: str):
+    """Draw a large name-badge (5395 style) at canvas position (x,y)."""
+    from reportlab.pdfgen import canvas as _c
+    from reportlab.lib.colors import HexColor, white, Color
+
+    PAD = 6
+    navy = HexColor(NAVY)
+    gold = HexColor(GOLD)
+
+    # ── Clip/border ──────────────────────────────────────────────────────────
+    c.saveState()
+    p = c.beginPath()
+    p.roundRect(x, y, w, h, 6)
+    c.clipPath(p, stroke=0, fill=0)
+
+    # Background
+    c.setFillColor(white)
+    c.roundRect(x, y, w, h, 6, stroke=0, fill=1)
+
+    # Navy header bar (top 22% of badge)
+    hdr_h = h * 0.22
+    c.setFillColor(navy)
+    c.rect(x, y + h - hdr_h, w, hdr_h, stroke=0, fill=1)
+
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawCentredString(x + w / 2, y + h - hdr_h + hdr_h * 0.35, "FFC CHURCH")
+
+    # Gold accent line below header
+    c.setStrokeColor(gold)
+    c.setLineWidth(2)
+    c.line(x, y + h - hdr_h, x + w, y + h - hdr_h)
+
+    # ── Photo / avatar ────────────────────────────────────────────────────────
+    body_top   = y + h - hdr_h - PAD        # top of body area
+    body_bot   = y + PAD
+    body_h     = body_top - body_bot
+
+    avatar_r   = min(w * 0.18, body_h * 0.32)
+    avatar_cx  = x + avatar_r + PAD * 2
+    avatar_cy  = body_top - avatar_r - PAD * 1.5
+
+    photo_path = _photo_path(member.photo) if member.photo else None
+    if photo_path:
+        try:
+            from reportlab.platypus import Image as RLImg
+            img_x = avatar_cx - avatar_r
+            img_y = avatar_cy - avatar_r
+            img_d = avatar_r * 2
+            # Clip to circle then draw image
+            cp = c.beginPath()
+            cp.circle(avatar_cx, avatar_cy, avatar_r)
+            c.clipPath(cp, stroke=0, fill=0)
+            c.drawImage(photo_path, img_x, img_y, img_d, img_d,
+                        preserveAspectRatio=True, mask="auto")
+            c.restoreState(); c.saveState()
+            p2 = c.beginPath(); p2.roundRect(x, y, w, h, 6)
+            c.clipPath(p2, stroke=0, fill=0)
+        except Exception:
+            photo_path = None
+
+    if not photo_path:
+        initials = f"{member.first[0]}{member.last[0]}".upper() if member.first and member.last else "?"
+        c.setFillColor(HexColor("#EBF0F8"))
+        c.circle(avatar_cx, avatar_cy, avatar_r, stroke=0, fill=1)
+        c.setFillColor(navy)
+        c.setFont("Helvetica-Bold", avatar_r * 0.9)
+        c.drawCentredString(avatar_cx, avatar_cy - avatar_r * 0.3, initials)
+
+    # ── Name & details ────────────────────────────────────────────────────────
+    text_x = avatar_cx + avatar_r + PAD * 2
+    text_w = (x + w - PAD) - text_x
+
+    full_name = f"{member.first} {member.last}"
+    # Scale font to fit width
+    name_size = 14
+    c.setFont("Helvetica-Bold", name_size)
+    while c.stringWidth(full_name, "Helvetica-Bold", name_size) > text_w and name_size > 8:
+        name_size -= 1
+
+    name_y = body_top - name_size - PAD * 1.5
+    c.setFillColor(HexColor("#111827"))
+    c.setFont("Helvetica-Bold", name_size)
+    c.drawString(text_x, name_y, full_name)
+
+    # Ministry
+    if member.ministry:
+        c.setFont("Helvetica", 8)
+        c.setFillColor(HexColor(GRAY))
+        c.drawString(text_x, name_y - 13, member.ministry[:38])
+
+    # Date
+    c.setFont("Helvetica", 7)
+    c.setFillColor(HexColor(GRAY))
+    c.drawString(text_x, body_bot + 4, badge_date)
+
+    # Border outline
+    c.setStrokeColor(HexColor("#D1D5DB"))
+    c.setLineWidth(0.5)
+    c.roundRect(x, y, w, h, 6, stroke=1, fill=0)
+
+    c.restoreState()
+
+
+def _draw_badge_5160(c, x, y, w, h, member, badge_date: str):
+    """Draw a small address-label badge (5160 style) at canvas position (x,y)."""
+    from reportlab.lib.colors import HexColor, white
+
+    PAD = 3
+    navy = HexColor(NAVY)
+
+    c.saveState()
+
+    # Thin top border accent
+    c.setFillColor(navy)
+    c.rect(x, y + h - 3, w, 3, stroke=0, fill=1)
+
+    full_name = f"{member.first} {member.last}"
+    name_size = 8
+    c.setFont("Helvetica-Bold", name_size)
+    while c.stringWidth(full_name, "Helvetica-Bold", name_size) > w - PAD * 2 - 20 and name_size > 6:
+        name_size -= 0.5
+
+    c.setFillColor(HexColor("#111827"))
+    c.setFont("Helvetica-Bold", name_size)
+    c.drawString(x + PAD, y + h - 3 - name_size - PAD, full_name)
+
+    if member.ministry:
+        c.setFont("Helvetica", 6.5)
+        c.setFillColor(HexColor(GRAY))
+        c.drawString(x + PAD, y + PAD + 1, member.ministry[:32])
+
+    # "FFC" top right
+    c.setFont("Helvetica-Bold", 5.5)
+    c.setFillColor(white)
+    c.drawRightString(x + w - PAD, y + h - 3 - 6, "FFC")
+
+    c.restoreState()
+
+
+def _build_name_tags_pdf(members, label_format: str, badge_date: str) -> bytes:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas as rl_canvas
+
+    spec   = _LABEL_SPECS.get(label_format, _LABEL_SPECS["5395"])
+    cols   = spec["cols"]
+    rows   = spec["rows"]
+    bw     = spec["badge_w"]
+    bh     = spec["badge_h"]
+    ml     = spec["margin_left"]
+    mt     = spec["margin_top"]
+    hgap   = spec["h_gap"]
+    vgap   = spec["v_gap"]
+
+    page_w, page_h = letter
+    buf = io.BytesIO()
+    c   = rl_canvas.Canvas(buf, pagesize=letter)
+
+    per_page = cols * rows
+    for page_idx in range(0, len(members), per_page):
+        page_members = members[page_idx:page_idx + per_page]
+        if page_idx > 0:
+            c.showPage()
+
+        for i, m in enumerate(page_members):
+            col = i % cols
+            row = i // cols
+            x = ml + col * (bw + hgap)
+            # PDF y=0 is at bottom; top margin is from top of page
+            y = page_h - mt - (row + 1) * bh - row * vgap
+
+            if label_format == "5160":
+                _draw_badge_5160(c, x, y, bw, bh, m, badge_date)
+            else:
+                _draw_badge_5395(c, x, y, bw, bh, m, badge_date)
+
+    c.save()
+    buf.seek(0)
+    return buf.read()
+
+
+@router.get("/name-tags")
+def name_tags_pdf(
+    label_format: str  = Query("5395", description="5395 or 5160"),
+    date:         Optional[str] = Query(None, description="YYYY-MM-DD attendance date"),
+    member_ids:   Optional[str] = Query(None, description="Comma-separated member IDs"),
+    db:           Session = Depends(get_db),
+    _user:        models.User = Depends(require_admin),
+):
+    try:
+        # ── Resolve members ───────────────────────────────────────────────────
+        if member_ids:
+            id_list = [i.strip() for i in member_ids.split(",") if i.strip()]
+            members = db.query(models.Member).filter(models.Member.id.in_(id_list)).all()
+            # preserve order
+            id_order = {v: k for k, v in enumerate(id_list)}
+            members  = sorted(members, key=lambda m: id_order.get(m.id, 999))
+        elif date:
+            from datetime import date as _date
+            d = _date.fromisoformat(date)
+            checkins   = db.query(models.MemberCheckin).filter(
+                models.MemberCheckin.date == d).all()
+            seen = set(); mid_list = []
+            for ck in checkins:
+                if ck.member_id not in seen:
+                    seen.add(ck.member_id); mid_list.append(ck.member_id)
+            members = db.query(models.Member).filter(models.Member.id.in_(mid_list)).all()
+            id_order = {v: k for k, v in enumerate(mid_list)}
+            members  = sorted(members, key=lambda m: id_order.get(m.id, 999))
+        else:
+            raise HTTPException(400, "Provide date or member_ids")
+
+        if not members:
+            raise HTTPException(404, "No members found for the given criteria")
+
+        badge_date = date or dt_date.today().strftime("%B %d, %Y")
+        if date:
+            try:
+                from datetime import date as _date2
+                badge_date = _date2.fromisoformat(date).strftime("%B %d, %Y")
+            except Exception:
+                pass
+
+        if label_format not in _LABEL_SPECS:
+            label_format = "5395"
+
+        pdf_bytes = _build_name_tags_pdf(members, label_format, badge_date)
+        fname = f"name_tags_{date or 'custom'}_{label_format}.pdf"
+        return Response(pdf_bytes, media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(500, detail=f"Name tags failed: {type(exc).__name__}: {exc}")
