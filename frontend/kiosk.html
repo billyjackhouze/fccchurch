@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FFC Church — Check In</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#1E3A5F;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+/* ── Header ── */
+.kiosk-header{padding:22px 36px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);flex-shrink:0}
+.kiosk-brand{color:#fff;font-size:22px;font-weight:800;letter-spacing:.4px}
+.kiosk-brand span{color:#B8860B}
+.kiosk-date{color:rgba(255,255,255,.65);font-size:14px;text-align:right;line-height:1.5}
+.kiosk-service{color:#B8860B;font-size:13px;font-weight:600}
+/* ── Body ── */
+.kiosk-body{flex:1;overflow-y:auto;padding:24px 36px;display:flex;flex-direction:column;gap:18px}
+/* ── Count bar ── */
+.kiosk-count-bar{background:rgba(255,255,255,.08);border-radius:12px;padding:14px 22px;display:flex;align-items:center;gap:18px;flex-shrink:0}
+.kiosk-count-num{font-size:40px;font-weight:800;color:#B8860B;line-height:1}
+.kiosk-count-text{color:rgba(255,255,255,.75);font-size:15px;line-height:1.4}
+/* ── Search ── */
+.kiosk-search-wrap{position:relative;flex-shrink:0}
+.kiosk-search-icon{position:absolute;left:20px;top:50%;transform:translateY(-50%);font-size:22px;color:#9CA3AF;pointer-events:none}
+.kiosk-search{width:100%;padding:18px 20px 18px 58px;font-size:22px;border:none;border-radius:14px;background:#fff;color:#1F2937;outline:none;box-shadow:0 4px 20px rgba(0,0,0,.25);-webkit-appearance:none}
+.kiosk-search::placeholder{color:#9CA3AF}
+/* ── Member grid ── */
+.kiosk-member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.kiosk-empty{color:rgba(255,255,255,.45);font-size:16px;text-align:center;padding:48px 0;grid-column:1/-1}
+/* ── Member card ── */
+.kiosk-card{background:#fff;border-radius:14px;padding:20px 14px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:3px solid transparent;-webkit-tap-highlight-color:transparent;user-select:none}
+.kiosk-card:active{transform:scale(.97)}
+.kiosk-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.kiosk-card.done{border-color:#1A7A4A;background:#F0FDF4}
+.kiosk-avatar{width:74px;height:74px;border-radius:50%;margin:0 auto 10px;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#1E3A5F;overflow:hidden;border:2px solid #E5E7EB}
+.kiosk-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.kiosk-card.done .kiosk-avatar{border-color:#1A7A4A}
+.kiosk-name{font-size:15px;font-weight:700;color:#1F2937;margin-bottom:3px}
+.kiosk-sub{font-size:12px;color:#6B7280}
+.kiosk-badge-in{display:inline-block;background:#DCFCE7;color:#166534;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;margin-top:6px}
+/* ── Confirm overlay ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,30,55,.88);z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.confirm-card{background:#fff;border-radius:20px;padding:36px 40px;text-align:center;max-width:440px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.35)}
+.confirm-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 16px;background:#EBF0F8;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:#1E3A5F;overflow:hidden;border:3px solid #E5E7EB}
+.confirm-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.confirm-name{font-size:24px;font-weight:800;color:#1E3A5F;margin-bottom:4px}
+.confirm-status{font-size:14px;color:#6B7280;margin-bottom:20px}
+.family-box{background:#F9FAFB;border-radius:10px;padding:14px 16px;margin-bottom:20px;text-align:left}
+.family-box-title{font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.family-check{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;font-size:14px;color:#374151}
+.family-check input{width:18px;height:18px;cursor:pointer;accent-color:#1E3A5F}
+.btn-row{display:flex;gap:12px;justify-content:center}
+.btn-cancel{padding:11px 28px;border-radius:8px;border:2px solid #D1D5DB;background:#fff;color:#374151;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-cancel:hover{background:#F3F4F6}
+.btn-checkin{padding:11px 32px;border-radius:8px;border:none;background:#1A7A4A;color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-checkin:hover{background:#15623c}
+.btn-checkin:disabled{opacity:.6;cursor:not-allowed}
+/* ── Already-in state in confirm ── */
+.already-in-msg{background:#DCFCE7;border:1px solid #86EFAC;border-radius:8px;padding:12px 16px;color:#166534;font-size:14px;font-weight:600;margin-bottom:20px}
+/* ── Success overlay ── */
+.success-overlay{display:none;position:fixed;inset:0;background:#1A7A4A;z-index:300;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:30px}
+.success-overlay.open{display:flex}
+.success-icon{font-size:96px;margin-bottom:20px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.success-name{font-size:36px;font-weight:800;margin-bottom:8px}
+.success-sub{font-size:20px;opacity:.85}
+.success-count{margin-top:16px;font-size:15px;opacity:.65}
+/* ── Exit button ── */
+.kiosk-exit-btn{position:fixed;bottom:16px;right:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.15);padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s;z-index:10}
+.kiosk-exit-btn:hover{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8)}
+/* ── Spinner ── */
+.spin{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="kiosk-header">
+  <div>
+    <div class="kiosk-brand">✝ FFC <span>Church</span></div>
+    <div class="kiosk-service" id="hdr-service">Sunday Service</div>
+  </div>
+  <div class="kiosk-date">
+    <div id="hdr-date"></div>
+    <div id="hdr-time" style="font-size:18px;font-weight:700;color:#fff;margin-top:2px"></div>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="kiosk-body">
+  <!-- Count -->
+  <div class="kiosk-count-bar">
+    <div class="kiosk-count-num" id="count-num">—</div>
+    <div class="kiosk-count-text">checked in<br>today</div>
+  </div>
+
+  <!-- Search -->
+  <div class="kiosk-search-wrap">
+    <span class="kiosk-search-icon">🔍</span>
+    <input class="kiosk-search" id="search-input" type="text"
+           placeholder="Type a name to check in…"
+           autocomplete="off" autocorrect="off" autocapitalize="words"
+           oninput="onSearch(this.value)">
+  </div>
+
+  <!-- Results -->
+  <div class="kiosk-member-grid" id="member-grid">
+    <div class="kiosk-empty" id="empty-msg">Start typing to find a member</div>
+  </div>
+</div>
+
+<!-- Confirm overlay -->
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-card">
+    <div class="confirm-avatar" id="conf-avatar"></div>
+    <div class="confirm-name"  id="conf-name"></div>
+    <div class="confirm-status" id="conf-status"></div>
+    <div class="already-in-msg" id="conf-already" style="display:none">✓ Already checked in today</div>
+    <div class="family-box" id="conf-family" style="display:none">
+      <div class="family-box-title">Also check in family?</div>
+      <div id="conf-family-list"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-checkin" id="conf-btn" onclick="doCheckin()">✓ Check In</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-icon">✅</div>
+  <div class="success-name" id="succ-name"></div>
+  <div class="success-sub">You're checked in!</div>
+  <div class="success-count" id="succ-count"></div>
+</div>
+
+<!-- Exit -->
+<button class="kiosk-exit-btn" onclick="exitKiosk()">✕ Exit Kiosk</button>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const API = '';   // same origin
+let allMembers   = [];
+let checkedInMap = {};   // member_id → true
+let todayRecord  = null;
+let confirmMember = null;
+let familySelected = new Set();
+let searchTimer   = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  await loadData();
+  document.getElementById('search-input').focus();
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('hdr-time').textContent =
+    now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+}
+
+async function loadData() {
+  try {
+    const [todayResp, membersResp] = await Promise.all([
+      fetch(`${API}/api/attendance/kiosk/today`),
+      fetch(`${API}/api/members`),
+    ]);
+    const todayData = await todayResp.json();
+    allMembers = await membersResp.json();
+
+    todayRecord = todayData.record || null;
+    document.getElementById('count-num').textContent = todayData.checkin_count ?? 0;
+    if (todayRecord) {
+      document.getElementById('hdr-service').textContent = todayRecord.service_type;
+    }
+  } catch(e) {
+    console.error('Load error', e);
+    document.getElementById('count-num').textContent = '?';
+  }
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function onSearch(val) {
+  clearTimeout(searchTimer);
+  const term = val.trim().toLowerCase();
+  if (!term) {
+    renderEmpty('Start typing to find a member');
+    return;
+  }
+  searchTimer = setTimeout(() => doSearch(term), 160);
+}
+
+function doSearch(term) {
+  const hits = allMembers.filter(m =>
+    (`${m.first} ${m.last}`).toLowerCase().includes(term) ||
+    (m.email || '').toLowerCase().includes(term)
+  ).slice(0, 16);
+
+  if (!hits.length) { renderEmpty('No members found'); return; }
+
+  const grid = document.getElementById('member-grid');
+  grid.innerHTML = hits.map(m => {
+    const initials = (m.first[0]||'') + (m.last[0]||'');
+    const done = !!checkedInMap[m.id];
+    const avatarInner = m.photo
+      ? `<img src="/static/photos/${m.photo}" alt="" loading="lazy">`
+      : initials;
+    return `
+      <div class="kiosk-card${done?' done':''}" onclick="openConfirm('${m.id}')">
+        <div class="kiosk-avatar">${avatarInner}</div>
+        <div class="kiosk-name">${m.first} ${m.last}</div>
+        <div class="kiosk-sub">${m.status || 'Member'}</div>
+        ${done ? '<div class="kiosk-badge-in">✓ Checked In</div>' : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderEmpty(msg) {
+  document.getElementById('member-grid').innerHTML = `<div class="kiosk-empty">${msg}</div>`;
+}
+
+// ── Confirm ───────────────────────────────────────────────────────────────────
+async function openConfirm(memberId) {
+  confirmMember = allMembers.find(m => m.id === memberId);
+  if (!confirmMember) return;
+  familySelected = new Set();
+
+  // Check live status
+  let alreadyIn = false;
+  try {
+    const r = await fetch(`${API}/api/attendance/kiosk/status/${memberId}`);
+    const s = await r.json();
+    alreadyIn = s.checked_in;
+    if (alreadyIn) checkedInMap[memberId] = true;
+  } catch(e) {}
+
+  // Avatar
+  const initials = (confirmMember.first[0]||'') + (confirmMember.last[0]||'');
+  document.getElementById('conf-avatar').innerHTML = confirmMember.photo
+    ? `<img src="/static/photos/${confirmMember.photo}" alt="">`
+    : initials;
+
+  document.getElementById('conf-name').textContent   = `${confirmMember.first} ${confirmMember.last}`;
+  document.getElementById('conf-status').textContent = confirmMember.status || 'Member';
+
+  const alreadyEl = document.getElementById('conf-already');
+  const confBtn   = document.getElementById('conf-btn');
+  alreadyEl.style.display = alreadyIn ? '' : 'none';
+  confBtn.textContent     = alreadyIn ? '✓ Done' : '✓ Check In';
+  confBtn.disabled        = false;
+
+  // Family
+  const family = (confirmMember.family || []);
+  const famBox  = document.getElementById('conf-family');
+  if (family.length && !alreadyIn) {
+    famBox.style.display = '';
+    document.getElementById('conf-family-list').innerHTML = family.map(f => `
+      <label class="family-check">
+        <input type="checkbox" id="fam-${f.related_id}"
+               onchange="toggleFam('${f.related_id}',this.checked)">
+        ${f.related_name} <span style="color:#9CA3AF;margin-left:4px">(${f.relation})</span>
+      </label>`).join('');
+  } else {
+    famBox.style.display = 'none';
+  }
+
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function toggleFam(id, checked) {
+  if (checked) familySelected.add(id);
+  else familySelected.delete(id);
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  confirmMember = null;
+  familySelected = new Set();
+}
+
+async function doCheckin() {
+  if (!confirmMember) return;
+  document.getElementById('conf-btn').disabled = true;
+  document.getElementById('conf-btn').textContent = 'Checking in…';
+
+  const toCheckin = [confirmMember.id, ...familySelected];
+  let lastCount = parseInt(document.getElementById('count-num').textContent) || 0;
+  let checkedName = confirmMember.first;
+
+  for (const memberId of toCheckin) {
+    try {
+      const resp = await fetch(`${API}/api/attendance/kiosk/checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          member_id: memberId,
+          record_id: todayRecord ? todayRecord.id : null,
+        }),
+      });
+      const data = await resp.json();
+      checkedInMap[memberId] = true;
+      lastCount = data.checkin_count || lastCount;
+    } catch(e) { console.error(e); }
+  }
+
+  document.getElementById('count-num').textContent = lastCount;
+  closeConfirm();
+
+  // Refresh search grid to show checked-in state
+  doSearch(document.getElementById('search-input').value.trim().toLowerCase());
+
+  // Success screen
+  const extra = toCheckin.length > 1 ? ` + ${toCheckin.length - 1} family` : '';
+  document.getElementById('succ-name').textContent    = `Welcome, ${checkedName}${extra}!`;
+  document.getElementById('succ-count').textContent   = `${lastCount} checked in today`;
+  document.getElementById('success-overlay').classList.add('open');
+
+  setTimeout(() => {
+    document.getElementById('success-overlay').classList.remove('open');
+    document.getElementById('search-input').value = '';
+    renderEmpty('Start typing to find a member');
+    document.getElementById('search-input').focus();
+  }, 3000);
+}
+
+// ── Exit ──────────────────────────────────────────────────────────────────────
+function exitKiosk() {
+  if (confirm('Exit kiosk mode and return to the management system?')) {
+    window.location.href = '/';
+  }
+}
+
+// ── Keyboard shortcut: Escape closes confirm ──────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeConfirm();
+});
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
