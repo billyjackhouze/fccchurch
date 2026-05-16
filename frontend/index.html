@@ -5319,8 +5319,13 @@ function downloadDirectory() {
   // Use fetch + blob so auth header is sent
   fetch(`/api/reports/directory-pdf?${params}`, {
     headers: { Authorization: `Bearer ${token}` }
-  }).then(r => {
-    if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'Error'); });
+  }).then(async r => {
+    if (!r.ok) {
+      const txt = await r.text();
+      let msg = txt;
+      try { msg = JSON.parse(txt).detail || txt; } catch(_) {}
+      throw new Error(msg);
+    }
     return r.blob();
   }).then(blob => {
     const url = URL.createObjectURL(blob);
@@ -5374,8 +5379,13 @@ function downloadStatements() {
     fname = `giving_statement_${year}.pdf`;
   }
   fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-    .then(r => {
-      if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'Error'); });
+    .then(async r => {
+      if (!r.ok) {
+        const txt = await r.text();
+        let msg = txt;
+        try { msg = JSON.parse(txt).detail || txt; } catch(_) {}
+        throw new Error(msg);
+      }
       return r.blob();
     }).then(blob => {
       const a = document.createElement('a');
